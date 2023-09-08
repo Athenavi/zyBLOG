@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- 网站主语言 -->
+<html lang="zh-cn">
+<head>
+    <!-- 网站采用的字符编码 -->
+    <meta charset="utf-8">
+    <!-- 预留网站标题的位置 -->
+    <title>{% block title %}{% endblock %}</title>
+    <!-- 引入bootstrap的css文件 -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <!-- 引入layer.js -->
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+</head>
+
+<body>
+<!-- 引入导航栏 -->
+<!-- 定义导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <!-- 导航栏商标 -->
+        <a class="navbar-brand" href="#">奇客舒</a>
+        <!-- 导航入口 -->
+        <div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">登录</a>
+                </li>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+
+<!-- 预留具体页面的位置 -->
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-md-6">
+            <br>
+            <form method="post" action="/register">
+                <!-- 账号 -->
+                <div class="form-group">
+                    <label for="username">账号</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <!-- 密码 -->
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <!-- 确认密码 -->
+                <div class="form-group">
+                    <label for="confirm_password">确认密码</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="invite_code">邀请码</label>
+                    <input type="text" class="form-control" id="invite_code" name="invite_code" required>
+                </div>
+
+
+
+
+                <!-- 提交按钮 -->
+                <button type="submit" class="btn btn-primary btn-block">提交</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 引入注脚 -->
+
+<div>
+    <br><br><br>
+</div>
+<footer class="py-3 bg-dark fixed-bottom">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; 漾BLOG 2023</p>
+    </div>
+</footer>
+<!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
+<script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
+
+<!--
+    popper.js 采用 cdn 远程引入，意思是你不需要把它下载到本地。
+    在实际的开发中推荐静态文件尽量都使用 cdn 的形式。
+    教程采用本地引入是为了让读者了解静态文件本地部署的流程。
+-->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
+
+<!-- 引入bootstrap的js文件 -->
+<script src="../static/bootstrap/js/bootstrap.min.js"></script>
+<script>
+    function validateForm() {
+      var password = document.getElementById("password").value;
+      var confirm_password = document.getElementById("confirm_password").value;
+
+      if (password !== confirm_password) {
+        alert("密码和确认密码不一致");
+        return false;
+      }
+    }
+  </script>
+</body>
+
+</html>
