@@ -147,7 +147,7 @@ def generate_sitemap():
 
     for file in markdown_files:
         article_name = file[:-3]  # 移除文件扩展名 (.md)
-        article_url = 'https://localhost:5000/' + article_name
+        article_url = domain+'blog/' + article_name
         date = get_file_date(article_name)
 
         # 创建url标签并包含链接
@@ -178,16 +178,16 @@ def generate_rss():
     xml_data += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n'
     xml_data += '<channel>\n'
     xml_data += '<title>Your RSS Feed Title</title>\n'
-    xml_data += '<link>https://localhost:5000</link>\n'
+    xml_data += '<link>'+domain+'</link>\n'
     xml_data += '<description>Your RSS Feed Description</description>\n'
     xml_data += '<language>en-us</language>\n'
     xml_data += '<lastBuildDate>' + datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z") + '</lastBuildDate>\n'
-    xml_data += '<atom:link href="https://localhost:5000/rss" rel="self" type="application/rss+xml" />\n'
+    xml_data += '<atom:link href="'+domain+'rss" rel="self" type="application/rss+xml" />\n'
 
     for file in markdown_files:
         article_name = file[:-3]  # 移除文件扩展名 (.md)
         encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
-        article_url = 'https://localhost:5000/' + encoded_article_name
+        article_url = domain+'blog/' + encoded_article_name
         date = get_file_date(encoded_article_name)
         describe = get_article_content(article_name,3)
         describe = clearHTMLFormat(describe)
