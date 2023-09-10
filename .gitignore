@@ -1,1 +1,6 @@
 /venv/
+/.github/
+/.idea/
+app.log
+config.ini
+.gitignore
