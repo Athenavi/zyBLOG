@@ -5,12 +5,8 @@ import time
 import urllib
 from configparser import ConfigParser
 
-import xml.etree.ElementTree as ET
-
-import chardet
 from flask import Flask, render_template, redirect, session, request, url_for, Response
 from jinja2 import Environment, select_autoescape, FileSystemLoader
-from markupsafe import Markup
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from AboutLogin import zylogin, zyregister
@@ -238,7 +234,3 @@ def undefined_route(undefined_path):
 
 
 
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
