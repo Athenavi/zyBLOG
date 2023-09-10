@@ -25,7 +25,7 @@ def back():
                 cursor.execute(query, (username,))
                 ifAdmin = cursor.fetchone()[0]
                 if ifAdmin:
-                    return render_template('admin.html'), 200
+                    return admin_dashboard(), 200
                 else:
                     return error("非管理员用户禁止访问！！！", 403)
             except Exception as e:
@@ -39,3 +39,8 @@ def back():
     else:
         return error("请先登录", 401)
 
+
+def admin_dashboard():
+        if 'theme' not in session:
+            session['theme'] = 'night-theme'
+        return render_template('admin.html',theme=session['theme'])

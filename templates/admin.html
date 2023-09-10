@@ -5,7 +5,7 @@
     <!-- 网站采用的字符编码 -->
     <meta charset="utf-8">
     <!-- 预留网站标题的位置 -->
-    <title>{{ article_name }}</title>
+    <title>管理后台</title>
     <!-- 引入bootstrap的css文件 -->
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
@@ -13,51 +13,142 @@
     <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
+<script id="xplayer" src="https://music.piphp.com/Static/player/player.js" key="64e40c86583f0" m="1"></script>
 <style>
-        body {
-            margin: 0;
-        }
+    body {
+        margin: 0;
+    }
 
-        .day-theme {
-            background-image: url("https://api.237127.xyz/img23");
-            color: #498ef6;
-        }
+    .day-theme {
+        color: #1e1f22;
+        background-image: url("../static/image/day.jpg");
+        background-color: #fff;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
 
-        .night-theme {
-            background-image: url("../static/image/dark.png");
-            background-color: #1b1e21;
-            color: #1e1f22;
-        }
+    .night-theme {
+        background-color: #1b1e21;
+        color: #498ef6;
+        background-image: url("../static/image/dark.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+    .day-theme div {
+        background-image: none;
+    }
+    .night-theme div {
+        background-image: none;
+        background-color: rgba(42, 40, 40, 0.9);
+    }
 
-        .content {
-            padding: 20px;
-        }
-    </style>
+    .night-theme div {
+        background-image: none;
+        background-color: rgba(42, 40, 40, 0.9);
+    }
 
 
-
+    .card-body div {
+        padding: 20px;
+    }
+</style>
 
 <body class="{{ theme }}" >
 <!-- 引入导航栏 -->
 <!-- 定义导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <!-- 导航栏商标 -->
+        <a class="navbar-brand" href="/">奇客舒</a>
+        <!-- 导航入口 -->
+        <div>
+        <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    tips
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <span>Ctrl + F 搜索内容</span>
+                    <a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Github开源地址</a>
+                </div>
+            </li>
 
+        </ul>
+    </div>
+    </div>
+</nav>
 
 
 
 <!-- 预留具体页面的位置 -->
 <div class="container">
-    <div class="row justify-content-md-center">
-        <div class="col-md-6">
-            <br>
-            <h3 class="nav-link">管理员界面</h3>
+  <div class="row justify-content-md-center">
+      <div class="card">
+         <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function chooseFile() {
+            document.getElementById('file-input').click();
+        }
+
+        // 监听文件选择事件，并更新文件选择框的标签
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            var fileLabel = document.getElementById('file-label');
+            var fileName = e.target.value.split('\\').pop();
+            fileLabel.textContent = fileName;
+        });
+
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const fileInput = document.getElementById('file-input');
+                fileInput.files = files;
+
+                const fileLabel = document.getElementById('file-label');
+                fileLabel.textContent = files[0].name;
+            }
+        }
+
+        // 将上述拖放功能的事件处理函数绑定到表单
+        const form = document.querySelector('form');
+        form.addEventListener('dragover', handleDragOver);
+        form.addEventListener('drop', handleDrop);
+    });
+</script>
+
+<form method="POST" enctype="multipart/form-data" action="/upload" style="width: 360px;">
+    <div class="form-row">
+        <div class="col-auto">
+            <div class="form-group">
+                <label for="file-input" class="btn btn-primary" style="height:150px">----------------可拖动文件到这里---------------</label>
+                <input type="file" name="file" id="file-input" accept=".txt, .png, .jpg, .jpeg" style="display: none;">
+                <span id="file-label"></span>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="form-group">
+                <select name="type" class="form-control">
+                    <option value="articles">文章</option>
+                    <option value="notice">公告</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-auto">
+            <input type="submit" value="Upload" class="btn btn-primary">
         </div>
     </div>
+</form>
+          <label for="file-input" class="btn btn-primary">选择上传的文件</label>
 </div>
-<!-- 引入注脚 -->
+  </div>
+    </div>
 
-<div>
-    <br><br><br>
-</div>
+
 <footer class="py-3 bg-dark fixed-bottom">
     <div class="container">
         <p class="m-0 text-center text-white">Copyright &copy;zyBLOG 2023</p>

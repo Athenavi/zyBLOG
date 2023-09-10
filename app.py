@@ -15,6 +15,7 @@ from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat
 from database import get_database_connection
 from user import zyadmin
+from utils import zy_upload_file
 
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
@@ -226,6 +227,12 @@ def admin(key):
     return zyadmin(key)
 
 #若要安全后台入口，请使用在路由请求中移除<key> return函数back
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    return zy_upload_file()
+
+
 
 
 @app.route('/<path:undefined_path>')
