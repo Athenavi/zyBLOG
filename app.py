@@ -221,9 +221,10 @@ def change_password():
     return zychange_password()
 
 
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    return zyadmin()
+@app.route('/admin/<key>', methods=['GET', 'POST'])
+def admin(key):
+    return zyadmin(key)
+
 
 @app.route('/<path:undefined_path>')
 def undefined_route(undefined_path):
