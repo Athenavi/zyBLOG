@@ -33,16 +33,6 @@
             padding: 20px;
         }
     </style>
-<script>
-        $(document).ready(function() {
-            $("#theme-form").submit(function(event) {
-                event.preventDefault();
-                $.post("/toggle_theme", function(data) {
-                    location.reload();  // 刷新页面，以便显示新的主题
-                });
-            });
-        });
-    </script>
 
 
 
@@ -55,11 +45,14 @@
 
 
 <!-- 预留具体页面的位置 -->
-<div id="content">
-        {% autoescape false %}
-        {{ themed_html_content }}
-        {% endautoescape %}
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-md-6">
+            <br>
+            <h3 class="nav-link">管理员界面</h3>
+        </div>
     </div>
+</div>
 <!-- 引入注脚 -->
 
 <div>
