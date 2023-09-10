@@ -64,7 +64,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-domain = config.get('general', 'domain')
+domain = config.get('general', 'domain').strip("'")
 
 @app.route('/toggle_theme', methods=['POST'])  # 处理切换主题的请求
 def toggle_theme():
