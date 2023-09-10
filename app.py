@@ -225,6 +225,8 @@ def change_password():
 def admin(key):
     return zyadmin(key)
 
+#若要安全后台入口，请使用在路由请求中移除<key> return函数back
+
 
 @app.route('/<path:undefined_path>')
 def undefined_route(undefined_path):
