@@ -36,8 +36,9 @@ $ python wsgi.py
 
 ## 鸣谢
 
- https://7trees.cn 提供API支持
- API可参阅 https://qks.icu/apiFox
+ <a href="https://7trees.cn">七棵树 提供API支持
+
+ API可参阅: <a href="https://qks.icu/apiFox">文档</a>
 
 ## 免责声明
 
