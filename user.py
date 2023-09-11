@@ -1,6 +1,7 @@
+import os
 from configparser import ConfigParser
-
-from flask import session, render_template, logging, redirect, url_for
+import logging
+from flask import session, render_template, redirect, url_for
 from database import get_database_connection
 config = ConfigParser()
 config.read('config.ini')
@@ -43,4 +44,25 @@ def back():
 def admin_dashboard():
         if 'theme' not in session:
             session['theme'] = 'night-theme'
+        files = show_files('articles/')
         return render_template('admin.html',theme=session['theme'])
+
+
+def show_files(path):
+    # 指定目录的路径
+    directory = path
+    files = os.listdir(directory)
+    return files
+
+
+def zy_delete_file(filename):
+    # 指定目录的路径
+    directory = 'articles/'
+
+    # 构建文件的完整路径
+    file_path = os.path.join(directory, filename)
+
+    # 删除文件
+    os.remove(file_path)
+
+    return 'success'

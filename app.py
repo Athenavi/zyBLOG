@@ -5,7 +5,6 @@ import time
 import urllib
 from configparser import ConfigParser
 
-import bcrypt
 from flask import Flask, render_template, redirect, session, request, url_for, Response
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -13,8 +12,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat
-from database import get_database_connection
-from user import zyadmin
+from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
 
 template_dir = 'templates'  # 模板文件的目录
@@ -47,7 +45,10 @@ def favicon():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    return zylogin()
+    if 'logged_in'  in session:
+        return redirect(url_for('home'))
+    else:
+        return zylogin()
 
 
 # 注册页面
@@ -233,6 +234,9 @@ def upload_file():
     return zy_upload_file()
 
 
+@app.route('/delete/<filename>', methods=['POST'])
+def delete_file(filename):
+    return zy_delete_file(filename)
 
 
 @app.route('/<path:undefined_path>')
