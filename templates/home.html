@@ -7,6 +7,7 @@
     <!-- 预留网站标题的位置 -->
     <title>{% block title %}{% endblock %}</title>
     <!-- 引入bootstrap的css文件 -->
+    <link rel="stylesheet" href="../static/main.css">
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
     <!-- 引入layer.js -->
@@ -14,26 +15,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
 <script id="xplayer" src="https://music.piphp.com/Static/player/player.js" key="64e40c86583f0" m="1"></script>
-<style>
-        body {
-            margin: 0;
-        }
 
-        .day-theme {
-
-            background-image: url("../static/image/day.jpg");
-            color: #498ef6;
-        }
-
-        .night-theme {
-            background-image: url("../static/image/dark.png");
-            color: #1e1f22;
-        }
-
-        .content {
-            padding: 20px;
-        }
-    </style>
 <script>
         $(document).ready(function() {
             $("#theme-form").submit(function(event) {

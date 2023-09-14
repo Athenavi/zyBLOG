@@ -66,3 +66,5 @@ def zy_delete_file(filename):
     os.remove(file_path)
 
     return 'success'
+
+

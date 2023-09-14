@@ -1,0 +1,37 @@
+
+    body {
+        margin: 0;
+    }
+
+    .day-theme {
+        color: #1e1f22;
+        background-image: url("../static/image/day.jpg");
+        background-color: #fff;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .night-theme {
+        background-color: #1b1e21;
+        color: #498ef6;
+        background-image: url("../static/image/dark.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+    .day-theme div {
+        background-image: none;
+    }
+    .night-theme div {
+        background-image: none;
+        background-color: rgba(42, 40, 40, 0.9);
+    }
+
+    .night-theme div {
+        background-image: none;
+        background-color: rgba(42, 40, 40, 0.9);
+    }
+
+
+    .card-body div {
+        padding: 20px;
+    }

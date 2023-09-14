@@ -5,6 +5,11 @@ import markdown
 
 import os
 
+from flask import session, request
+
+from database import get_database_connection
+
+
 def get_article_names(page=1, per_page=10):
     articles = []
     files = os.listdir('articles')
@@ -38,3 +43,34 @@ def clearHTMLFormat(text):
     # 使用正则表达式清除HTML标记
     clean_text = re.sub('<.*?>', '', text)
     return clean_text
+
+def get_comment():
+    if session.get('logged_in'):
+        username = session.get('username')
+        if username:
+            comment = password = request.form['comment']
+            return zy_get_comment(username,comment)
+        else:
+            return 0
+    else:
+        return 0
+
+
+
+def zy_get_comment(username,comment):
+    db = get_database_connection()
+    cursor = db.cursor()
+    try:
+        query = "SELECT * FROM users WHERE username = %s"
+        cursor.execute(query, (username,))
+        result = cursor.fetchone()
+        if result is not None:
+            return result
+        else:
+            return 0
+    except Exception as e:
+        return 0
+    finally:
+        cursor.close()
+        db.close()
+    return 0
