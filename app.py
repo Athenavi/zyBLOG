@@ -5,7 +5,7 @@ import time
 import urllib
 from configparser import ConfigParser
 
-from flask import Flask, render_template, redirect, session, request, url_for, Response, g
+from flask import Flask, render_template, redirect, session, request, url_for, Response
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -23,6 +23,7 @@ env.add_extension('jinja2.ext.loopcontrols')
 app = Flask(__name__)
 app.jinja_env = env
 app.secret_key = 'your_secret_key'
+app.permanent_session_lifetime = datetime.timedelta(hours=3)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)  # 添加 ProxyFix 中间件
 
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
@@ -41,6 +42,27 @@ def favicon():
 
 
 # 登录页面
+
+def get_user_status():
+    if 'logged_in' in session and session['logged_in']:
+        return True
+    else:
+        return False
+
+
+def get_username():
+    if 'username' in session:
+        return session['username']
+    else:
+        return None
+
+
+@app.context_processor
+def inject_variables():
+    return dict(
+        userStatus=get_user_status,
+        username=get_username
+    )
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -97,10 +119,11 @@ def home():
         template = env.get_template('home.html')
         session.setdefault('theme', 'day-theme')
         notice = read_file('notice/1.txt', 50)
-        logged_in = session.get('logged_in')
-        return template.render(articles=articles, url_for=url_for, theme=session['theme'],logged_in=logged_in,
+        userStatus = get_user_status()
+        username = get_username()
+        return template.render(articles=articles, url_for=url_for, theme=session['theme'],
                                notice=notice,
-                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page)
+                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username)
     else:
         return render_template('home.html')
 
