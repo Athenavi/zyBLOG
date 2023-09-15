@@ -8,6 +8,7 @@
     <title>{% block title %}{% endblock %}</title>
     <!-- 引入bootstrap的css文件 -->
     <link rel="stylesheet" href="../static/main.css">
+    <script src="../static/main.js"></script>
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
     <!-- 引入layer.js -->
@@ -15,9 +16,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
 <script id="xplayer" src="https://music.piphp.com/Static/player/player.js" key="64e40c86583f0" m="1"></script>
-
 <script>
-        $(document).ready(function() {
+            $(document).ready(function() {
             $("#theme-form").submit(function(event) {
                 event.preventDefault();
                 $.post("/toggle_theme", function(data) {
@@ -25,9 +25,7 @@
                 });
             });
         });
-    </script>
-<script>
-window.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('DOMContentLoaded', function() {
   // 获取主题切换按钮和图像元素
   var themeButton = document.querySelector('#theme-form button');
   var themeImage = themeButton.querySelector('img');
@@ -47,6 +45,9 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+{% from 'header.html' import zytopbar %}
+<!-- 调用topbar -->
+{{ zytopbar() }}
 <body class="{{ theme }}">
 <!-- 引入导航栏 -->
 <!-- 定义导航栏 -->
@@ -105,11 +106,6 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 <!-- 预留具体页面的位置 -->
-<div class="fixed-icon">
-    <!-- 这里放置你的图标 -->
-    <a href="#top"><img src="../static/image/rocket.svg" style="height: 40px" alt="回到顶部"></a>
-  </div>
-
 
 
 
