@@ -15,7 +15,9 @@ def generate_short_url():
 ALLOWED_EXTENSIONS = {
     'txt': 5 * 1024 * 1024,  # 5MB
     'jpg': 10 * 1024 * 1024,  # 10MB
-    'png': 10 * 1024 * 1024  # 10MB
+    'png': 10 * 1024 * 1024,  # 10MB
+    'md': 5 * 1024 * 1024  # 10MB
+
 }
 
 

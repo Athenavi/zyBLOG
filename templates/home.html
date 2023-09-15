@@ -56,7 +56,7 @@ window.addEventListener('DOMContentLoaded', function() {
         <a class="navbar-brand" href="#">奇客舒</a>
         <!-- 导航入口 -->
         <div>
-    <ul class="navbar-nav">
+         <ul class="navbar-nav">
     <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     其他
@@ -97,7 +97,7 @@ window.addEventListener('DOMContentLoaded', function() {
         <a class="dropdown-item" href="/change-password">修改密码</a>
     {% endif %}
         </li>
-    </ul>
+         </ul>
 </div>
     </div>
 </nav>
@@ -108,7 +108,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 
-<div class="container">
+<div class="container" name="top">
   <div class="row justify-content-md-center">
 
   <style>
@@ -177,13 +177,30 @@ window.addEventListener('DOMContentLoaded', function() {
           </a>
         </div>
       {% endfor %}
+<a href="#top">回到顶部</a>
+<div style="width: 1080px; height: 30px; background-color: transparent;">
+  <!-- 翻页按钮 -->
+{% if has_previous_page %}
+    <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
+{% endif %}
+<span>----------</span>
+{% if has_next_page %}
+    <a href="{{ url_for('home', page=current_page+1) }}">Next</a>
+{% endif %}
+  </div>
+
     </div>
+
 <div class="col-md-2">
 
 
   <div>
       <span>Ctrl + F 搜索内容</span>
             </div>
+
+    <a href="#top">回到顶部</a>
+
+
         </div>
     </div>
   </div>
