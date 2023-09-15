@@ -16,34 +16,14 @@
 </head>
 <script id="xplayer" src="https://music.piphp.com/Static/player/player.js" key="64e40c86583f0" m="1"></script>
 
+<body class="{{ theme }}" >
 {% from 'header.html' import zytopbar %}
 <!-- 调用topbar -->
 {{ zytopbar() }}
 
-<body class="{{ theme }}" >
+
 <!-- 引入导航栏 -->
 <!-- 定义导航栏 -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <!-- 导航栏商标 -->
-        <a class="navbar-brand" href="/">奇客舒</a>
-        <!-- 导航入口 -->
-        <div>
-        <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    tips
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <span>Ctrl + F 搜索内容</span>
-                    <a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Github开源地址</a>
-                </div>
-            </li>
-
-        </ul>
-    </div>
-    </div>
-</nav>
 
 
 

@@ -34,10 +34,88 @@
     });
   };
 </script>
-
 <div class="fixed-icon">
     <!-- 这里放置你的图标 -->
     <a href="#top"><img src="../static/image/rocket.svg" style="height: 40px" alt="回到顶部"></a>
+    <form id="theme-form" method="post" action="/toggle_theme">
+        <br>
+    <button type="submit" style="border: none; background-color: transparent; height: 28px">
+      <img src="../static/image/sun.svg" alt="切换主题" height=28px>
+    </button>
+  </form>
   </div>
+<script>
+            $(document).ready(function() {
+            $("#theme-form").submit(function(event) {
+                event.preventDefault();
+                $.post("/toggle_theme", function(data) {
+                    location.reload();  // 刷新页面，以便显示新的主题
+                });
+            });
+        });
+            window.addEventListener('DOMContentLoaded', function() {
+  // 获取主题切换按钮和图像元素
+  var themeButton = document.querySelector('#theme-form button');
+  var themeImage = themeButton.querySelector('img');
 
+  // 获取后台传递的主题值
+  var backendTheme = '{{ theme }}'; // 替换为实际的后台传递的主题值
+
+  // 根据后台主题值切换图像和按钮样式
+  if (backendTheme === 'day-theme') {
+    themeImage.setAttribute('src', '../static/image/sun.svg');
+    themeImage.setAttribute('alt', '切换主题');
+  } else if (backendTheme === 'night-theme') {
+    themeImage.setAttribute('src', '../static/image/moon.svg');
+    themeImage.setAttribute('alt', '切换主题');
+  }
+});
+</script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <!-- 导航栏商标 -->
+        <a class="navbar-brand" href="/">奇客舒</a>
+        <!-- 导航入口 -->
+        <div>
+         <ul class="navbar-nav">
+    <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    其他
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <span>Ctrl + F 搜索内容</span>
+                    <a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Github开源地址</a>
+                    <a class="dropdown-item" href="/blog/privacy">隐私协议</a>
+                    <a class="dropdown-item" href="/blog/legal-agreement">法律声明</a>
+                    <a class="dropdown-item" href="/sitemap">站点地图</a>
+                    <a class="dropdown-item" href="/feed">RSS订阅</a>
+                </div>
+            </li>
+    <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    公告
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <span>{{ notice }}</span>
+                </div>
+            </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                账户
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+             {% if userStatu %}
+        <a class="dropdown-item" href="/login">登录</a>
+                 <br>
+                 <img height="90" src="https://7trees.cn/wp-content/uploads/2023/08/348f5b9acc0605ea443058826975a8a1.png" style="border-radius: 8%"></div>
+    {% else %}
+        <a class="dropdown-item" href="/logout">注销</a>
+        <a class="dropdown-item" href="/change-password">修改密码</a>
+    {% endif %}
+        </li>
+         </ul>
+</div>
+    </div>
+</nav>
 {% endmacro %}
