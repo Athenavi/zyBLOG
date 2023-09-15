@@ -64,9 +64,22 @@
       <span class="carousel-control-next-icon" aria-hidden="true"></span>
       <span class="sr-only">Next</span>
     </a>
+
   </div>
 
-  <div style="width: 1080px; height: 30px; background-color: transparent;">
+<div style="width: 1080px; height: 30px; background-color: transparent;">
+  <a>公告:</a><span>{{ notice }}</span>
+  <div>
+    {% if userStatus %}
+      <!-- 展示已登录的内容 -->
+      <a>欢迎您，{{ username }}</a>　　<a href="#">关于我</a>　　<a href="/logout">注销</a>　　<a href="/change-password">修改密码</a>
+    {% else %}
+      <!-- 展示未登录的内容 -->
+      <a href="/login">登录</a>
+    {% endif %}
+  </div>
+</div>
+
   <!-- 翻页按钮 -->
 {% if has_previous_page %}
     <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
@@ -110,33 +123,10 @@
 
 <div class="col-md-2">
 
-
-  <div>
-                      <a>
-                    公告
-                </a><br/>
-                    <span>{{ notice }}</span>
-                </div>
-
       <span>Ctrl + F 搜索内容</span>
             </div>
 
-            <a>
-                账户
-            </a>
-            <div>
-             {% if  userStatus %}
-    <!-- 展示已登录的内容 -->
-    <a class="dropdown-item" >欢迎您，{{ username }}</a>
-    <a class="dropdown-item" href="#">关于我</a>
-    <a class="dropdown-item" href="/logout">注销</a>
-    <a class="dropdown-item" href="/change-password">修改密码</a>
-{% else %}
-    <!-- 展示未登录的内容 -->
-    <a class="dropdown-item" href="/login">登录</a>
-{% endif %}
 
-     </div>
 
         </div>
     </div>

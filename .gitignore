@@ -5,6 +5,7 @@
 /venv/
 /.github/
 /.idea/
+/articles/donate.md
 app.log
 config.ini
 .gitignore
