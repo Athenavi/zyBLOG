@@ -41,38 +41,40 @@
         </div>
       </div>
 
-      {% set per_page = 10 %}
-{% set page = 1 %}
+{% set per_page = 10 %}
+{% set page = 2 %}
 {% import "macros.html" as custom %}
 <div id="comments-container">
   {% if comments %}
     <h2>Comments:</h2>
     <ul class="list-group">
-      {% for comment in comments %}
+      {% set comment_count = comments|length %}
+      {% set total_pages = (comment_count // per_page) + (comment_count % per_page > 0) %}
+      {% set start_index = (page - 1) * per_page %}
+      {% set end_index = start_index + per_page %}
+      {% for comment in comments[start_index:end_index] %}
         <li class="list-group-item">
           <span class="fw-bold">{{ comment.username }}:</span> {{ comment.comment }}
         </li>
       {% endfor %}
     </ul>
 
-    {% if comments|length >= per_page %}
+    {% if total_pages >= 1 %}
       <nav aria-label="Comment navigation">
         <ul class="pagination justify-content-center">
           {% if page > 1 %}
             <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page-1) }}">Previous</a>
+              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page-1) }}">最新</a>
             </li>
           {% endif %}
-          {% for p in range(1, ((comments|length) // per_page) + 1) %}
-            <li class="page-item {% if page == p %}active{% endif %}">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=p) }}">{{ p }}</a>
-            </li>
-          {% endfor %}
-          {% if page < (comments|length) // per_page %}
+            {% if page == 2 %}
             <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page+1) }}">Next</a>
+              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page) }}">默认</a>
             </li>
           {% endif %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page+1) }}">最初</a>
+            </li>
         </ul>
       </nav>
     {% endif %}

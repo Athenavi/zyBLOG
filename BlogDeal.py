@@ -50,11 +50,11 @@ def zy_get_comment(article_name, page=1, per_page=10):
     db = get_database_connection()
     cursor = db.cursor()
     try:
-        query = "SELECT * FROM comments WHERE article_name = %s LIMIT %s OFFSET %s"
+        query = "SELECT * FROM comments WHERE article_name = %s LIMIT 70 OFFSET %s"
         offset = (page - 1) * per_page
-        cursor.execute(query, (article_name, per_page, offset))
+        cursor.execute(query, (article_name, offset))
 
-        results = []  # Used to store the results
+        results = []
         rows = cursor.fetchall()
 
         for row in rows:
