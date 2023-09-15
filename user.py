@@ -9,6 +9,8 @@ door_key = config.get('admin', 'key').strip("'")
 
 def error(message, status_code):
     return render_template('error.html', error=message,status_code=status_code), status_code
+
+
 def zyadmin(key):
     if key == door_key:
         return back()

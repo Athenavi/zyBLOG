@@ -5,7 +5,6 @@ import markdown
 
 import os
 
-from flask import session, request
 
 from database import get_database_connection
 
@@ -44,33 +43,29 @@ def clearHTMLFormat(text):
     clean_text = re.sub('<.*?>', '', text)
     return clean_text
 
-def get_comment():
-    if session.get('logged_in'):
-        username = session.get('username')
-        if username:
-            comment = password = request.form['comment']
-            return zy_get_comment(username,comment)
-        else:
-            return 0
-    else:
-        return 0
 
 
 
-def zy_get_comment(username,comment):
+def zy_get_comment(article_name):
     db = get_database_connection()
     cursor = db.cursor()
     try:
-        query = "SELECT * FROM users WHERE username = %s"
-        cursor.execute(query, (username,))
-        result = cursor.fetchone()
-        if result is not None:
-            return result
-        else:
-            return 0
+        query = "SELECT * FROM comments WHERE article_name = %s"
+        cursor.execute(query, (article_name,))
+
+        results = []  # 用于保存结果的列表
+        rows = cursor.fetchall()
+
+        for row in rows:
+            username = row[0]
+            comment = row[2]
+            result_dict = {'username': username, 'comment': comment}
+            results.append(result_dict)
+
+        return results
     except Exception as e:
-        return 0
+        print("An error occurred:", str(e))
+        return []
     finally:
         cursor.close()
         db.close()
-    return 0

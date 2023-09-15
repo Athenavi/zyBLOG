@@ -40,6 +40,25 @@
                   </div>
         </div>
       </div>
+
+      <div id="comments-container">
+  {% if comments %}
+    <h2>Comments:</h2>
+    <ul class="list-group">
+      {% for comment in comments %}
+        <li class="list-group-item">
+          <span class="fw-bold">{{ comment.username }}:</span> {{ comment.comment }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="alert alert-info">No comments available.</p>
+  {% endif %}
+
+  <!-- Your code for processing comments can go here -->
+</div>
+
+
   </div>
 </div>
 <!-- 引入注脚 -->

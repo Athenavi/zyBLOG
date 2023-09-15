@@ -11,7 +11,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from AboutLogin import zylogin, zyregister
 from AboutPW import zychange_password, zyconfirm_password
-from BlogDeal import get_article_names, get_article_content, clearHTMLFormat
+from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment
 from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
 
@@ -130,14 +130,30 @@ def home():
 
 @app.route('/blog/<article>', methods=['GET'])
 def blog_detail(article):
-    # 根据文章名称获取相应的内容并处理
-    article_name = article
-    author=get_blog_author()
-    blogDate=get_file_date(article_name)
-    if 'theme' not in session:  # 检查session中是否存在theme键
-        session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
-    article_content = get_article_content(article,215)
-    return render_template('BlogDetail.html', article_content=article_content,articleName=article_name,theme=session['theme'],author=author,blogDate=blogDate)
+    try:
+        # 根据文章名称获取相应的内容并处理
+        article_name = article
+        author = get_blog_author()
+        blogDate = get_file_date(article_name)
+        if 'theme' not in session:  # 检查session中是否存在theme键
+            session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
+        article_content = get_article_content(article, 215)
+
+        comments = []
+        if session.get('logged_in'):
+            username = session.get('username')
+            if username:
+                comments = zy_get_comment(article_name)
+            else:
+                comments = None
+        else:
+            comments = None
+
+        return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
+                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments)
+    except FileNotFoundError:
+        return redirect(url_for('undefined_route'))
+
 
 def get_blog_author():
         articleAuthor = read_file('author/default.txt', 6)
@@ -260,19 +276,6 @@ def upload_file():
 @app.route('/delete/<filename>', methods=['POST'])
 def delete_file(filename):
     return zy_delete_file(filename)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
