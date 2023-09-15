@@ -64,30 +64,52 @@
         <ul class="pagination justify-content-center">
           {% if page > 1 %}
             <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page-1) }}">最新</a>
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page-1) }}', 'comments-container')">最新</a>
             </li>
           {% endif %}
-            {% if page == 2 %}
+          {% if page == 2 %}
             <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page) }}">默认</a>
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page) }}', 'comments-container')">默认</a>
             </li>
           {% endif %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog_detail', article=articleName, page=page+1) }}">最初</a>
-            </li>
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page+1) }}', 'comments-container')">最初</a>
+          </li>
         </ul>
       </nav>
     {% endif %}
+
+
+<script>
+  function loadPage(url, containerId) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = xhr.responseText;
+
+        var newCommentsContainer = tempDiv.querySelector('#' + containerId);
+        var currentCommentsContainer = document.getElementById(containerId);
+
+        if (newCommentsContainer && currentCommentsContainer) {
+          currentCommentsContainer.innerHTML = newCommentsContainer.innerHTML;
+        }
+      }
+    };
+
+    xhr.send();
+  }
+</script>
   {% else %}
     <p class="alert alert-info">No comments available.</p>
   {% endif %}
-
+</div>
   <!-- Your code for processing comments can go here -->
 </div>
 
-
   </div>
-</div>
 <!-- 引入注脚 -->
 
 <div>

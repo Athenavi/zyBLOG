@@ -128,7 +128,7 @@ def home():
         return render_template('home.html')
 
 
-@app.route('/blog/<article>', methods=['GET'])
+@app.route('/blog/<article>', methods=['GET', 'POST'])
 def blog_detail(article):
     try:
         # 根据文章名称获取相应的内容并处理
@@ -155,8 +155,13 @@ def blog_detail(article):
         else:
             comments = None
 
+        if request.method == 'POST':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
+
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
-                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments,url_for=url_for)
+                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
+                               url_for=url_for)
     except FileNotFoundError:
         return redirect(url_for('undefined_route'))
 
