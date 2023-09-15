@@ -135,22 +135,28 @@ def blog_detail(article):
         article_name = article
         author = get_blog_author()
         blogDate = get_file_date(article_name)
+
         if 'theme' not in session:  # 检查session中是否存在theme键
             session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
+
         article_content = get_article_content(article, 215)
+
+        # 分页参数
+        page = request.args.get('page', default=1, type=int)
+        per_page = 10  # 每页显示的评论数量
 
         comments = []
         if session.get('logged_in'):
             username = session.get('username')
             if username:
-                comments = zy_get_comment(article_name)
+                comments = zy_get_comment(article_name, page=page, per_page=per_page)
             else:
                 comments = None
         else:
             comments = None
 
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
-                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments)
+                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments,url_for=url_for)
     except FileNotFoundError:
         return redirect(url_for('undefined_route'))
 

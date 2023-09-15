@@ -46,14 +46,15 @@ def clearHTMLFormat(text):
 
 
 
-def zy_get_comment(article_name):
+def zy_get_comment(article_name, page=1, per_page=10):
     db = get_database_connection()
     cursor = db.cursor()
     try:
-        query = "SELECT * FROM comments WHERE article_name = %s"
-        cursor.execute(query, (article_name,))
+        query = "SELECT * FROM comments WHERE article_name = %s LIMIT %s OFFSET %s"
+        offset = (page - 1) * per_page
+        cursor.execute(query, (article_name, per_page, offset))
 
-        results = []  # 用于保存结果的列表
+        results = []  # Used to store the results
         rows = cursor.fetchall()
 
         for row in rows:

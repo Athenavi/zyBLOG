@@ -1,0 +1,3 @@
+{% macro url_for(endpoint, kwargs) -%}
+    {{ caller.url_for(endpoint, **kwargs) }}
+{%- endmacro %}
