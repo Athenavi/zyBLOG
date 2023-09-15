@@ -5,7 +5,7 @@ import time
 import urllib
 from configparser import ConfigParser
 
-from flask import Flask, render_template, redirect, session, request, url_for, Response
+from flask import Flask, render_template, redirect, session, request, url_for, Response, g
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -60,10 +60,10 @@ def register():
 # 登出页面
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    session.pop('username', None)
-    session.pop('password_confirmed', None)
-    return redirect(url_for('login'))
+        session.pop('logged_in', None)
+        session.pop('username', None)
+        session.pop('password_confirmed', None)
+        return redirect(url_for('login'))
 
 
 domain = config.get('general', 'domain').strip("'")
@@ -86,6 +86,7 @@ def read_file(file_path, num_chars):
         content = file.read(num_chars)
     return content
 
+
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -94,11 +95,10 @@ def home():
         articles, has_next_page, has_previous_page = get_article_names(page=page)  # 获取分页后的文章列表和翻页信息
 
         template = env.get_template('home.html')
-        userStatu = 1 if 'logged_in' not in session else 0
         session.setdefault('theme', 'day-theme')
         notice = read_file('notice/1.txt', 50)
-
-        return template.render(articles=articles, url_for=url_for, theme=session['theme'], userStatu=bool(userStatu),
+        logged_in = session.get('logged_in')
+        return template.render(articles=articles, url_for=url_for, theme=session['theme'],logged_in=logged_in,
                                notice=notice,
                                has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page)
     else:

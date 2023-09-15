@@ -7,10 +7,12 @@ from flask import request, session, redirect, url_for, render_template, app
 from database import get_database_connection
 
 
+import bleach  # 导入 bleach 库用于 XSS 防范
+
 def zylogin():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = bleach.clean(request.form['username'])  # 使用 bleach 进行 XSS 防范
+        password = bleach.clean(request.form['password'])
 
         db = get_database_connection()
         cursor = db.cursor()
@@ -21,8 +23,8 @@ def zylogin():
             result = cursor.fetchone()
 
             if result is not None and bcrypt.checkpw(password.encode('utf-8'), result[2].encode('utf-8')):
-                session.permanent = True  # 设置会话为永久会话
-                app.permanent_session_lifetime = timedelta(minutes=120)  # 设置过期时间
+                session.permanent = True
+                app.permanent_session_lifetime = timedelta(minutes=120)
                 session['logged_in'] = True
                 session['username'] = result[1]
                 return redirect(url_for('home'))
@@ -40,9 +42,9 @@ def zylogin():
 
 def zyregister():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        invite_code = request.form['invite_code']
+        username = bleach.clean(request.form['username'])  # 使用 bleach 进行 XSS 防范
+        password = bleach.clean(request.form['password'])
+        invite_code = bleach.clean(request.form['invite_code'])
 
         db = get_database_connection()
         cursor = db.cursor()
@@ -66,7 +68,7 @@ def zyregister():
                 hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
                 insert_query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-                cursor.execute(insert_query, (username, hashed_password.decode('utf-8')))
+                cursor.execute(insert_query, (username, hashed_password))
                 db.commit()
 
                 # 将邀请码标记为已使用
@@ -85,4 +87,3 @@ def zyregister():
             db.close()
 
     return render_template('register.html')
-
