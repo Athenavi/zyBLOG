@@ -38,8 +38,29 @@
 
             {{ article_content|safe }}
                   </div>
+
         </div>
+
       </div>
+  <div>
+      <form method="post" action="/post_comment">
+     <div class="form-group">
+        <label for="article_name">当前区域: {{ articleName }}</label>
+        <input type="text" class="form-control" id="article_name" name="article_name" value="{{ articleName }}" readonly style="display:none;">
+    </div>
+    <!-- 账号 -->
+    <div class="form-group">
+        <label for="username">当前已登录: {{ username }}</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
+    </div>
+    <!-- 评论 -->
+    <div class="form-group">
+        <label for="comment">评论</label>
+        <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">一键发送</button>
+</form>
+      <div>
 
 {% set per_page = 10 %}
 {% set page = 2 %}
@@ -114,6 +135,8 @@
 
 <div>
     <br><br><br>
+
+
 </div>
 
 {% from 'footer.html' import zyfooter %}

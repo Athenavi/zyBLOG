@@ -70,3 +70,36 @@ def zy_get_comment(article_name, page=1, per_page=10):
     finally:
         cursor.close()
         db.close()
+
+
+def zy_post_comment(article_name, username, comment):
+    db = get_database_connection()
+    cursor = db.cursor()
+
+    # SQL语句将评论插入到 'comments' 表中
+    sql = "INSERT INTO comments (username, article_name, comment) VALUES (%s, %s, %s)"
+
+    # 要插入到表中的数据
+    values = (username, article_name, comment)
+
+    try:
+        # 使用提供的数据执行SQL语句
+        cursor.execute(sql, values)
+
+        # 提交事务以保存更改
+        db.commit()
+
+        # 打印成功消息
+        return "评论成功"
+
+    except Exception as e:
+        # 如果发生错误，回滚事务
+        db.rollback()
+
+        # 打印错误消息
+        return "评论失败"
+
+    finally:
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.close()

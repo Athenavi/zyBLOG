@@ -5,13 +5,13 @@ import time
 import urllib
 from configparser import ConfigParser
 
-from flask import Flask, render_template, redirect, session, request, url_for, Response
+from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from AboutLogin import zylogin, zyregister
 from AboutPW import zychange_password, zyconfirm_password
-from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment
+from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
 from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
 
@@ -60,8 +60,8 @@ def get_username():
 @app.context_processor
 def inject_variables():
     return dict(
-        userStatus=get_user_status,
-        username=get_username
+        userStatus=get_user_status(),
+        username=get_username()
     )
 
 
@@ -161,7 +161,7 @@ def blog_detail(article):
 
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
                                theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                               url_for=url_for)
+                               url_for=url_for,username=username)
     except FileNotFoundError:
         return redirect(url_for('undefined_route'))
 
@@ -184,6 +184,18 @@ def get_file_date(file_path):
     formatted_modify_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(modify_time))
 
     return  formatted_modify_time
+
+
+@app.route('/post_comment', methods=['POST'])
+def post_comment():
+    article_name = request.form.get('article_name')
+    username = request.form.get('username')
+    comment = request.form.get('comment')
+    return zy_post_comment(article_name, username,comment)
+
+
+
+
 
 
 @app.route('/sitemap.xml')
