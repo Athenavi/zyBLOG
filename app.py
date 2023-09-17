@@ -145,6 +145,7 @@ def blog_detail(article):
         page = request.args.get('page', default=1, type=int)
         per_page = 10  # 每页显示的评论数量
 
+        username = None
         comments = []
         if session.get('logged_in'):
             username = session.get('username')

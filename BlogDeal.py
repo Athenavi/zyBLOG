@@ -50,7 +50,7 @@ def zy_get_comment(article_name, page=1, per_page=10):
     db = get_database_connection()
     cursor = db.cursor()
     try:
-        query = "SELECT * FROM comments WHERE article_name = %s LIMIT 70 OFFSET %s"
+        query = "SELECT * FROM comments WHERE article_name = %s ORDER BY add_date DESC LIMIT 70 OFFSET %s"
         offset = (page - 1) * per_page
         cursor.execute(query, (article_name, offset))
 
@@ -61,7 +61,7 @@ def zy_get_comment(article_name, page=1, per_page=10):
             username = row[0]
             comment = row[2]
             result_dict = {'username': username, 'comment': comment}
-            results.append(result_dict)
+            results.insert(0, result_dict)
 
         return results
     except Exception as e:
