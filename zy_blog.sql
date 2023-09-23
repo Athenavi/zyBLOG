@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： localhost
--- 生成日期： 2023-09-08 15:37:05
+-- 生成日期： 2023-09-23 04:41:26
 -- 服务器版本： 8.0.34
 -- PHP 版本： 8.2.4
 
@@ -24,6 +24,19 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `comments`
+--
+
+CREATE TABLE `comments` (
+  `username` varchar(255) NOT NULL,
+  `article_name` char(255) NOT NULL,
+  `comment` tinytext NOT NULL,
+  `add_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `invitecode`
 --
 
@@ -38,7 +51,7 @@ CREATE TABLE `invitecode` (
 --
 
 INSERT INTO `invitecode` (`uuid`, `code`, `is_used`) VALUES
-('1', '9988', 0),
+('1', '9988', 1),
 ('2', '8989', 0);
 
 -- --------------------------------------------------------
@@ -81,18 +94,6 @@ CREATE TABLE `urls` (
   `username` varchar(255) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3;
 
---
--- 转存表中的数据 `urls`
---
-
-INSERT INTO `urls` (`id`, `long_url`, `short_url`, `created_at`, `username`) VALUES
-(50, 'http://mzf.mzfpay.com', 'AlSkFw', '2023-09-01 14:55:24', 'test'),
-(56, 'https://banbo.org', 'GntSWm', '2023-09-03 03:41:11', 'test'),
-(51, 'https://7trees.cn', 'rKHSkk', '2023-09-01 15:17:43', 'test'),
-(54, 'http/mzf.mzfpay.com', '9cro1x', '2023-09-02 03:58:43', 'test'),
-(53, 'https://pay.7e22.cn/', 'lJlvmK', '2023-09-01 15:49:13', 'test'),
-(55, 'http://mzf.mzfpay.com', 'sqdjMG', '2023-09-02 06:51:16', '7t');
-
 -- --------------------------------------------------------
 
 --
@@ -111,12 +112,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `ifAdmin`) VALUES
-(1, 'test', '$2b$12$1FjwIi8RHii.F21p1D5c8OXuhM7Ksdyet77AQ4bI6kpFlmv41Bo0i', 1),
-(14, 'admin1', '$2b$12$HFKerNnwxeX22na8tXeztONbBOVEQ6QL0K7kHIYsyNrY7mpoCNS06', 0),
-(6, '7t', '$2b$12$jRzWoD4ydHmvgWxxIUz35.K5YdI6rh/q4OVUlVEWm/6BY.COyDbkK', 0),
-(8, 'yue', '$2b$12$BlzigWJ/NkT9rx4dh9qlZuxwzo3K9VzSpmUD4McKGq8.ss2BwFy0m', 0),
-(10, 'qks', '$2b$12$LKV9E9VS6tpvBI3lZ72ciuFIcTBnid/I5zdp72VfqjrPk7jo5uP7e', 0),
-(11, 'admin', '$2b$12$1FjwIi8RHii.F21p1D5c8OXuhM7Ksdyet77AQ4bI6kpFlmv41Bo0i', 0);
+(1, 'test', '$2b$12$1FjwIi8RHii.F21p1D5c8OXuhM7Ksdyet77AQ4bI6kpFlmv41Bo0i', 1);
 
 --
 -- 转储表的索引
@@ -151,7 +147,8 @@ ALTER TABLE `urls`
 -- 表的索引 `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
 
 --
 -- 在导出的表使用AUTO_INCREMENT
@@ -173,13 +170,13 @@ ALTER TABLE `opentimes`
 -- 使用表AUTO_INCREMENT `urls`
 --
 ALTER TABLE `urls`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
