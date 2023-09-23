@@ -77,6 +77,12 @@
       <!-- 展示未登录的内容 -->
       <a href="/login">登录</a>
     {% endif %}
+  {% if IPinfo %}
+      <!-- 展示已登录的内容 -->
+      <a>{{ IPinfo }}</a>
+    {% else %}
+      <a>未知状态</a>
+    {% endif %}
   </div>
 </div>
 

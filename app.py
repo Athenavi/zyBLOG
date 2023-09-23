@@ -5,6 +5,7 @@ import time
 import urllib
 from configparser import ConfigParser
 
+import requests
 from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -41,6 +42,21 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
+
+def get_client_ip():
+    # 获取 X-Real-IP 请求头中的 IP 地址
+    #ip_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    return get_public_ip()
+
+def get_public_ip():
+    # 使用 "ipify" 的 API 查询公共 IP 地址
+    response = requests.get('https://api.ipify.org?format=json')
+    if response.status_code == 200:
+        ip_address = response.json()['ip']
+        return ip_address
+    else:
+        return None
+
 # 登录页面
 
 def get_user_status():
@@ -61,7 +77,7 @@ def get_username():
 def inject_variables():
     return dict(
         userStatus=get_user_status(),
-        username=get_username()
+        username=get_username(),
     )
 
 
@@ -109,23 +125,35 @@ def read_file(file_path, num_chars):
     return content
 
 
+def check_banned_ip(ip_address):
+    with open("banIP.txt", "r") as file:
+        banned_ips = file.read().splitlines()
+        if ip_address in banned_ips:
+            return True
+    return False
+
+
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    if request.method == 'GET':
-        page = request.args.get('page', default=1, type=int)  # 获取 URL 参数中的页码，默认为第一页
-        articles, has_next_page, has_previous_page = get_article_names(page=page)  # 获取分页后的文章列表和翻页信息
-
-        template = env.get_template('home.html')
-        session.setdefault('theme', 'day-theme')
-        notice = read_file('notice/1.txt', 50)
-        userStatus = get_user_status()
-        username = get_username()
-        return template.render(articles=articles, url_for=url_for, theme=session['theme'],
-                               notice=notice,
-                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username)
+    IPinfo = get_client_ip()
+    if check_banned_ip(IPinfo):
+        return render_template('error.html')
     else:
-        return render_template('home.html')
+        if request.method == 'GET':
+            page = request.args.get('page', default=1, type=int)  # 获取 URL 参数中的页码，默认为第一页
+            articles, has_next_page, has_previous_page = get_article_names(page=page)  # 获取分页后的文章列表和翻页信息
+
+            template = env.get_template('home.html')
+            session.setdefault('theme', 'day-theme')
+            notice = read_file('notice/1.txt', 50)
+            userStatus = get_user_status()
+            username = get_username()
+            return template.render(articles=articles, url_for=url_for, theme=session['theme'],
+                               notice=notice,
+                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo)
+        else:
+            return render_template('home.html')
 
 
 @app.route('/blog/<article>', methods=['GET', 'POST'])
