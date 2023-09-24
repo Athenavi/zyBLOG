@@ -1,39 +1,5 @@
 <!-- header.html -->
 {% macro zytopbar() -%}
-<div class="top-bar">
-<script>
-  function copyAndAlert() {
-    const text = "奇客舒";
-    navigator.clipboard.writeText(text).then(function () {
-      alert("已复制到剪切板，可在微信内搜索该公众号");
-    }).catch(function (error) {
-      alert("复制失败：" + error);
-    });
-  }
-</script>
-<div class="top-bar">
-   <div>
-    <a href="weixin://" onclick="copyAndAlert()" style="text-align: center;">
-      <span style="color: red;">
-        点击这里打开微信
-      </span> 搜索“奇客舒”体验GPT-3.5
-    </a>&nbsp;&nbsp;&nbsp;
-  </div>
-  <div class="close-button">
-    <img src="../static/image/close.png" style="height: 28px" alt="关闭按钮">
-  </div>
-</div>
-</div>
-<script type="text/javascript">
-  window.onload = function() {
-    var closeButton = document.querySelector('.close-button');
-    var topBar = document.querySelector('.top-bar');
-
-    closeButton.addEventListener('click', function() {
-      topBar.style.display = 'none';
-    });
-  };
-</script>
 <div class="fixed-icon">
     <!-- 这里放置你的图标 -->
     <a href="#top"><img src="../static/image/rocket.svg" style="height: 40px" alt="回到顶部"></a>
