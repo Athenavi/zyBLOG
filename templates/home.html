@@ -130,18 +130,56 @@
 <div class="col-md-2">
 
       <span>Ctrl + F 搜索内容</span>
+        <img id="imageBtn" src="../static/image/sch.svg" alt="按钮" class="image-button" onclick="togglePopup()" />
             </div>
+             <style>
+        /* 弹出窗格的样式 */
+        .popup {
+            display: none; /* 初始状态下隐藏 */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 900px;
+            height: 600px;
+            background-color: #fff;
+            border: 2px solid #000;
+            padding: 20px;
+        }
 
+        /* 图片按钮的样式 */
+        .image-button {
+            cursor: pointer;
+        }
+    </style>
+    <!-- 图片按钮 -->
+    <div id="popup" class="popup">
+        <button id="resetBtn" class="btn btn-primary mb-2" onclick="resetIframe()">重置</button>
+        <img id="imageBtn" src="../static/image/close.png" style="height: 28px" alt="按钮" class="image-button" onclick="togglePopup()" />
+        <iframe src="http://localhost:5000/search" width="100%" height="100%"></iframe>
+    </div>
+
+    <script>
+        function togglePopup() {
+            var popup = document.getElementById("popup");
+            if (popup.style.display === "none") {
+                popup.style.display = "block"; // 打开窗格
+            } else {
+                popup.style.display = "none"; // 关闭窗格
+            }
+        }
+
+        function resetIframe() {
+            var iframe = document.querySelector("iframe"); // 选择第一个找到的 iframe 元素
+            iframe.src = iframe.src; // 刷新 iframe 内容
+        }
+    </script>
 
 
         </div>
     </div>
   </div>
-</div>
 
-
-  </div>
-</div>
 <!-- 引入注脚 -->
 
 <div>

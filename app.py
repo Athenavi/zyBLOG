@@ -15,6 +15,7 @@ from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
 from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
+import feedparser
 
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
@@ -133,6 +134,63 @@ def check_banned_ip(ip_address):
     return False
 
 
+
+import xml.etree.ElementTree as ET
+
+import xml.etree.ElementTree as ET
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        keyword = request.form.get('keyword')  # 获取搜索关键字
+        matched_content = []
+
+        files = os.listdir('articles')
+        markdown_files = [file for file in files if file.endswith('.md')]
+
+        # 创建XML根元素
+        root = ET.Element('root')
+
+        for file in markdown_files:
+            article_name = file[:-3]  # 移除文件扩展名 (.md)
+            encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
+            article_url = domain + 'blog/' + encoded_article_name
+            date = get_file_date(encoded_article_name)
+            describe = get_article_content(article_name, 10)
+            describe = clearHTMLFormat(describe)
+
+            if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
+                # 创建item元素并包含内容
+                item = ET.SubElement(root, 'item')
+                ET.SubElement(item, 'title').text = article_name
+                ET.SubElement(item, 'link').text = article_url
+                ET.SubElement(item, 'pubDate').text = date
+                ET.SubElement(item, 'description').text = describe
+
+        # 创建XML树
+        tree = ET.ElementTree(root)
+
+        # 将XML数据转换为字符串
+        match_data = ET.tostring(tree.getroot(), encoding='utf-8', method='xml').decode()
+
+        # 解析XML数据
+        parsed_data = ET.fromstring(match_data)
+        for item in parsed_data.findall('item'):
+            content = {
+                'title': item.find('title').text,
+                'link': item.find('link').text,
+                'pubDate': item.find('pubDate').text,
+                'description': item.find('description').text
+            }
+            matched_content.append(content)
+
+        if matched_content:
+            return render_template('search.html', results=matched_content)
+
+    return render_template('search.html', results=None)
+
+
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -168,7 +226,6 @@ def blog_detail(article):
             session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
         article_content = get_article_content(article, 215)
-
         # 分页参数
         page = request.args.get('page', default=1, type=int)
         per_page = 10  # 每页显示的评论数量
