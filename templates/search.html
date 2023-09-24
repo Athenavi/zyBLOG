@@ -1,5 +1,5 @@
 <html>
-<body>
+<body class="{{ theme }}">
   <form class="js-search search-form search-form--modal is-visible" method="post" action="/search" role="search">
     <div class="search-form__inner">
       <div class="micro">
@@ -10,7 +10,8 @@
       <h3>搜索结果：</h3>
       <ul>
         {% for result in results %}
-          <li><a href="{{ result.link }}">{{ result.title }}</a></li>
+            <li><a href="{{ result.link }}">{{ result.title }}</a><a href="{{ result.link }}" target="_blank" alt="新建标签页中开启" ><img src="../static/image/jump.svg" style="height: 28px" ></a></li></li>
+
         {% endfor %}
       </ul>
 
