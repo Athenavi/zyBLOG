@@ -219,6 +219,7 @@ def blog_detail(article):
     try:
         # 根据文章名称获取相应的内容并处理
         article_name = article
+        article_url = "https://api.7trees.cn/qrcode/?data="+domain+'blog/'+article_name
         author = get_blog_author()
         blogDate = get_file_date(article_name)
 
@@ -247,7 +248,7 @@ def blog_detail(article):
 
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
                                theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                               url_for=url_for,username=username)
+                               url_for=url_for,username=username,article_url=article_url)
     except FileNotFoundError:
         return redirect(url_for('undefined_route'))
 

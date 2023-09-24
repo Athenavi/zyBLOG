@@ -26,13 +26,18 @@
 <!-- 定义导航栏 -->
 
 
-
 <!-- 预留具体页面的位置 -->
 <div class="container">
   <div class="row justify-content-md-center">
       <div class="card">
         <div class="card-body">
           <h3 class="card-title">{{ articleName }}</h3><span>author:{{ author }}</span><span>最近一次修订的日期:{{ blogDate }}</span>
+<!-- 元素代码 -->
+<div class="show-on-desktop">
+  <span>扫描二维码可在手机端进行阅读</span>
+  <img src="{{ article_url }}" style="height:100px;" alt="手机上浏览"/>
+</div>
+
           <hr>
               <div class="{{ theme }}">
 
@@ -43,6 +48,7 @@
 
       </div>
   <div>
+
       <form method="post" action="/post_comment">
      <div class="form-group">
         <label for="article_name">当前区域: {{ articleName }}</label>
@@ -145,3 +151,17 @@
 
 </body>
 </html>
+<script>
+  // 检测设备类型
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // 根据设备类型添加样式
+  if (isMobile) {
+    document.addEventListener("DOMContentLoaded", function() {
+      var showOnDesktopDiv = document.querySelector(".show-on-desktop");
+      if (showOnDesktopDiv) {
+        showOnDesktopDiv.style.display = "none";
+      }
+    });
+  }
+</script>
