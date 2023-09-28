@@ -1,18 +1,21 @@
 import os
 import codecs
 import markdown
-
-
+import datetime
 import os
 
 
 from database import get_database_connection
 
 
+
 def get_article_names(page=1, per_page=10):
     articles = []
     files = os.listdir('articles')
     markdown_files = [file for file in files if file.endswith('.md')]
+
+    # Sort markdown_files in reverse order based on modified date
+    markdown_files = sorted(markdown_files, key=lambda f: datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join('articles', f))), reverse=True)
 
     start_index = (page-1) * per_page
     end_index = start_index + per_page
