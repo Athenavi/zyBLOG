@@ -9,7 +9,28 @@
       <img src="../static/image/sun.svg" alt="切换主题" height=28px>
     </button>
   </form>
+    <br><br>
+       <button id="wechat-button" style="border: none; background-color: transparent; height: 28px"
+        onmouseover="showQRCode()"
+        onmouseout="hideQRCode()">
+  <img  src="../static/image/wchat.svg" alt="关注微信公众号" style="height: 28px">
+</button>
+
+<img id="wechat-qr-code" src="../static/image/gzh.png" alt="关注微信公众号"
+     style="height:125px;display: none; position: absolute; top: 0; left: -100px;">
+
+<script>
+  function showQRCode() {
+    document.getElementById("wechat-qr-code").style.display = "block";
+  }
+
+  function hideQRCode() {
+    document.getElementById("wechat-qr-code").style.display = "none";
+  }
+</script>
+
   </div>
+
 <script>
             $(document).ready(function() {
             $("#theme-form").submit(function(event) {
