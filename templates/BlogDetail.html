@@ -32,6 +32,16 @@
       <div class="card">
         <div class="card-body">
           <h3 class="card-title">{{ articleName }}</h3><span>author:{{ author }}</span><span>最近一次修订的日期:{{ blogDate }}</span>
+            <div>
+                <a href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={{ article_Surl }}&title={{ articleName }}&pics=&summary={{ article_summary }}" target="_blank">
+                   <button  style="border: none; background-color: transparent; height: 28px">
+    <img src="../static/image/share-qzone.svg" alt="分享到QZone" height="28px"></button>
+</a>
+                <a href="https://service.weibo.com/share/share.php?url={{ article_Surl }}&title={{ article_summary }}&pic=&appkey=&searchPic=true" target="_blank">
+                   <button  style="border: none; background-color: transparent; height: 28px">
+    <img src="../static/image/share-weibo.svg" alt="分享到weibo" height="28px"></button>
+</a>
+    </div>
 <!-- 元素代码 -->
 <div class="show-on-desktop">
   <span>扫描二维码可在手机端进行阅读</span>

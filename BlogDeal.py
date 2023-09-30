@@ -7,8 +7,6 @@ import os
 
 from database import get_database_connection
 
-
-
 def get_article_names(page=1, per_page=10):
     articles = []
     files = os.listdir('articles')
@@ -76,6 +74,10 @@ def zy_get_comment(article_name, page=1, per_page=10):
 
 
 def zy_post_comment(article_name, username, comment):
+    # 检查用户名是否为None
+    if username == 'None':
+        return "未登录用户无法评论"
+
     db = get_database_connection()
     cursor = db.cursor()
 

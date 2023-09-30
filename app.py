@@ -22,7 +22,11 @@ loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))
 env.add_extension('jinja2.ext.loopcontrols')
 
+
+
+
 app = Flask(__name__)
+
 app.jinja_env = env
 app.secret_key = 'your_secret_key'
 app.permanent_session_lifetime = datetime.timedelta(hours=3)
@@ -32,7 +36,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG)
 
 config = ConfigParser()
 config.read('config.ini')
-
+# 应用分享配置参数
 
 from flask import send_from_directory
 
@@ -219,7 +223,8 @@ def blog_detail(article):
     try:
         # 根据文章名称获取相应的内容并处理
         article_name = article
-        article_url = "https://api.7trees.cn/qrcode/?data="+domain+'blog/'+article_name
+        article_Surl= domain+'blog/'+article_name
+        article_url = "https://api.7trees.cn/qrcode/?data="+article_Surl
         author = get_blog_author()
         blogDate = get_file_date(article_name)
 
@@ -227,6 +232,8 @@ def blog_detail(article):
             session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
         article_content = get_article_content(article, 215)
+        article_summary=clearHTMLFormat(article_content)
+        article_summary = article_summary[:30]
         # 分页参数
         page = request.args.get('page', default=1, type=int)
         per_page = 10  # 每页显示的评论数量
@@ -248,7 +255,7 @@ def blog_detail(article):
 
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
                                theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                               url_for=url_for,username=username,article_url=article_url)
+                               url_for=url_for,username=username,article_url=article_url,article_Surl=article_Surl,article_summary=article_summary)
     except FileNotFoundError:
         return redirect(url_for('undefined_route'))
 
