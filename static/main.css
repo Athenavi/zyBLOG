@@ -69,3 +69,14 @@
     .card-body div {
         padding: 20px;
     }
+
+    .table {
+    border-collapse: collapse;
+    border: none;
+    background-color: transparent;
+    }
+
+    .table th,
+    .table td {
+    border: none;
+    }

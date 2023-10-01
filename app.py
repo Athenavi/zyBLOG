@@ -197,7 +197,8 @@ import geoip2.database
 
 def analyze_ip_location(ip_address):
     # 加载GeoIP2数据库文件
-    reader = geoip2.database.Reader('GeoLite2-City.mmdb')
+    reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
+
 
     try:
         # 查询IP地址的地理位置
@@ -206,27 +207,42 @@ def analyze_ip_location(ip_address):
         # 提取相关信息
         country = response.country.name
         city = response.city.name
-        latitude = response.location.latitude
-        longitude = response.location.longitude
 
-        # 打印结果
-        print(f"IP地址：{ip_address}")
-        print(f"国家：{country}")
-        print(f"城市：{city}")
-        print(f"纬度：{latitude}")
-        print(f"经度：{longitude}")
+        # 返回国家和城市信息
+        return country, city
 
     except geoip2.errors.AddressNotFoundError:
         print("未找到该IP地址的地理位置信息")
+        return None
 
-    # 关闭数据库连接
-    reader.close()
+    finally:
+        # 关闭数据库连接
+        reader.close()
 
 
-# 调用函数进行分析
-#ip_address = input("请输入IP地址：")
-#analyze_ip_location(ip_address)
 import json
+def update_visit(ip):
+    # 读取visit_ip.txt中的记录
+    with open('visit_ip.txt', 'r') as file:
+        lines = file.readlines()
+
+    # 检查是否存在该字段的记录
+    field_exists = False
+    for i, line in enumerate(lines):
+        if line.startswith(f'{ip} '):
+            field_exists = True
+            # 将字段的值加1
+            value = int(line.split()[1]) + 1
+            # 更新行的内容
+            lines[i] = f'{ip} {value}\n'
+
+    # 如果不存在该字段的记录，则创建新的行
+    if not field_exists:
+        lines.append(f'{ip} 1\n')
+
+    # 将更新后的记录写回visit_ip.txt文件
+    with open('visit_ip.txt', 'w') as file:
+        file.writelines(lines)
 
 @app.route('/weather/<city_code>', methods=['GET'])
 def get_weather(city_code):
@@ -278,6 +294,8 @@ def get_weather_icon_url(weather_type):
 
     if weather_type == "晴":
         iconFileName = "晴.png"
+    elif weather_type == "阴":
+        iconFileName = "阴.png"
     elif weather_type == "多云":
         iconFileName = "多云.png"
     elif weather_type == "小雨":
@@ -331,15 +349,29 @@ def get_weather_icon_url(weather_type):
     return iconUrl
 
 
-
-
-
-
+def convert_to_chinese(data):
+    converted_data = []
+    for item in data:
+        response = requests.get(
+            f'http://fanyi.youdao.com/translate?doctype=json&type=AUTO&i={item}'
+        )
+        if response.status_code == 200:
+            try:
+                translation = response.json()['translateResult'][0][0]['tgt']
+                converted_data.append(translation)
+            except Exception:
+                converted_data.append(item)
+        else:
+            converted_data.append(item)
+    return tuple(converted_data)
 
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
     IPinfo = get_client_ip()
+    update_visit(IPinfo)
+    IPinfo= analyze_ip_location(IPinfo)
+    IPinfo=convert_to_chinese(IPinfo)
     city_code = 101010100
     if check_banned_ip(IPinfo):
         return render_template('error.html')
