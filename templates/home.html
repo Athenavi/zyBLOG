@@ -131,6 +131,28 @@
 
       <span>Ctrl + F 搜索内容</span>
         <img id="imageBtn" src="../static/image/sch.svg" alt="按钮" class="image-button" onclick="togglePopup()" />
+            <br>
+    <span>天气</span>
+            <div id="weather-info">
+    <div id="today-weather">
+      <h2>今天</h2>
+      <p>天气： <span id="today-type"></span></p>
+      <img id="today-icon" src="" alt="天气图标">
+    </div>
+
+    <div id="tomorrow-weather">
+      <h2>明天</h2>
+      <p>天气： <span id="tomorrow-type"></span></p>
+      <img id="tomorrow-icon" src="" alt="天气图标">
+    </div>
+
+    <div id="day-after-tomorrow-weather">
+      <h2>后天</h2>
+      <p>天气： <span id="day-after-tomorrow-type"></span></p>
+      <img id="day-after-tomorrow-icon" src="" alt="天气图标">
+    </div>
+  </div>
+
             </div>
 
         </div>
@@ -148,3 +170,27 @@
 </body>
 
 </html>
+<script>
+function getWeather() {
+  const cityCode = "{{ city_code }}";
+  const apiUrl = `/weather/${cityCode}`;
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(processedData => {
+      document.getElementById("today-type").innerText = processedData.today.type;
+      document.getElementById("tomorrow-type").innerText = processedData.tomorrow.type;
+      document.getElementById("day-after-tomorrow-type").innerText = processedData.dayAfterTomorrow.type;
+
+      document.getElementById("today-icon").src = processedData.today.icon;
+      document.getElementById("tomorrow-icon").src = processedData.tomorrow.icon;
+      document.getElementById("day-after-tomorrow-icon").src = processedData.dayAfterTomorrow.icon;
+    })
+    .catch(error => {
+      console.error('获取天气信息失败：', error);
+    });
+}
+
+// 在页面加载完成后调用获取天气信息的函数
+document.addEventListener('DOMContentLoaded', getWeather);
+</script>

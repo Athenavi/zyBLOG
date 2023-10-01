@@ -141,8 +141,6 @@ def check_banned_ip(ip_address):
 
 import xml.etree.ElementTree as ET
 
-import xml.etree.ElementTree as ET
-
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -195,10 +193,98 @@ def search():
     return render_template('search.html', results=None)
 
 
+import geoip2.database
+
+def analyze_ip_location(ip_address):
+    # 加载GeoIP2数据库文件
+    reader = geoip2.database.Reader('GeoLite2-City.mmdb')
+
+    try:
+        # 查询IP地址的地理位置
+        response = reader.city(ip_address)
+
+        # 提取相关信息
+        country = response.country.name
+        city = response.city.name
+        latitude = response.location.latitude
+        longitude = response.location.longitude
+
+        # 打印结果
+        print(f"IP地址：{ip_address}")
+        print(f"国家：{country}")
+        print(f"城市：{city}")
+        print(f"纬度：{latitude}")
+        print(f"经度：{longitude}")
+
+    except geoip2.errors.AddressNotFoundError:
+        print("未找到该IP地址的地理位置信息")
+
+    # 关闭数据库连接
+    reader.close()
+
+
+# 调用函数进行分析
+#ip_address = input("请输入IP地址：")
+#analyze_ip_location(ip_address)
+
+
+@app.route('/weather/<city_code>')
+def get_weather(city_code):
+    apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
+    try:
+        response = requests.get(apiUrl)
+        weatherData = response.json()
+
+        todayWeather = weatherData['data']['forecast'][0]
+        tomorrowWeather = weatherData['data']['forecast'][1]
+        dayAfterTomorrowWeather = weatherData['data']['forecast'][2]
+
+        processedData = {
+            'today': {
+                'type': todayWeather['type'],
+                'icon': get_weather_icon_url(todayWeather['type'])
+            },
+            'tomorrow': {
+                'type': tomorrowWeather['type'],
+                'icon': get_weather_icon_url(tomorrowWeather['type'])
+            },
+            'dayAfterTomorrow': {
+                'type': dayAfterTomorrowWeather['type'],
+                'icon': get_weather_icon_url(dayAfterTomorrowWeather['type'])
+            }
+        }
+
+        return jsonify(processedData)
+    except Exception as e:
+        error_message = {'error': str(e)}
+        return jsonify(error_message), 500
+
+def get_weather_icon_url(weather_type):
+    iconFileName = ""  # 默认图标文件名，根据实际情况修改
+
+    if weather_type == "晴":
+        iconFileName = "晴.png"
+    elif weather_type == "多云":
+        iconFileName = "多云.png"
+    elif weather_type == "小雨":
+        iconFileName = "小雨.png"
+    else:
+        iconFileName = "undefined.png"
+
+    iconUrl = f'static/image/weather/{iconFileName}'
+    return iconUrl
+
+
+
+
+
+
+
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
     IPinfo = get_client_ip()
+    city_code = 101010100
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:
@@ -213,7 +299,7 @@ def home():
             username = get_username()
             return template.render(articles=articles, url_for=url_for, theme=session['theme'],
                                notice=notice,
-                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo)
+                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo,city_code=city_code)
         else:
             return render_template('home.html')
 
