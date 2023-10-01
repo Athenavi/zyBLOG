@@ -226,9 +226,9 @@ def analyze_ip_location(ip_address):
 # 调用函数进行分析
 #ip_address = input("请输入IP地址：")
 #analyze_ip_location(ip_address)
+import json
 
-
-@app.route('/weather/<city_code>')
+@app.route('/weather/<city_code>', methods=['GET'])
 def get_weather(city_code):
     apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
     try:
@@ -258,6 +258,20 @@ def get_weather(city_code):
     except Exception as e:
         error_message = {'error': str(e)}
         return jsonify(error_message), 500
+
+@app.route('/get_city_code', methods=['POST'])
+def get_city_code():
+    city_name = request.form.get('city_name')
+    city_name = clearHTMLFormat(city_name)
+
+    with open('static/cityCode.json', 'r', encoding='utf-8') as file:
+        city_data = json.load(file)
+
+    for city in city_data:
+        if city['city_name'] == city_name:
+            return jsonify({'city_code': city['city_code']})
+
+    return jsonify({'error': '城市不存在'})
 
 def get_weather_icon_url(weather_type):
     iconFileName = ""  # 默认图标文件名，根据实际情况修改
