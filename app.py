@@ -268,6 +268,48 @@ def get_weather_icon_url(weather_type):
         iconFileName = "多云.png"
     elif weather_type == "小雨":
         iconFileName = "小雨.png"
+    elif weather_type == "中雨":
+        iconFileName = "中雨.png"
+    elif weather_type == "大雨":
+        iconFileName = "大雨.png"
+    elif weather_type == "暴雨":
+        iconFileName = "暴雨.png"
+    elif weather_type == "大暴雨":
+        iconFileName = "大暴雨.png"
+    elif weather_type == "特大暴雨":
+        iconFileName = "特大暴雨.png"
+    elif weather_type == "阵雨":
+        iconFileName = "阵雨.png"
+    elif weather_type == "雷阵雨":
+        iconFileName = "雷阵雨.png"
+    elif weather_type == "雷阵雨伴有冰雹":
+        iconFileName = "雷阵雨伴有冰雹.png"
+    elif weather_type == "雨夹雪":
+        iconFileName = "雨夹雪.png"
+    elif weather_type == "阵雪":
+        iconFileName = "阵雪.png"
+    elif weather_type == "小雪":
+        iconFileName = "小雪.png"
+    elif weather_type == "中雪":
+        iconFileName = "中雪.png"
+    elif weather_type == "大雪":
+        iconFileName = "大雪.png"
+    elif weather_type == "暴雪":
+        iconFileName = "暴雪.png"
+    elif weather_type == "浮沉":
+        iconFileName = "浮沉.png"
+    elif weather_type == "雾":
+        iconFileName = "雾.png"
+    elif weather_type == "霾":
+        iconFileName = "霾.png"
+    elif weather_type == "冻雨":
+        iconFileName = "冻雨.png"
+    elif weather_type == "沙尘暴":
+        iconFileName = "沙尘暴.png"
+    elif weather_type == "扬沙":
+        iconFileName = "扬沙.png"
+    elif weather_type == "强沙尘暴":
+        iconFileName = "强沙尘暴.png"
     else:
         iconFileName = "undefined.png"
 
