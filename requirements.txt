@@ -10,3 +10,4 @@ markdown==3.3.4
 mysql-connector-python==8.0.26
 bleach==6.0.0
 requests==2.31.0
+feedparser==6.0.10
