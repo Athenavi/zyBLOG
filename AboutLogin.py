@@ -9,17 +9,21 @@ from database import get_database_connection
 
 import bleach  # 导入 bleach 库用于 XSS 防范
 
+
 def zylogin():
     if request.method == 'POST':
-        username = bleach.clean(request.form['username'])  # 使用 bleach 进行 XSS 防范
+        input_value = bleach.clean(request.form['username'])  # 用户输入的用户名或邮箱
         password = bleach.clean(request.form['password'])
+
+        if input_value == 'guest@7trees.cn':
+            return render_template('login.html', error="Guest account cannot be used for login")
 
         db = get_database_connection()
         cursor = db.cursor()
 
         try:
-            query = "SELECT * FROM users WHERE username = %s"
-            cursor.execute(query, (username,))
+            query = "SELECT * FROM users WHERE (username = %s OR email = %s) AND username <> 'guest@7trees.cn'"
+            cursor.execute(query, (input_value, input_value))
             result = cursor.fetchone()
 
             if result is not None and bcrypt.checkpw(password.encode('utf-8'), result[2].encode('utf-8')):
@@ -30,9 +34,11 @@ def zylogin():
                 return redirect(url_for('home'))
             else:
                 return render_template('login.html', error="Invalid username or password")
+
         except Exception as e:
             logging.error(f"Error logging in: {e}")
             return "登录失败"
+
         finally:
             cursor.close()
             db.close()
