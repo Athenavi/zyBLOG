@@ -365,6 +365,25 @@ def convert_to_chinese(data):
             converted_data.append(item)
     return tuple(converted_data)
 
+@app.route('/profile', methods=['GET', 'POST'])
+def space():
+    city_code = 101010100
+    avatar_url=profile('guest@7trees.cn')
+    template = env.get_template('profile.html')
+    session.setdefault('theme', 'day-theme')
+    notice = read_file('notice/1.txt', 50)
+    userStatus = get_user_status()
+    username = get_username()
+    if userStatus and username != None:
+        avatar_url=get_email(username)
+        avatar_url=profile(avatar_url)
+    return template.render(url_for=url_for, theme=session['theme'],
+                               notice=notice,avatar_url=avatar_url,userStatus=userStatus,username=username,city_code=city_code)
+
+
+
+
+
 # 主页
 @app.route('/', methods=['GET', 'POST'])
 def home():
