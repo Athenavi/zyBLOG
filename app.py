@@ -10,7 +10,7 @@ from flask import Flask, render_template, redirect, session, request, url_for, R
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from AboutLogin import zylogin, zyregister, get_email, profile
+from AboutLogin import zylogin, zyregister, get_email, profile, zy_get_city_code
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
 from user import zyadmin, zy_delete_file
@@ -220,7 +220,7 @@ def analyze_ip_location(ip_address):
         reader.close()
 
 
-import json
+
 def update_visit(ip):
     # 读取visit_ip.txt中的记录
     with open('visit_ip.txt', 'r') as file:
@@ -279,15 +279,7 @@ def get_weather(city_code):
 def get_city_code():
     city_name = request.form.get('city_name')
     city_name = clearHTMLFormat(city_name)
-
-    with open('static/cityCode.json', 'r', encoding='utf-8') as file:
-        city_data = json.load(file)
-
-    for city in city_data:
-        if city['city_name'] == city_name:
-            return jsonify({'city_code': city['city_code']})
-
-    return jsonify({'error': '城市不存在'})
+    return zy_get_city_code(city_name)
 
 def get_weather_icon_url(weather_type):
     iconFileName = ""  # 默认图标文件名，根据实际情况修改
@@ -381,7 +373,12 @@ def space():
                                notice=notice,avatar_url=avatar_url,userStatus=userStatus,username=username,city_code=city_code)
 
 
-
+@app.route('/settingRegion', methods=['POST'])
+def setting_region():
+    username = get_username()
+    if username is not None:
+        return 1
+    return 1
 
 
 # 主页

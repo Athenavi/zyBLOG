@@ -40,55 +40,16 @@
     {% if userStatus %}
       <!-- 展示已登录的内容 -->
         <img src="{{ avatar_url }}"style="height:35px"/>
-      <a>欢迎您，{{ username }}</a>　　<a href="#">关于我</a>　　<a href="/logout">注销</a>　　<a href="/change-password">修改密码</a>
+      <a>欢迎您，{{ username }}</a><a href="/logout">点击这里直接注销</a>　　<a href="/change-password">修改我的密码</a>
     {% else %}
       <!-- 展示未登录的内容 -->
       <a href="/login">登录</a>
     {% endif %}
   </div>
 </div>
-
-  <!-- 翻页按钮 -->
-
-
     </div>
-
-<div class="col-md-2">
-            <br>
-    <span>天气</span>
-            <div id="weather-form">
-  <label for="city-input"></label>
-  <input type="text" id="city-input" name="city_name">
-  <button type="button" onclick="getCityCode()"><img src="../static/image/sch.svg" alt="按钮" /></button>
-</div>
-
-<div id="weather-info">
-  <div id="today-weather">
-    <h2>今天</h2>
-    <p>天气： <span id="today-type"></span></p>
-    <img id="today-icon" src="" alt="天气图标">
-  </div>
-
-  <div id="tomorrow-weather">
-    <h2>明天</h2>
-    <p>天气： <span id="tomorrow-type"></span></p>
-    <img id="tomorrow-icon" src="" alt="天气图标">
-  </div>
-
-  <div id="day-after-tomorrow-weather">
-    <h2>后天</h2>
-    <p>天气： <span id="day-after-tomorrow-type"></span></p>
-    <img id="day-after-tomorrow-icon" src="" alt="天气图标">
-  </div>
-</div>
-
-  </div>
-
             </div>
 
-        </div>
-    </div>
-  </div>
 
 <!-- 引入注脚 -->
 
@@ -101,87 +62,3 @@
 </body>
 
 </html>
-<script>
-function getCityCode() {
-  const cityInput = document.getElementById("city-input");
-  let cityName = cityInput.value.trim();
-
-  if (cityName === "") {
-    alert("请输入城市名");
-    return;
-  }
-
-  // 如果城市名既不包含 "市" 又不包含 "县"，则添加 "市"
-  const isCityName = cityName.includes("市") || cityName.includes("县");
-  if (!isCityName) {
-    cityName += "市";
-  }
-
-  const apiUrl = "/get_city_code";
-  const formData = new FormData();
-  formData.append("city_name", cityName);
-
-  fetch(apiUrl, {
-    method: "POST",
-    body: formData
-  })
-    .then(response => response.json())
-    .then(data => {
-      const cityCode = data.city_code;
-      if (cityCode) {
-        getWeather(cityCode);
-      } else {
-        // 去掉添加的 "市" 并添加 "县"
-        cityName = cityName.replace(/市$/, "") + "县";
-        formData.set("city_name", cityName);
-
-        fetch(apiUrl, {
-          method: "POST",
-          body: formData
-        })
-          .then(response => response.json())
-          .then(data => {
-            const cityCode = data.city_code;
-            if (cityCode) {
-              getWeather(cityCode);
-            } else {
-              alert("城市不存在");
-            }
-          })
-          .catch(error => {
-            console.error("获取城市代码失败：", error);
-          });
-      }
-    })
-    .catch(error => {
-      console.error("获取城市代码失败：", error);
-    });
-}
-
-function getWeather(cityCode) {
-  const apiUrl = `/weather/${cityCode}`;
-
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(processedData => {
-      document.getElementById("today-type").innerText = processedData.today.type;
-      document.getElementById("tomorrow-type").innerText = processedData.tomorrow.type;
-      document.getElementById("day-after-tomorrow-type").innerText = processedData.dayAfterTomorrow.type;
-
-      document.getElementById("today-icon").src = processedData.today.icon;
-      document.getElementById("tomorrow-icon").src = processedData.tomorrow.icon;
-      document.getElementById("day-after-tomorrow-icon").src = processedData.dayAfterTomorrow.icon;
-    })
-    .catch(error => {
-      console.error("获取天气信息失败：", error);
-    });
-}
-
-// 在页面加载完成后调用获取天气信息的函数
-document.addEventListener("DOMContentLoaded", () => {
-  const cityCode = "{{ city_code }}";
-  if (cityCode) {
-    getWeather(cityCode);
-  }
-});
-</script>
