@@ -87,3 +87,23 @@ def zyregister():
             db.close()
 
     return render_template('register.html')
+
+def get_email(username):
+    email = 'guest@7trees.cn'
+    username = bleach.clean(username)  # 移除列表括号
+    db = get_database_connection()
+    cursor = db.cursor()
+
+    try:
+        query = "SELECT email FROM users WHERE username = %s"
+        cursor.execute(query, (username,))
+        result = cursor.fetchone()  # 获取查询结果
+
+        if result:
+            email = result[0]  # 从结果中提取email值
+
+    finally:
+        cursor.close()
+        db.close()
+
+    return email

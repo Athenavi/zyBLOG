@@ -10,7 +10,7 @@ from flask import Flask, render_template, redirect, session, request, url_for, R
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from AboutLogin import zylogin, zyregister
+from AboutLogin import zylogin, zyregister, get_email
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
 from user import zyadmin, zy_delete_file
@@ -366,6 +366,18 @@ def convert_to_chinese(data):
     return tuple(converted_data)
 
 # 主页
+import hashlib
+def profile(email):
+    email = email  # 用户的电子邮件地址
+    # 将电子邮件地址转换为小写，并使用 MD5 哈希算法生成哈希值
+    email_hash = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
+    # 构建 Gravatar 头像的 URL
+    avatar_url = f'https://www.gravatar.com/avatar/{email_hash}?s=100&r=g&d=retro'
+
+    return avatar_url
+
+
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     IPinfo = get_client_ip()
@@ -373,6 +385,7 @@ def home():
     IPinfo= analyze_ip_location(IPinfo)
     IPinfo=convert_to_chinese(IPinfo)
     city_code = 101010100
+    avatar_url=profile('guest@7trees.cn')
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:
@@ -385,8 +398,11 @@ def home():
             notice = read_file('notice/1.txt', 50)
             userStatus = get_user_status()
             username = get_username()
+            if userStatus and username != None:
+                avatar_url=get_email(username)
+                avatar_url=profile(avatar_url)
             return template.render(articles=articles, url_for=url_for, theme=session['theme'],
-                               notice=notice,
+                               notice=notice,avatar_url=avatar_url,
                                has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo,city_code=city_code)
         else:
             return render_template('home.html')
