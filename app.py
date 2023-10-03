@@ -567,6 +567,20 @@ def post_comment():
 @app.route('/sitemap.xml')
 @app.route('/sitemap')
 def generate_sitemap():
+    cache_dir = 'temp'
+    os.makedirs(cache_dir, exist_ok=True)
+
+    cache_file = os.path.join(cache_dir, 'sitemap.xml')
+
+    # Check if cache file exists and is within one hour
+    if os.path.exists(cache_file):
+        cache_timestamp = os.path.getmtime(cache_file)
+        if datetime.now().timestamp() - cache_timestamp <= 3600:
+            with open(cache_file, 'r') as f:
+                cached_xml_data = f.read()
+            response = Response(cached_xml_data, mimetype='text/xml')
+            return response
+
     files = os.listdir('articles')
     markdown_files = [file for file in files if file.endswith('.md')]
 
@@ -590,8 +604,11 @@ def generate_sitemap():
     # 关闭urlset标签
     xml_data += '</urlset>\n'
 
-    response = Response(xml_data, mimetype='text/xml')
+    # 写入缓存文件
+    with open(cache_file, 'w') as f:
+        f.write(xml_data)
 
+    response = Response(xml_data, mimetype='text/xml')
     return response
 
 
