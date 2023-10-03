@@ -243,36 +243,79 @@ def update_visit(ip):
     with open('visit_ip.txt', 'w') as file:
         file.writelines(lines)
 
+import json
+from datetime import datetime, timedelta
+import os
+from flask import Flask, jsonify
+import portalocker
+import requests
+
 @app.route('/weather/<city_code>', methods=['GET'])
 def get_weather(city_code):
-    apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
+    cache_dir = 'temp'
+    os.makedirs(cache_dir, exist_ok=True)
+
+    cache_file = os.path.join(cache_dir, f'{city_code}.json')
+
+    # Check if cache file exists and is within one hour
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            cache_data = json.load(f)
+            cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
+            if datetime.now() - cache_timestamp <= timedelta(hours=1):
+                return jsonify(cache_data)
+
+    # Acquire a lock before generating cache file
+    lock_file = f'{cache_file}.lock'
     try:
-        response = requests.get(apiUrl)
-        weatherData = response.json()
+        with portalocker.Lock(lock_file, timeout=1) as lock:
+            # Check again if cache file is created by another request
+            if os.path.exists(cache_file):
+                with open(cache_file, 'r') as f:
+                    cache_data = json.load(f)
+                    cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
+                    if datetime.now() - cache_timestamp <= timedelta(hours=1):
+                        return jsonify(cache_data)
 
-        todayWeather = weatherData['data']['forecast'][0]
-        tomorrowWeather = weatherData['data']['forecast'][1]
-        dayAfterTomorrowWeather = weatherData['data']['forecast'][2]
+            apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
+            try:
+                response = requests.get(apiUrl)
+                weatherData = response.json()
 
-        processedData = {
-            'today': {
-                'type': todayWeather['type'],
-                'icon': get_weather_icon_url(todayWeather['type'])
-            },
-            'tomorrow': {
-                'type': tomorrowWeather['type'],
-                'icon': get_weather_icon_url(tomorrowWeather['type'])
-            },
-            'dayAfterTomorrow': {
-                'type': dayAfterTomorrowWeather['type'],
-                'icon': get_weather_icon_url(dayAfterTomorrowWeather['type'])
-            }
-        }
+                todayWeather = weatherData['data']['forecast'][0]
+                tomorrowWeather = weatherData['data']['forecast'][1]
+                dayAfterTomorrowWeather = weatherData['data']['forecast'][2]
 
-        return jsonify(processedData)
-    except Exception as e:
-        error_message = {'error': str(e)}
-        return jsonify(error_message), 500
+                processedData = {
+                    'timestamp': datetime.now().isoformat(),
+                    'today': {
+                        'type': todayWeather['type'],
+                        'icon': get_weather_icon_url(todayWeather['type'])
+                    },
+                    'tomorrow': {
+                        'type': tomorrowWeather['type'],
+                        'icon': get_weather_icon_url(tomorrowWeather['type'])
+                    },
+                    'dayAfterTomorrow': {
+                        'type': dayAfterTomorrowWeather['type'],
+                        'icon': get_weather_icon_url(dayAfterTomorrowWeather['type'])
+                    }
+                }
+
+                with open(cache_file, 'w') as f:
+                    json.dump(processedData, f)
+
+                return jsonify(processedData)
+            except Exception as e:
+                error_message = {'error': str(e)}
+                return jsonify(error_message), 500
+    except portalocker.exceptions.LockException:
+        # Another request is already creating the cache file
+        pass
+
+    # If cache file creation failed, return error
+    error_message = {'error': 'Failed to create cache file'}
+    return jsonify(error_message), 500
 
 @app.route('/get_city_code', methods=['POST'])
 def get_city_code():
