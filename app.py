@@ -596,13 +596,28 @@ def generate_sitemap():
 
 
 
+
 @app.route('/feed')
 @app.route('/rss')
 def generate_rss():
+    cache_dir = 'temp'
+    os.makedirs(cache_dir, exist_ok=True)
+
+    cache_file = os.path.join(cache_dir, 'feed.xml')
+
+    # Check if cache file exists and is within one hour
+    if os.path.exists(cache_file):
+        cache_timestamp = os.path.getmtime(cache_file)
+        if datetime.now().timestamp() - cache_timestamp <= 3600:
+            with open(cache_file, 'r') as f:
+                cached_xml_data = f.read()
+            response = Response(cached_xml_data, mimetype='application/rss+xml')
+            return response
+
     files = os.listdir('articles')
     markdown_files = [file for file in files if file.endswith('.md')]
 
-    # 创建XML文件头
+    # 创建XML文件头及其他信息...
     xml_data = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_data += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n'
     xml_data += '<channel>\n'
@@ -610,7 +625,7 @@ def generate_rss():
     xml_data += '<link>'+domain+'</link>\n'
     xml_data += '<description>Your RSS Feed Description</description>\n'
     xml_data += '<language>en-us</language>\n'
-    xml_data += '<lastBuildDate>' + datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z") + '</lastBuildDate>\n'
+    xml_data += '<lastBuildDate>' + datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z") + '</lastBuildDate>\n'
     xml_data += '<atom:link href="'+domain+'rss" rel="self" type="application/rss+xml" />\n'
 
     for file in markdown_files:
@@ -634,8 +649,11 @@ def generate_rss():
     xml_data += '</channel>\n'
     xml_data += '</rss>\n'
 
-    response = Response(xml_data, mimetype='application/rss+xml')
+    # 写入缓存文件
+    with open(cache_file, 'w') as f:
+        f.write(xml_data)
 
+    response = Response(xml_data, mimetype='application/rss+xml')
     return response
 
 
