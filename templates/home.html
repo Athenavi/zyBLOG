@@ -70,6 +70,7 @@
 <div style="width: 1080px; height: 30px; background-color: transparent;">
   <a>公告:</a><span>{{ notice }}</span>
   <div>
+        <a href="/profile"><img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;"></a>
     {% if userStatus %}
       <!-- 展示已登录的内容 -->
         <a>欢迎您，{{ username }}</a>
@@ -79,8 +80,6 @@
     {% else %}
       <a>未知状态</a>
     {% endif %}
-        <a href="/profile"><img src="{{ avatar_url }}"style="height:35px"/></a>
-
     {% else %}
       <!-- 展示未登录的内容 -->
       <a href="/login">您还没有登录呢</a>
@@ -181,7 +180,7 @@
 
 </html>
 <script>
-function getCityCode() {
+async function getCityCode() {
   const cityInput = document.getElementById("city-input");
   let cityName = cityInput.value.trim();
 
@@ -190,51 +189,55 @@ function getCityCode() {
     return;
   }
 
-  // 如果城市名既不包含 "市" 又不包含 "县"，则添加 "市"
-  const isCityName = cityName.includes("市") || cityName.includes("县");
-  if (!isCityName) {
-    cityName += "市";
-  }
-
   const apiUrl = "/get_city_code";
   const formData = new FormData();
   formData.append("city_name", cityName);
 
-  fetch(apiUrl, {
+  const response = await fetch(apiUrl, {
     method: "POST",
     body: formData
-  })
-    .then(response => response.json())
-    .then(data => {
-      const cityCode = data.city_code;
-      if (cityCode) {
-        getWeather(cityCode);
+  });
+
+  const data = await response.json();
+  const cityCode = data.city_code;
+
+  if (cityCode) {
+    getWeather(cityCode);
+  } else {
+    const isCity = cityName.includes("市");
+    const isCounty = cityName.includes("县");
+
+    if (!isCity && !isCounty) {
+      formData.set("city_name", cityName + "市");
+      const response2 = await fetch(apiUrl, {
+        method: "POST",
+        body: formData
+      });
+      const data2 = await response2.json();
+      const cityCode2 = data2.city_code;
+
+      if (cityCode2) {
+        getWeather(cityCode2);
       } else {
-        // 去掉添加的 "市" 并添加 "县"
         cityName = cityName.replace(/市$/, "") + "县";
         formData.set("city_name", cityName);
-
-        fetch(apiUrl, {
+        const response3 = await fetch(apiUrl, {
           method: "POST",
           body: formData
-        })
-          .then(response => response.json())
-          .then(data => {
-            const cityCode = data.city_code;
-            if (cityCode) {
-              getWeather(cityCode);
-            } else {
-              alert("城市不存在");
-            }
-          })
-          .catch(error => {
-            console.error("获取城市代码失败：", error);
-          });
+        });
+        const data3 = await response3.json();
+        const cityCode3 = data3.city_code;
+
+        if (cityCode3) {
+          getWeather(cityCode3);
+        } else {
+          alert("城市不存在");
+        }
       }
-    })
-    .catch(error => {
-      console.error("获取城市代码失败：", error);
-    });
+    } else {
+      alert("城市不存在");
+    }
+  }
 }
 
 function getWeather(cityCode) {

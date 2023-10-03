@@ -37,13 +37,13 @@
 <div style="width: 1080px; height: 30px; background-color: transparent;">
   <a>公告:</a><span>{{ notice }}</span>
   <div>
+    <img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;">
     {% if userStatus %}
       <!-- 展示已登录的内容 -->
-        <img src="{{ avatar_url }}"style="height:35px"/>
       <a>欢迎您，{{ username }}</a><a href="/logout">点击这里直接注销</a>　　<a href="/change-password">修改我的密码</a>
     {% else %}
       <!-- 展示未登录的内容 -->
-      <a href="/login">登录</a>
+      <a href="/login">需要登录</a>
     {% endif %}
   </div>
 </div>
