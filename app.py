@@ -1,11 +1,9 @@
 import datetime
 import logging
-import os
 import time
 import urllib
 from configparser import ConfigParser
 import geoip2.database
-import requests
 from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -140,40 +138,53 @@ def check_banned_ip(ip_address):
 
 import xml.etree.ElementTree as ET
 
-
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    matched_content = []
+
     if request.method == 'POST':
         keyword = request.form.get('keyword')  # 获取搜索关键字
-        matched_content = []
+        cache_dir = os.path.join('temp', 'search')
+        os.makedirs(cache_dir, exist_ok=True)
+        cache_path = os.path.join(cache_dir, keyword + '.xml')
 
-        files = os.listdir('articles')
-        markdown_files = [file for file in files if file.endswith('.md')]
+        # 检查缓存是否存在且在一个小时之内
+        if os.path.isfile(cache_path) and (time.time() - os.path.getmtime(cache_path) < 3600):
+            # 读取缓存并继续处理
+            with open(cache_path, 'r') as cache_file:
+                match_data = cache_file.read()
+        else:
+            files = os.listdir('articles')
+            markdown_files = [file for file in files if file.endswith('.md')]
 
-        # 创建XML根元素
-        root = ET.Element('root')
+            # 创建XML根元素
+            root = ET.Element('root')
 
-        for file in markdown_files:
-            article_name = file[:-3]  # 移除文件扩展名 (.md)
-            encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
-            article_url = domain + 'blog/' + encoded_article_name
-            date = get_file_date(encoded_article_name)
-            describe = get_article_content(article_name, 10)
-            describe = clearHTMLFormat(describe)
+            for file in markdown_files:
+                article_name = file[:-3]  # 移除文件扩展名 (.md)
+                encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
+                article_url = domain + 'blog/' + encoded_article_name
+                date = get_file_date(encoded_article_name)
+                describe = get_article_content(article_name, 10)
+                describe = clearHTMLFormat(describe)
 
-            if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
-                # 创建item元素并包含内容
-                item = ET.SubElement(root, 'item')
-                ET.SubElement(item, 'title').text = article_name
-                ET.SubElement(item, 'link').text = article_url
-                ET.SubElement(item, 'pubDate').text = date
-                ET.SubElement(item, 'description').text = describe
+                if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
+                    # 创建item元素并包含内容
+                    item = ET.SubElement(root, 'item')
+                    ET.SubElement(item, 'title').text = article_name
+                    ET.SubElement(item, 'link').text = article_url
+                    ET.SubElement(item, 'pubDate').text = date
+                    ET.SubElement(item, 'description').text = describe
 
-        # 创建XML树
-        tree = ET.ElementTree(root)
+            # 创建XML树
+            tree = ET.ElementTree(root)
 
-        # 将XML数据转换为字符串
-        match_data = ET.tostring(tree.getroot(), encoding='utf-8', method='xml').decode()
+            # 将XML数据转换为字符串
+            match_data = ET.tostring(tree.getroot(), encoding='utf-8', method='xml').decode()
+
+            # 写入缓存
+            with open(cache_path, 'w') as cache_file:
+                cache_file.write(match_data)
 
         # 解析XML数据
         parsed_data = ET.fromstring(match_data)
@@ -186,10 +197,7 @@ def search():
             }
             matched_content.append(content)
 
-        if matched_content:
-            return render_template('search.html', results=matched_content)
-
-    return render_template('search.html', results=None)
+    return render_template('search.html', results=matched_content)
 
 
 
