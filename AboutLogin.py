@@ -124,23 +124,3 @@ def profile(email):
 
     return avatar_url
 
-from flask import jsonify
-def zy_get_city_code(city_name):
-    try:
-        db = get_database_connection()
-        cursor = db.cursor()
-        # 执行查询
-        sql = "SELECT city_code FROM cities WHERE city_name = %s"
-        cursor.execute(sql, (city_name,))
-
-        result = cursor.fetchone()
-
-        # 检查查询结果
-        if result:
-            return jsonify({'city_code': result[0]})
-        else:
-            return jsonify({'error': '城市不存在'})
-    finally:
-        # 关闭数据库连接
-        cursor.close()
-        db.close()

@@ -4,29 +4,28 @@ import os
 import time
 import urllib
 from configparser import ConfigParser
-
+import geoip2.database
 import requests
 from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
-
-from AboutLogin import zylogin, zyregister, get_email, profile, zy_get_city_code
+from AboutLogin import zylogin, zyregister, get_email, profile
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
+from database import get_database_connection
 from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
-import feedparser
+from flask_caching import Cache
+
 
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))
 env.add_extension('jinja2.ext.loopcontrols')
 
-
-
-
 app = Flask(__name__)
-
+app.config['CACHE_TYPE'] = 'simple'
+cache = Cache(app)
 app.jinja_env = env
 app.secret_key = 'your_secret_key'
 app.permanent_session_lifetime = datetime.timedelta(hours=3)
@@ -193,7 +192,7 @@ def search():
     return render_template('search.html', results=None)
 
 
-import geoip2.database
+
 
 def analyze_ip_location(ip_address):
     # 加载GeoIP2数据库文件
@@ -379,6 +378,42 @@ def setting_region():
     if username is not None:
         return 1
     return 1
+
+
+
+@cache.cached(timeout=None, key_prefix='cities')
+def get_table_data():
+    db = get_database_connection()
+
+    cursor = db.cursor()
+    # 执行 MySQL 查询获取你想要缓存的表数据
+    query = "SELECT * FROM cities"
+    cursor.execute(query)
+
+    # 构建数据字典列表
+    data = []
+    columns = [desc[0] for desc in cursor.description]
+    for row in cursor.fetchall():
+        data.append(dict(zip(columns, row)))
+
+    cursor.close()
+    db.close()
+
+    return data
+
+def zy_get_city_code(city_name):
+    table_data = get_table_data()
+
+    # 在缓存的数据中查询城市代码
+    result = next((item for item in table_data if item['city_name'] == city_name), None)
+
+    # 检查查询结果
+    if result:
+        return jsonify({'city_code': result['city_code']})
+    else:
+        return jsonify({'error': '城市不存在'})
+
+
 
 
 # 主页
