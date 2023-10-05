@@ -2,23 +2,31 @@ import datetime
 import logging
 import time
 import urllib
-from configparser import ConfigParser
+import json
+import os
+import portalocker
+import requests
+import xml.etree.ElementTree as ET
 import geoip2.database
-from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify
+from configparser import ConfigParser
+
+from flask import Flask, render_template, redirect, session, request, url_for, Response,jsonify,send_from_directory
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment
+from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file
 from utils import zy_upload_file
 from flask_caching import Cache
 
-
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))
+env.filters['custom_max'] = custom_max
+env.filters['custom_min'] = custom_min
 env.add_extension('jinja2.ext.loopcontrols')
 
 app = Flask(__name__)
@@ -34,10 +42,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG)
 config = ConfigParser()
 config.read('config.ini')
 # 应用分享配置参数
-
-from flask import send_from_directory
-
-
+from datetime import datetime, timedelta
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
@@ -136,7 +141,7 @@ def check_banned_ip(ip_address):
 
 
 
-import xml.etree.ElementTree as ET
+
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -251,12 +256,6 @@ def update_visit(ip):
     with open('visit_ip.txt', 'w') as file:
         file.writelines(lines)
 
-import json
-from datetime import datetime, timedelta
-import os
-from flask import Flask, jsonify
-import portalocker
-import requests
 
 @app.route('/weather/<city_code>', methods=['GET'])
 def get_weather(city_code):

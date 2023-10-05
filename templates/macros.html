@@ -1,3 +1,26 @@
+{% import 'custom.py' as custom %}
 {% macro url_for(endpoint, kwargs) -%}
     {{ caller.url_for(endpoint, **kwargs) }}
+{%- endmacro %}
+{% set custom_max = namespace(value=math.nan) %}
+{% set custom_min = namespace(value=math.nan) %}
+
+{% macro update_max(value) -%}
+  {%- if math.isinf(value) or value > custom_max.value -%}
+    {%- set custom_max.value = value -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro update_min(value) -%}
+  {%- if math.isinf(value) or value < custom_min.value -%}
+    {%- set custom_min.value = value -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro get_custom_max() -%}
+  {{ custom_max.value }}
+{%- endmacro %}
+
+{% macro get_custom_min() -%}
+  {{ custom_min.value }}
 {%- endmacro %}

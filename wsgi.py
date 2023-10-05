@@ -1,15 +1,12 @@
-from app import app, get_table_data
+from app import app
 
 import socket
 
-from database import get_database_connection, test_database_connection, CheckDatabase
+from database import test_database_connection, CheckDatabase
 
 if __name__ == '__main__':
     test_database_connection()
     CheckDatabase()
-    table_data = get_table_data()
-    table_data = bool(table_data)
-    print(f"----------------数据库表 加载---------{table_data}")
     host = socket.gethostbyname(socket.gethostname())
     print(f"在浏览器中访问：http://{host}:5000/")
     print(f"在浏览器中访问：http://127.0.0.1:5000/")

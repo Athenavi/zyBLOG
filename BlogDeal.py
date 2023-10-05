@@ -52,8 +52,10 @@ def zy_get_comment(article_name, page=1, per_page=10):
     cursor = db.cursor()
     try:
         query = "SELECT * FROM comments WHERE article_name = %s ORDER BY add_date DESC LIMIT 70 OFFSET %s"
+
         offset = (page - 1) * per_page
         cursor.execute(query, (article_name, offset))
+        print("Total rows fetched:", cursor.rowcount)
 
         results = []
         rows = cursor.fetchall()
