@@ -60,6 +60,7 @@ def zy_get_comment(article_name, page=1, per_page=10):
         results = []
         rows = cursor.fetchall()
 
+
         for row in rows:
             username = row[0]
             comment = row[2]

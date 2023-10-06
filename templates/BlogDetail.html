@@ -89,7 +89,7 @@
 
 <div id="comments-container">
   {% if comments %}
-    <h2>Comments:</h2>
+    <h2>近期评论</h2>
     <ul class="list-group">
       {% set comment_count = comments|length %}
       {% set total_pages = (comment_count // per_page) + (comment_count % per_page > 0) %}
