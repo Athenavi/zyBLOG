@@ -1,7 +1,9 @@
 import os
 import string
 import random
-from flask import request, make_response
+import requests
+import urllib
+from flask import request, make_response, session
 from user import error
 from werkzeug.utils import secure_filename
 
@@ -63,3 +65,128 @@ def zy_upload_file():
         return 'File uploaded successfully'
 
     return make_response('success')
+
+def get_client_ip():
+    # 获取 X-Real-IP 请求头中的 IP 地址
+    #ip_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    return get_public_ip()
+
+def get_public_ip():
+    # 使用 "ipify" 的 API 查询公共 IP 地址
+    response = requests.get('https://api.ipify.org?format=json')
+    if response.status_code == 200:
+        ip_address = response.json()['ip']
+        return ip_address
+    else:
+        return None
+
+# 登录页面
+
+def get_user_status():
+    if 'logged_in' in session and session['logged_in']:
+        return True
+    else:
+        return False
+
+
+def get_username():
+    if 'username' in session:
+        return session['username']
+    else:
+        return None
+
+
+
+def read_file(file_path, num_chars):
+    decoded_path = urllib.parse.unquote(file_path)  # 对文件路径进行解码处理
+    encoding = 'utf-8'
+    with open(decoded_path, 'r', encoding=encoding) as file:
+        content = file.read(num_chars)
+    return content
+
+
+def check_banned_ip(ip_address):
+    with open("banIP.txt", "r") as file:
+        banned_ips = file.read().splitlines()
+        if ip_address in banned_ips:
+            return True
+    return False
+
+
+def get_weather_icon_url(weather_type):
+    iconFileName = ""  # 默认图标文件名，根据实际情况修改
+
+    if weather_type == "晴":
+        iconFileName = "晴.png"
+    elif weather_type == "阴":
+        iconFileName = "阴.png"
+    elif weather_type == "多云":
+        iconFileName = "多云.png"
+    elif weather_type == "小雨":
+        iconFileName = "小雨.png"
+    elif weather_type == "中雨":
+        iconFileName = "中雨.png"
+    elif weather_type == "大雨":
+        iconFileName = "大雨.png"
+    elif weather_type == "暴雨":
+        iconFileName = "暴雨.png"
+    elif weather_type == "大暴雨":
+        iconFileName = "大暴雨.png"
+    elif weather_type == "特大暴雨":
+        iconFileName = "特大暴雨.png"
+    elif weather_type == "阵雨":
+        iconFileName = "阵雨.png"
+    elif weather_type == "雷阵雨":
+        iconFileName = "雷阵雨.png"
+    elif weather_type == "雷阵雨伴有冰雹":
+        iconFileName = "雷阵雨伴有冰雹.png"
+    elif weather_type == "雨夹雪":
+        iconFileName = "雨夹雪.png"
+    elif weather_type == "阵雪":
+        iconFileName = "阵雪.png"
+    elif weather_type == "小雪":
+        iconFileName = "小雪.png"
+    elif weather_type == "中雪":
+        iconFileName = "中雪.png"
+    elif weather_type == "大雪":
+        iconFileName = "大雪.png"
+    elif weather_type == "暴雪":
+        iconFileName = "暴雪.png"
+    elif weather_type == "浮沉":
+        iconFileName = "浮沉.png"
+    elif weather_type == "雾":
+        iconFileName = "雾.png"
+    elif weather_type == "霾":
+        iconFileName = "霾.png"
+    elif weather_type == "冻雨":
+        iconFileName = "冻雨.png"
+    elif weather_type == "沙尘暴":
+        iconFileName = "沙尘暴.png"
+    elif weather_type == "扬沙":
+        iconFileName = "扬沙.png"
+    elif weather_type == "强沙尘暴":
+        iconFileName = "强沙尘暴.png"
+    else:
+        iconFileName = "undefined.png"
+
+    iconUrl = f'static/image/weather/{iconFileName}'
+    return iconUrl
+
+
+def convert_to_chinese(data):
+    converted_data = []
+    for item in data:
+        response = requests.get(
+            f'http://fanyi.youdao.com/translate?doctype=json&type=AUTO&i={item}'
+        )
+        if response.status_code == 200:
+            try:
+                translation = response.json()['translateResult'][0][0]['tgt']
+                converted_data.append(translation)
+            except Exception:
+                converted_data.append(item)
+        else:
+            converted_data.append(item)
+    return tuple(converted_data)
+
+

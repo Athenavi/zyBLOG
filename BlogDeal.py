@@ -1,11 +1,10 @@
-import os
 import codecs
+import urllib
 import markdown
-import datetime
 import os
-
-
 from database import get_database_connection
+from utils import read_file
+import datetime
 
 def get_article_names(page=1, per_page=10):
     articles = []
@@ -28,7 +27,6 @@ def get_article_names(page=1, per_page=10):
     return articles, has_next_page, has_previous_page
 
 
-
 def get_article_content(article, limit):
     lines_limit = limit
     with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
@@ -43,8 +41,6 @@ def clearHTMLFormat(text):
     # 使用正则表达式清除HTML标记
     clean_text = re.sub('<.*?>', '', text)
     return clean_text
-
-
 
 
 def zy_get_comment(article_name, page=1, per_page=10):
@@ -111,3 +107,22 @@ def zy_post_comment(article_name, username, comment):
         # 关闭游标和数据库连接
         cursor.close()
         db.close()
+
+def get_blog_author():
+        articleAuthor = read_file('author/default.txt', 6)
+        return articleAuthor
+
+
+def get_file_date(file_path):
+    decoded_name = urllib.parse.unquote(file_path)  # 对文件名进行解码处理
+    file_path = os.path.join('articles', decoded_name + '.md')
+    # 获取文件的创建时间
+    create_time = os.path.getctime(file_path)
+    # 获取文件的修改时间
+    modify_time = os.path.getmtime(file_path)
+    # 获取文件的访问时间
+    access_time = os.path.getatime(file_path)
+
+    formatted_modify_time = datetime.datetime.fromtimestamp(modify_time).strftime("%Y-%m-%d %H:%M:%S")
+
+    return formatted_modify_time
