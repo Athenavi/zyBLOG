@@ -64,7 +64,7 @@ def zy_get_comment(article_name, page=1, per_page=10):
             username = row[0]
             comment = row[2]
             result_dict = {'username': username, 'comment': comment}
-            results.insert(0, result_dict)
+            results.append(result_dict)
 
         return results
     except Exception as e:
