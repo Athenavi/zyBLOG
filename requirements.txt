@@ -12,3 +12,4 @@ bleach==6.0.0
 requests==2.31.0
 feedparser==6.0.10
 geoip2==4.7.0
+portalocker>=2.8.0
