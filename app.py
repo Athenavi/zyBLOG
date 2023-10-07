@@ -613,23 +613,53 @@ def generate_captcha():
     captcha_text = generate_random_text()
 
     # 创建一个新的图像对象
-    image = Image.new('RGB', (200, 100), color = (255, 255, 255))
+    image = Image.new('RGB', (135, 80), color = (255, 255, 255))
 
     # 创建字体对象并设置字体大小
     font = ImageFont.truetype('arial.ttf', size=40)
 
     # 在图像上绘制验证码文本
     d = ImageDraw.Draw(image)
-    d.text((50, 30), captcha_text, font=font, fill=(0, 0, 0))
+    d.text((35, 20), captcha_text, font=font, fill=(0, 0, 0))
 
     # 保存图像到临时文件
     image.save('captcha.png')
-
+    convert_white_to_transparent('captcha.png')
     # 将验证码文本存储在session中，用于校对
     session['captcha_text'] = captcha_text
 
     # 返回生成的验证码图像给用户
     return send_file('captcha.png', mimetype='image/png')
+
+def convert_white_to_transparent(image_path):
+    # 打开图像
+    image = Image.open(image_path)
+    image = image.convert("RGBA")
+
+    # 获取图像的像素数据
+    data = image.getdata()
+
+    # 创建一个新的像素数据列表，将白色的像素转换为透明，其他像素保持不变
+    new_data = []
+    for item in data:
+        # 如果像素是白色
+        if item[:3] == (255, 255, 255):
+            new_data.append((255, 255, 255, 0))
+        else:
+            new_data.append(item)
+
+    # 将新的像素数据设置回图像
+    image.putdata(new_data)
+
+    # 保存图像
+    image.save("captcha.png", "PNG")
+
+
+
+
+
+
+
 
 @app.route('/verify_captcha', methods=['POST'])
 def verify_captcha():
