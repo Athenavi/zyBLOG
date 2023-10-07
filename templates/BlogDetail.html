@@ -67,8 +67,8 @@
       </div>
   <div>
 
-      <form method="post" action="/post_comment">
-     <div class="form-group">
+  <form method="post" action="/post_comment" id="comment_form">
+    <div class="form-group">
         <label for="article_name">当前区域: {{ articleName }}</label>
         <input type="text" class="form-control" id="article_name" name="article_name" value="{{ articleName }}" readonly style="display:none;">
     </div>
@@ -78,12 +78,21 @@
         <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
     </div>
     <!-- 评论 -->
+    <div id="result"></div>
     <div class="form-group">
         <label for="comment">评论</label>
         <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+        <img id="captcha-image" src="" alt="Captcha Image" onclick="generateCaptcha()">
     </div>
+
+    <div class="form-group">
+        <label for="captcha">验证码:</label>
+        <input type="text" id="captcha" name="captcha" required>
+    </div>
+
     <button type="submit" class="btn btn-primary btn-block">一键发送</button>
 </form>
+
 {% set per_page = 10 %}
 {% set page = 1 %}
 
@@ -208,6 +217,82 @@
 
 </body>
 </html>
+<script>
+  function postComment(event) {
+    event.preventDefault();  // 防止默认的表单提交行为
+
+    var articleName = document.getElementById('article_name').value;
+    var username = document.getElementById('username').value;
+    var comment = document.getElementById('comment').value;
+    var captcha = document.getElementById('captcha').value;
+
+    // 发送请求以验证验证码
+    fetch('/verify_captcha', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'captcha=' + captcha
+    })
+      .then(function(response) {
+        return response.text();
+      })
+      .then(function(result) {
+        // 如果验证码匹配成功，执行评论逻辑
+        if (result === '验证码匹配成功') {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/post_comment', true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              var response = JSON.parse(xhr.responseText);
+              document.getElementById('result').innerText = response.result;
+
+              // 如果评论成功，清空评论输入框
+              if (response.result === '评论成功') {
+                document.getElementById('comment').value = '';
+
+                // 用新添加的评论更新现有评论部分
+                var commentsSection = document.getElementById('comments');
+                var newComment = document.createElement('div');
+                newComment.innerHTML = response.username + ": " + response.comment;
+                commentsSection.appendChild(newComment);
+
+                // 刷新验证码图像
+                generateCaptcha();
+              }
+            }
+          };
+          xhr.send('article_name=' + articleName + '&username=' + username + '&comment=' + comment);
+        } else {
+          // 验证码不匹配，提示用户
+          alert('验证码不匹配');
+          // 刷新验证码图像
+          generateCaptcha();
+        }
+      })
+      .catch(function(error) {
+        console.error(error);
+      })
+      .finally(function() {
+        // 重新注册点击事件，以刷新验证码图像
+        var captchaImage = document.getElementById('captcha-image');
+        captchaImage.addEventListener('click', generateCaptcha);
+      });
+  }
+
+  function generateCaptcha() {
+    var captchaImage = document.getElementById('captcha-image');
+    captchaImage.src = "/generate_captcha?" + new Date().getTime();
+  }
+
+  // 在表单提交时调用评论函数
+  var form = document.getElementById('comment_form');
+  form.addEventListener('submit', postComment);
+
+  // 生成初始验证码图像
+  generateCaptcha();
+</script>
 <script>
   // 检测设备类型
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

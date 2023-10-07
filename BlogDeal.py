@@ -1,4 +1,5 @@
 import codecs
+import random
 import urllib
 import markdown
 import os
@@ -107,6 +108,18 @@ def zy_post_comment(article_name, username, comment):
         # 关闭游标和数据库连接
         cursor.close()
         db.close()
+
+
+def generate_random_text():
+    # 生成随机的验证码文本
+    characters = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    captcha_text = ''.join(random.choices(characters, k=4))
+    return captcha_text
+
+
+
+
+
 
 def get_blog_author():
         articleAuthor = read_file('author/default.txt', 6)

@@ -17,7 +17,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
-    get_file_date, get_blog_author
+    get_file_date, get_blog_author, generate_random_text
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file
@@ -422,15 +422,38 @@ def blog_detail(article):
         return redirect(url_for('undefined_route'))
 
 
-
-
-
+last_comment_time = {}  # 全局变量，用于记录用户最后评论时间
 @app.route('/post_comment', methods=['POST'])
 def post_comment():
     article_name = request.form.get('article_name')
     username = request.form.get('username')
     comment = request.form.get('comment')
-    return zy_post_comment(article_name, username,comment)
+
+    # 在处理评论前检查用户评论时间
+    if username in last_comment_time:
+        last_time = last_comment_time[username]
+        current_time = time.time()
+        if current_time - last_time < 10:
+            response = {
+                'result': 'error',
+                'message': '请稍后再发表评论'
+            }
+            return json.dumps(response)
+
+    # 更新用户最后评论时间
+    last_comment_time[username] = time.time()
+
+    # 处理评论逻辑
+    result = zy_post_comment(article_name, username, comment)
+
+    # 构建响应JSON对象
+    response = {
+        'result': result,
+        'username': username,
+        'comment': comment
+    }
+
+    return json.dumps(response)
 
 
 
@@ -612,19 +635,15 @@ def generate_captcha():
 def verify_captcha():
     # 获取前端传来的验证码值
     user_input = request.form.get('captcha')
+    user_input = clearHTMLFormat(user_input)
 
     # 获取存储在session中的验证码文本
     captcha_text = session['captcha_text']
 
-    if user_input == captcha_text:
+    if user_input.lower() == captcha_text.lower():
         # 验证码匹配成功，执行相应逻辑
         return '验证码匹配成功'
     else:
         # 验证码匹配失败，执行相应逻辑
         return '验证码不匹配'
 
-def generate_random_text():
-    # 生成随机的验证码文本
-    characters = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-    captcha_text = ''.join(random.choices(characters, k=6))
-    return captcha_text
