@@ -8,7 +8,10 @@
     <title>{% block title %}{% endblock %}</title>
     <style>
 body {
-    background-image: url("https://api.237127.xyz/img23");
+    background-image: url("../static/image/day.jpg");
+    background-size: 120%;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 </style>
     <!-- 引入bootstrap的css文件 -->
@@ -20,22 +23,16 @@ body {
 </head>
 
 <body>
-<!-- 引入导航栏 -->
-<!-- 定义导航栏 -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
         <!-- 导航栏商标 -->
-        <a class="navbar-brand" href="#">奇客舒</a>
+        <a class="navbar-brand" href="/">奇客舒</a>
         <!-- 导航入口 -->
         <div>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">返回</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="/register">去注册</a>
                 </li>
-
             </ul>
         </div>
     </div>
@@ -43,7 +40,6 @@ body {
 
 
 
-<!-- 预留具体页面的位置 -->
 <<div class="container">
     <div class="row justify-content-md-center">
         <div class="col-md-6">
@@ -67,22 +63,10 @@ body {
 </div>
 
 <!-- 引入注脚 -->
-
-<div>
-    <br><br><br>
-</div>
 <!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
 <script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
-
-<!--
-    popper.js 采用 cdn 远程引入，意思是你不需要把它下载到本地。
-    在实际的开发中推荐静态文件尽量都使用 cdn 的形式。
-    教程采用本地引入是为了让读者了解静态文件本地部署的流程。
--->
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
-
 <!-- 引入bootstrap的js文件 -->
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
 </body>
-
 </html>
