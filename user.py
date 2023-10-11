@@ -10,6 +10,12 @@ door_key = config.get('admin', 'key').strip("'")
 def error(message, status_code):
     return render_template('error.html', error=message,status_code=status_code), status_code
 
+def read_hidden_articles():
+    hidden_articles = []
+    with open('articles/hidden.txt', 'r') as hidden_file:
+        hidden_articles = hidden_file.read().splitlines()
+    return hidden_articles
+
 
 def zyadmin(key):
     if key == door_key:
@@ -47,7 +53,9 @@ def admin_dashboard():
         if 'theme' not in session:
             session['theme'] = 'night-theme'
         files = show_files('articles/')
-        return render_template('admin.html',theme=session['theme'])
+        hiddenList=read_hidden_articles()
+        print(hiddenList)
+        return render_template('admin.html',theme=session['theme'],hiddenList=hiddenList)
 
 
 def show_files(path):
