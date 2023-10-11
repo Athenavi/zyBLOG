@@ -17,7 +17,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
-    get_file_date, get_blog_author, generate_random_text
+    get_file_date, get_blog_author, generate_random_text, read_hidden_articles
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file
@@ -385,17 +385,28 @@ def blog_detail(article):
     try:
         # 根据文章名称获取相应的内容并处理
         article_name = article
-        article_Surl= domain+'blog/'+article_name
-        article_url = "https://api.7trees.cn/qrcode/?data="+article_Surl
+        article_names = get_article_names()
+        if article_name not in article_names[0]:
+            return render_template('404.html'), 404
+
+        hidden_articles = read_hidden_articles()
+
+        if article_name in hidden_articles:
+            return render_template('404.html'), 404
+
+        article_Surl = domain + 'blog/' + article_name
+        article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
         author = get_blog_author()
         blogDate = get_file_date(article_name)
 
-        if 'theme' not in session:  # 检查session中是否存在theme键
+        # 检查session中是否存在theme键
+        if 'theme' not in session:
             session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
         article_content = get_article_content(article, 215)
-        article_summary=clearHTMLFormat(article_content)
+        article_summary = clearHTMLFormat(article_content)
         article_summary = article_summary[:30]
+
         # 分页参数
         page = request.args.get('page', default=1, type=int)
         per_page = 10  # 每页显示的评论数量
@@ -416,11 +427,12 @@ def blog_detail(article):
                 return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
 
         return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
-                               theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                               url_for=url_for,username=username,article_url=article_url,article_Surl=article_Surl,article_summary=article_summary)
-    except FileNotFoundError:
-        return redirect(url_for('undefined_route'))
+                                theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
+                                url_for=url_for, username=username, article_url=article_url,
+                                article_Surl=article_Surl, article_summary=article_summary)
 
+    except FileNotFoundError:
+        return render_template('404.html'), 404
 
 last_comment_time = {}  # 全局变量，用于记录用户最后评论时间
 @app.route('/post_comment', methods=['POST'])

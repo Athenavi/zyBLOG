@@ -3,7 +3,11 @@ import random
 import urllib
 import markdown
 import os
+
+from flask import redirect, url_for
+
 from database import get_database_connection
+from user import error
 from utils import read_file
 import datetime
 
@@ -22,25 +26,41 @@ def get_article_names(page=1, per_page=10):
         article_name = file[:-3]  # Remove the file extension (.md)
         articles.append(article_name)
 
+    # Check if each article is in hidden.txt and remove it if necessary
+    hidden_articles = read_hidden_articles()
+    articles = [article for article in articles if article not in hidden_articles]
+
     has_next_page = end_index < len(markdown_files)
     has_previous_page = start_index > 0
 
     return articles, has_next_page, has_previous_page
 
+def read_hidden_articles():
+    hidden_articles = []
+    with open('articles/hidden.txt', 'r') as hidden_file:
+        hidden_articles = hidden_file.read().splitlines()
+    return hidden_articles
+
 
 def get_article_content(article, limit):
     lines_limit = limit
-    with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    article_content = ''.join(lines[:lines_limit])
-    html_content = markdown.markdown(article_content)
-    return html_content
+    try:
+        with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        article_content = ''.join(lines[:lines_limit])
+        html_content = markdown.markdown(article_content)
+        return html_content
+
+    except FileNotFoundError:
+        # 文件不存在时重定向到404页面
+        return error('No file', 404)
 
 import re
 
+
 def clearHTMLFormat(text):
-    # 使用正则表达式清除HTML标记
-    clean_text = re.sub('<.*?>', '', text)
+    clean_text = re.sub('<.*?>', '', str(text))
     return clean_text
 
 
@@ -127,15 +147,20 @@ def get_blog_author():
 
 
 def get_file_date(file_path):
-    decoded_name = urllib.parse.unquote(file_path)  # 对文件名进行解码处理
-    file_path = os.path.join('articles', decoded_name + '.md')
-    # 获取文件的创建时间
-    create_time = os.path.getctime(file_path)
-    # 获取文件的修改时间
-    modify_time = os.path.getmtime(file_path)
-    # 获取文件的访问时间
-    access_time = os.path.getatime(file_path)
+    try:
+        decoded_name = urllib.parse.unquote(file_path)  # 对文件名进行解码处理
+        file_path = os.path.join('articles', decoded_name + '.md')
+        # 获取文件的创建时间
+        create_time = os.path.getctime(file_path)
+        # 获取文件的修改时间
+        modify_time = os.path.getmtime(file_path)
+        # 获取文件的访问时间
+        access_time = os.path.getatime(file_path)
 
-    formatted_modify_time = datetime.datetime.fromtimestamp(modify_time).strftime("%Y-%m-%d %H:%M:%S")
+        formatted_modify_time = datetime.datetime.fromtimestamp(modify_time).strftime("%Y-%m-%d %H:%M:%S")
 
-    return formatted_modify_time
+        return formatted_modify_time
+
+    except FileNotFoundError:
+        # 处理文件不存在的情况
+        return None
