@@ -97,8 +97,35 @@
 {% endif %}
   </div>
 
+<script>
+  // 获取最外层div元素
+  const container = document.getElementById("articles-container");
 
-<div class="container">
+  // 获取所有img元素
+  const images = container.querySelectorAll("img");
+
+  // 遍历所有img元素
+  images.forEach((img) => {
+    // 获取img元素的数据源URL
+    const src = img.dataset.src;
+
+    // 使用Intersection Observer监测元素的可见性
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        // 如果元素可见，则设置其src属性为数据源URL，加载图片
+        if (entry.isIntersecting) {
+          img.src = src;
+          observer.unobserve(entry.target);
+        }
+      });
+    });
+
+    // 开始监测img元素的可见性
+    observer.observe(img);
+  });
+</script>
+
+<div class="container" id="articles-container">
   <div class="row">
 <div class="col-md-8">
       {% for article in articles %}

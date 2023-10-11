@@ -21,8 +21,8 @@ from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file
-from utils import zy_upload_file, get_user_status, get_username, get_client_ip, get_public_ip, read_file, \
-    check_banned_ip, get_weather_icon_url, convert_to_chinese
+from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
+    check_banned_ip, get_weather_icon_url
 from flask_caching import Cache
 
 template_dir = 'templates'  # 模板文件的目录
@@ -355,7 +355,6 @@ def home():
     IPinfo = get_client_ip()
     update_visit(IPinfo)
     IPinfo= analyze_ip_location(IPinfo)
-    IPinfo=convert_to_chinese(IPinfo)
     city_code = 101010100
     avatar_url=profile('guest@7trees.cn')
     if check_banned_ip(IPinfo):

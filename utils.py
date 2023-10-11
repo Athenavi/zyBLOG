@@ -68,17 +68,10 @@ def zy_upload_file():
 
 def get_client_ip():
     # 获取 X-Real-IP 请求头中的 IP 地址
-    #ip_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    return get_public_ip()
+    ip_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    return ip_address
 
-def get_public_ip():
-    # 使用 "ipify" 的 API 查询公共 IP 地址
-    response = requests.get('https://api.ipify.org?format=json')
-    if response.status_code == 200:
-        ip_address = response.json()['ip']
-        return ip_address
-    else:
-        return None
+
 
 # 登录页面
 
@@ -172,21 +165,5 @@ def get_weather_icon_url(weather_type):
     iconUrl = f'static/image/weather/{iconFileName}'
     return iconUrl
 
-
-def convert_to_chinese(data):
-    converted_data = []
-    for item in data:
-        response = requests.get(
-            f'http://fanyi.youdao.com/translate?doctype=json&type=AUTO&i={item}'
-        )
-        if response.status_code == 200:
-            try:
-                translation = response.json()['translateResult'][0][0]['tgt']
-                converted_data.append(translation)
-            except Exception:
-                converted_data.append(item)
-        else:
-            converted_data.append(item)
-    return tuple(converted_data)
 
 
