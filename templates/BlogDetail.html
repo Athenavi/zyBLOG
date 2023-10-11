@@ -32,6 +32,18 @@
       <div class="card">
         <div class="card-body">
           <h3 class="card-title">{{ articleName }}</h3><span>author:{{ author }}</span><span>最近一次修订的日期:{{ blogDate }}</span>
+
+<!-- 元素代码 -->
+<div class="show-on-desktop">
+  <span>扫描二维码于手机端进行阅读</span>
+  <img src="{{ article_url }}" style="height:100px;" alt="手机上浏览"/>
+</div>
+
+          <hr>
+              <div class="{{ theme }}">
+
+            {{ article_content|safe }}
+                  </div>
             <div>
                 <a href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={{ article_Surl }}&title={{ articleName }}&pics=&summary={{ article_summary }}" target="_blank">
                    <button  style="border: none; background-color: transparent; height: 28px">
@@ -45,23 +57,9 @@
                    <button  style="border: none; background-color: transparent; height: 28px">
     <img src="../static/image/x.svg" alt="分享到推特" height="28px"></button>
 </a>
-                <a href="weixin://dl/chat?url={{ article_Surl }}" target="_blank">
-                   <button  style="border: none; background-color: transparent; height: 28px">
-    <img src="../static/image/wchat.svg" alt="分享到微信" height="28px"></button>
-</a>
+
     </div>
-<!-- 元素代码 -->
-<div class="show-on-desktop">
-  <span>扫描二维码可在手机端进行阅读</span>
-  <img src="{{ article_url }}" style="height:100px;" alt="手机上浏览"/>
-</div>
-
-          <hr>
-              <div class="{{ theme }}">
-
-            {{ article_content|safe }}
-                  </div>
-
+            <span>本文来自奇客舒，作者：{{ author }}，转载请注明原文链接：<a href="{{ article_Surl }}" target="_blank">{{ article_Surl }}</a><span>
         </div>
 
       </div>
