@@ -626,7 +626,7 @@ def newArticle():
             if current_time - last_time < 600:
                 return error('距离你上次上传时间过短，请十分钟后重试', 503)
 
-        # 更新用户最后评论时间
+        # 更新用户最后递交时间
         last_newArticle_time[username] = time.time()
         file = request.files['file']
         if not file.filename.endswith('.md'):

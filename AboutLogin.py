@@ -81,7 +81,9 @@ def zyregister():
                 update_query = "UPDATE inviteCode SET is_used = TRUE WHERE uuid = %s"
                 cursor.execute(update_query, (result[0],))
                 db.commit()
-
+                session.pop('logged_in', None)
+                session.pop('username', None)
+                session.pop('password_confirmed', None)
                 return render_template('success.html')
             else:
                 return "邀请码无效或已被使用，请输入有效的邀请码。"
