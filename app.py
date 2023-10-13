@@ -1,3 +1,4 @@
+import configparser
 import datetime
 import logging
 import random
@@ -605,6 +606,7 @@ def admin(key):
 
 
 app.config['UPLOAD_FOLDER'] = 'temp/upload'
+authorMapper = configparser.ConfigParser()
 @app.route('/newArticle', methods=['GET', 'POST'])
 def newArticle():
     if request.method == 'GET':
@@ -612,8 +614,8 @@ def newArticle():
 
     elif request.method == 'POST':
         # 处理文件上传请求
+        zynewArticle()
         file = request.files['file']
-
         if not file.filename.endswith('.md'):
             return error('Invalid file format. Only Markdown files are allowed.', 400)
 
@@ -631,6 +633,18 @@ def newArticle():
                 else:
                     # 如果文件不存在，将文件复制到articles文件夹下，并提示上传成功
                     shutil.copy(os.path.join(app.config['UPLOAD_FOLDER'], file.filename), 'articles')
+                    file_name = os.path.splitext(file.filename)[0]  # 获取文件名（不包含后缀）
+                    with open('articles/hidden.txt', 'a', encoding='utf-8') as f:
+                        f.write(file_name + '\n')
+                    authorMapper.read('author/mapper.ini', encoding='utf-8')
+                    author_value = session.get('username')
+                    # 更新 [author] 节中的键值对
+                    authorMapper.set('author', file_name, f"'{author_value}'")
+
+                    # 将更改保存到文件
+                    with open('author/mapper.ini', 'w', encoding='utf-8') as configfile:
+                        authorMapper.write(configfile)
+
                     message = '上传成功。但需要通过管理员确认'
 
                 return render_template('postNewArticle.html', message=message)

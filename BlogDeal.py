@@ -37,8 +37,7 @@ def get_article_names(page=1, per_page=10):
     return articles, has_next_page, has_previous_page
 
 def read_hidden_articles():
-    hidden_articles = []
-    with open('articles/hidden.txt', 'r') as hidden_file:
+    with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
         hidden_articles = hidden_file.read().splitlines()
     return hidden_articles
 
