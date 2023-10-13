@@ -604,17 +604,30 @@ def admin(key):
     return zyadmin(key)
 
 
-
+last_newArticle_time = {}  # 全局变量，用于记录用户最后评论时间
 app.config['UPLOAD_FOLDER'] = 'temp/upload'
 authorMapper = configparser.ConfigParser()
 @app.route('/newArticle', methods=['GET', 'POST'])
 def newArticle():
     if request.method == 'GET':
+        username = session.get('username')
+        if username in last_newArticle_time:
+            last_time = last_newArticle_time[username]
+            current_time = time.time()
+            if current_time - last_time < 600:
+                return error('您完成了一次服务（无论成功与否），此服务短期内将变得不可达，请你10分钟之后再来', 503)
         return zynewArticle()
 
     elif request.method == 'POST':
-        # 处理文件上传请求
-        zynewArticle()
+        username = session.get('username')
+        if username in last_newArticle_time:
+            last_time = last_newArticle_time[username]
+            current_time = time.time()
+            if current_time - last_time < 600:
+                return error('距离你上次上传时间过短，请十分钟后重试', 503)
+
+        # 更新用户最后评论时间
+        last_newArticle_time[username] = time.time()
         file = request.files['file']
         if not file.filename.endswith('.md'):
             return error('Invalid file format. Only Markdown files are allowed.', 400)

@@ -7,10 +7,64 @@
     {% if message %}
         <p>{{ message }}</p>
     {% endif %}
+    <div id="result"></div>
     <form method="POST" action="/newArticle" enctype="multipart/form-data">
         <input type="file" name="file" accept=".md">
-        <input type="submit" value="上传">
+
+        <div class="form-group">
+            <img id="captcha-image" src="" alt="Captcha Image" onclick="generateCaptcha()">
+        <label for="captcha">验证码:</label>
+        <input type="text" id="captcha" name="captcha" required>
+            <input type="submit" value="上传">
+    </div>
     </form>
 
 </body>
 </html>
+
+<script>
+  function postComment(event) {
+    event.preventDefault();  // 防止默认的表单提交行为
+    var captcha = document.getElementById('captcha').value;
+
+    // 发送请求以验证验证码
+    fetch('/verify_captcha', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'captcha=' + captcha
+    })
+      .then(function(response) {
+        return response.text();
+      })
+      .then(function(result) {
+        // 如果验证码匹配成功，执行评论逻辑
+        if (result === '验证码匹配成功') {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/newArticle', true);
+                // 刷新验证码图像
+                generateCaptcha();
+        } else {
+          // 验证码不匹配，提示用户
+          alert('验证码不匹配');
+          // 刷新验证码图像
+          generateCaptcha();
+        }
+      })
+      .catch(function(error) {
+        console.error(error);
+      })
+      .finally(function() {
+        // 重新注册点击事件，以刷新验证码图像
+        var captchaImage = document.getElementById('captcha-image');
+        captchaImage.addEventListener('click', generateCaptcha);
+      });
+  }
+  function generateCaptcha() {
+    var captchaImage = document.getElementById('captcha-image');
+    captchaImage.src = "/generate_captcha?" + new Date().getTime();
+  }
+  // 生成初始验证码图像
+  generateCaptcha();
+</script>
