@@ -16,11 +16,10 @@
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    window.addEventListener("load", function() {
     var loadingElement = document.getElementById("loading");
-    setTimeout(function() {
-        loadingElement.style.display = "none";
-        document.body.style.backgroundColor = 'white';
-    }, 30);
+    loadingElement.style.display = "none";
+});
 });
 </script>
 <div id="loading"><img src="../static/image/iloli.gif"></div>
