@@ -648,7 +648,7 @@ def newArticle():
                     shutil.copy(os.path.join(app.config['UPLOAD_FOLDER'], file.filename), 'articles')
                     file_name = os.path.splitext(file.filename)[0]  # 获取文件名（不包含后缀）
                     with open('articles/hidden.txt', 'a', encoding='utf-8') as f:
-                        f.write(file_name + '\n')
+                        f.write('\n'+file_name + '\n')
                     authorMapper.read('author/mapper.ini', encoding='utf-8')
                     author_value = session.get('username')
                     # 更新 [author] 节中的键值对
