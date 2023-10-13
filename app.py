@@ -1,6 +1,7 @@
 import datetime
 import logging
 import random
+import shutil
 import time
 import urllib
 import json
@@ -20,9 +21,9 @@ from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
-from user import zyadmin, zy_delete_file
+from user import zyadmin, zy_delete_file, zynewArticle, error
 from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
-    check_banned_ip, get_weather_icon_url
+    check_banned_ip, get_weather_icon_url, allowed_file
 from flask_caching import Cache
 
 template_dir = 'templates'  # 模板文件的目录
@@ -601,7 +602,44 @@ def change_password():
 def admin(key):
     return zyadmin(key)
 
-#若要安全后台入口，请使用在路由请求中移除<key> return函数back
+
+
+app.config['UPLOAD_FOLDER'] = 'temp/upload'
+@app.route('/newArticle', methods=['GET', 'POST'])
+def newArticle():
+    if request.method == 'GET':
+        return zynewArticle()
+
+    elif request.method == 'POST':
+        # 处理文件上传请求
+        file = request.files['file']
+
+        if not file.filename.endswith('.md'):
+            return error('Invalid file format. Only Markdown files are allowed.', 400)
+
+        if file.content_length > 10 * 1024 * 1024:
+            return error('Invalid file', 400)
+        else:
+            if file:
+                # 保存上传的文件到指定路径
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+
+                # 检查文件是否存在于articles文件夹下
+                if os.path.isfile(os.path.join('articles', file.filename)):
+                    # 如果文件已经存在，提示上传失败
+                    message = '上传失败，文件已存在。'
+                else:
+                    # 如果文件不存在，将文件复制到articles文件夹下，并提示上传成功
+                    shutil.copy(os.path.join(app.config['UPLOAD_FOLDER'], file.filename), 'articles')
+                    message = '上传成功。但需要通过管理员确认'
+
+                return render_template('postNewArticle.html', message=message)
+
+            else:
+                return redirect('/newArticle')
+
+
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():

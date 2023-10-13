@@ -164,6 +164,3 @@ def get_weather_icon_url(weather_type):
 
     iconUrl = f'static/image/weather/{iconFileName}'
     return iconUrl
-
-
-

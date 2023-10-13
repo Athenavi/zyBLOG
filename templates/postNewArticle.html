@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>前台投稿</title>
+</head>
+<body>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    <form method="POST" action="/newArticle" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".md">
+        <input type="submit" value="上传">
+    </form>
+
+</body>
+</html>
