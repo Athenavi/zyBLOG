@@ -399,7 +399,7 @@ def blog_detail(article):
 
             article_Surl = domain + 'blog/' + article_name
             article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
-            author = get_blog_author()
+            author = get_blog_author(article_name)
             blogDate = get_file_date(article_name)
 
             # 检查session中是否存在theme键

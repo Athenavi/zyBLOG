@@ -1,4 +1,5 @@
 import codecs
+import configparser
 import random
 import urllib
 import markdown
@@ -137,13 +138,20 @@ def generate_random_text():
     return captcha_text
 
 
+def get_blog_author(article_name):
+    # 创建ConfigParser对象
+    config = configparser.ConfigParser()
 
+    # 读取配置文件
+    config.read('author/mapper.ini', encoding='utf-8')
 
+    # 获取article_name对应的作者
+    articleAuthor = config.get('author', article_name, fallback=config.get('default', 'default'))
 
+    # 移除单引号
+    articleAuthor = articleAuthor.replace("'", "")
 
-def get_blog_author():
-        articleAuthor = read_file('author/default.txt', 6)
-        return articleAuthor
+    return articleAuthor
 
 
 def get_file_date(file_path):
