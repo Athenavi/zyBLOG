@@ -49,6 +49,12 @@
 </body>
 </html>
 <script>
+var goPostElement = document.getElementById("goPost");
+if (goPostElement) {
+  goPostElement.style.display = "none";
+}
+</script>
+<script>
   function postComment(event) {
     event.preventDefault();  // 防止默认的表单提交行为
     var captcha = document.getElementById('captcha').value;
