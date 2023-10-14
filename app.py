@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, redirect, session, request, url_for, Response,jsonify,send_from_directory,send_file
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
-from AboutLogin import zylogin, zyregister, get_email, profile
+from AboutLogin import zylogin, zyregister, get_email, profile, zyGitHublogin
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage
@@ -81,6 +81,13 @@ def logout():
         session.pop('logged_in', None)
         session.pop('username', None)
         session.pop('password_confirmed', None)
+        github_blueprint = blueprint
+        token = blueprint.token["access_token"]
+        resp = github_blueprint.post(
+            "https://api.github.com/applications/{}/token".format(github_blueprint.client_id),
+            headers={"Authorization": "Bearer {}".format(token)},
+        )
+        github_blueprint.token = None
         return redirect(url_for('login'))
 
 
@@ -750,3 +757,30 @@ def verify_captcha():
 def send_message(message):
     zySendMessage(message)
     return '1'
+
+
+from flask_dance.contrib.github import make_github_blueprint, github
+blueprint = make_github_blueprint(
+    client_id=config.get('github', 'client_id').strip("'"),
+    client_secret=config.get('github', 'client_secret').strip("'"),
+    scope='user:email',
+)
+app.register_blueprint(blueprint, url_prefix="/GitHublogin")
+@app.route('/GitHublogin')
+def GitHublogin():
+    return redirect(url_for("github.login"))
+
+
+@app.route("/login/authorized")
+def authorized():
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+    resp = github.get("/user")
+    resp_email = github.get("/user/emails")
+    if resp.ok and resp_email.ok:
+        user_data = resp.json()
+        email_data = resp_email.json()
+        user_email = next((email.get('email') for email in email_data if email.get('primary')), None)
+        username = user_data['login']
+        return zyGitHublogin(user_email, username)
+    return "获取用户信息失败"

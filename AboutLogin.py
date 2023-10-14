@@ -126,3 +126,53 @@ def profile(email):
 
     return avatar_url
 
+def zyGitHublogin(user_email, user_name):
+    if request.method == 'POST':
+        username = user_name
+        user_email = user_email
+        password = '123456'
+        db = get_database_connection()
+        cursor = db.cursor()
+
+        try:
+            # 判断用户邮箱是否已存在
+            query = "SELECT * FROM users WHERE (username = %s OR email = %s)"
+            cursor.execute(query, (username, user_email))
+            existing_user = cursor.fetchone()
+
+            if existing_user:
+                try:
+                    if username is not None:
+                        session.permanent = True
+                        app.permanent_session_lifetime = timedelta(minutes=120)
+                        session['logged_in'] = True
+                        session['username'] = username
+                        return redirect(url_for('home'))
+                    else:
+                        return render_template('login.html', error="Invalid username or password")
+
+                except Exception as e:
+                    logging.error(f"Error logging in: {e}")
+                    return "登录失败"
+
+            else:
+                # 执行用户注册的逻辑
+                hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                insert_query = "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)"
+                cursor.execute(insert_query, (username, hashed_password, user_email))
+                db.commit()
+                session.pop('logged_in', None)
+                session.pop('username', None)
+                session.pop('password_confirmed', None)
+                message = '已经为您自动注册账号\n' + '账号' + username + '默认密码：123456 请尽快修改'
+                return render_template('success.html', message=message)
+
+        except Exception as e:
+            logging.error(f"Error registering user: {e}")
+            return "注册失败,如遇到其他问题，请尽快反馈"
+
+        finally:
+            cursor.close()
+            db.close()
+
+    return render_template('login.html')
