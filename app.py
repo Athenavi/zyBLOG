@@ -766,21 +766,26 @@ def send_message(message):
     return '1'
 
 from flask_dance.contrib.github import make_github_blueprint, github
+
+# 创建 GitHub 蓝图
 blueprint = make_github_blueprint(
     client_id=config.get('github', 'client_id').strip("'"),
     client_secret=config.get('github', 'client_secret').strip("'"),
     scope='user:email',
 )
-app.register_blueprint(blueprint, url_prefix="/github/login")
-@app.route("/github/login")
+# 注册蓝图
+app.register_blueprint(blueprint, url_prefix="/login")
+
+@app.route("/login/github")  # 重定向到授权页面
 def github_login():
     if not github.authorized:
-        return redirect(url_for("authorized", _external=True))
+        return redirect(url_for("github.login"))
     return redirect(url_for("login"))
-@app.route("/login/authorized")
+
+@app.route("/login/authorized")  # 接收回调并获取用户数据
 def authorized():
     if not github.authorized:
-        return redirect(url_for("github.login", _external=True))
+        return redirect(url_for("github.login"))
     resp = github.get("/user")
     resp_email = github.get("/user/emails")
     if resp.ok and resp_email.ok:
