@@ -5,11 +5,8 @@ import urllib
 import markdown
 import os
 
-from flask import redirect, url_for
-
-from database import get_database_connection
+import requests
 from user import error
-from utils import read_file
 import datetime
 
 def get_article_names(page=1, per_page=10):
@@ -115,6 +112,8 @@ def zy_post_comment(article_name, username, comment):
         db.commit()
 
         # 打印成功消息
+        message = '您的文章' + article_name + '有了新的评论'
+        zySendMessage(message)
         return "评论成功"
 
     except Exception as e:
@@ -171,3 +170,21 @@ def get_file_date(file_path):
     except FileNotFoundError:
         # 处理文件不存在的情况
         return None
+
+from configparser import ConfigParser
+from database import get_database_connection
+config = ConfigParser()
+config.read('config.ini')
+access_token = config.get('messageBot', 'access_token').strip("'")
+def zySendMessage(message):
+    print(message)
+    # 发送消息到钉钉机器人
+    webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token='+{access_token}
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        'msgtype': 'text',
+        'text': {
+            'content': message
+        }
+    }
+    requests.post(webhook_url, headers=headers, json=data)

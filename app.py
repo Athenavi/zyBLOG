@@ -19,7 +19,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
-    get_file_date, get_blog_author, generate_random_text, read_hidden_articles
+    get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file, zynewArticle, error
@@ -52,11 +52,6 @@ from datetime import datetime, timedelta
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
-
-
-
-
 
 @app.context_processor
 def inject_variables():
@@ -604,7 +599,7 @@ def admin(key):
     return zyadmin(key)
 
 
-last_newArticle_time = {}  # 全局变量，用于记录用户最后评论时间
+last_newArticle_time = {}  # 全局变量，用于记录用户最后递交时间
 app.config['UPLOAD_FOLDER'] = 'temp/upload'
 authorMapper = configparser.ConfigParser()
 @app.route('/newArticle', methods=['GET', 'POST'])
@@ -734,13 +729,6 @@ def convert_white_to_transparent(image_path):
     # 保存图像
     image.save("captcha.png", "PNG")
 
-
-
-
-
-
-
-
 @app.route('/verify_captcha', methods=['POST'])
 def verify_captcha():
     # 获取前端传来的验证码值
@@ -757,3 +745,8 @@ def verify_captcha():
         # 验证码匹配失败，执行相应逻辑
         return '验证码不匹配'
 
+
+@app.route('/send_message', methods=['POST'])
+def send_message(message):
+    zySendMessage(message)
+    return '1'
