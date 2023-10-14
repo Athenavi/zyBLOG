@@ -774,10 +774,9 @@ blueprint = make_github_blueprint(
 app.register_blueprint(blueprint, url_prefix="/github/login")
 @app.route("/github/login")
 def github_login():
-    if github.authorized:
+    if not github.authorized:
         return redirect(url_for("authorized", _external=True))
-    return redirect(url_for("github.login", _external=True))
-
+    return redirect(url_for("login"))
 @app.route("/login/authorized")
 def authorized():
     if not github.authorized:
@@ -790,4 +789,4 @@ def authorized():
         user_email = next((email.get('email') for email in email_data if email.get('primary')), None)
         username = user_data['login']
         return zyGitHublogin(user_email, username)
-    return "Failed to retrieve user information"
+    return redirect(url_for("login"))
