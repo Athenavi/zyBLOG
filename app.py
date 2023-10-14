@@ -774,9 +774,9 @@ blueprint = make_github_blueprint(
 app.register_blueprint(blueprint, url_prefix="/github/login")
 @app.route("/github/login")
 def github_login():
-    if not github.authorized:
-        return redirect(url_for("github.login", _external=True))
-    return redirect(url_for("authorized"))
+    if github.authorized:
+        return redirect(url_for("authorized", _external=True))
+    return redirect(url_for("github.login", _external=True))
 
 @app.route("/login/authorized")
 def authorized():
