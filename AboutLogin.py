@@ -161,9 +161,6 @@ def zyGitHublogin(user_email, user_name):
                 insert_query = "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)"
                 cursor.execute(insert_query, (username, hashed_password, user_email))
                 db.commit()
-                session.pop('logged_in', None)
-                session.pop('username', None)
-                session.pop('password_confirmed', None)
                 message = '已经为您自动注册账号\n' + '账号' + username + '默认密码：123456 请尽快修改'
                 return render_template('success.html', message=message)
 

@@ -78,17 +78,24 @@ def register():
 # 登出页面
 @app.route('/logout')
 def logout():
-        session.pop('logged_in', None)
-        session.pop('username', None)
-        session.pop('password_confirmed', None)
-        github_blueprint = blueprint
-        token = blueprint.token["access_token"]
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    session.pop('password_confirmed', None)
+    github_blueprint = blueprint
+
+    if github_blueprint.token is not None:
+        token = github_blueprint.token["access_token"]
+        # 继续使用 token 对象进行其他操作
         resp = github_blueprint.post(
             "https://api.github.com/applications/{}/token".format(github_blueprint.client_id),
             headers={"Authorization": "Bearer {}".format(token)},
         )
-        github_blueprint.token = None
-        return redirect(url_for('login'))
+    else:
+        pass
+
+    github_blueprint.token = None
+
+    return redirect(url_for('login'))
 
 
 domain = config.get('general', 'domain').strip("'")
@@ -758,23 +765,23 @@ def send_message(message):
     zySendMessage(message)
     return '1'
 
-
 from flask_dance.contrib.github import make_github_blueprint, github
 blueprint = make_github_blueprint(
     client_id=config.get('github', 'client_id').strip("'"),
     client_secret=config.get('github', 'client_secret').strip("'"),
     scope='user:email',
 )
-app.register_blueprint(blueprint, url_prefix="/GitHublogin")
-@app.route('/GitHublogin')
-def GitHublogin():
-    return redirect(url_for("github.login"))
-
+app.register_blueprint(blueprint, url_prefix="/github/login")
+@app.route("/github/login")
+def github_login():
+    if not github.authorized:
+        return redirect(url_for("github.login", _external=True))
+    return redirect(url_for("authorized"))
 
 @app.route("/login/authorized")
 def authorized():
     if not github.authorized:
-        return redirect(url_for("github.login"))
+        return redirect(url_for("github.login", _external=True))
     resp = github.get("/user")
     resp_email = github.get("/user/emails")
     if resp.ok and resp_email.ok:
@@ -783,4 +790,4 @@ def authorized():
         user_email = next((email.get('email') for email in email_data if email.get('primary')), None)
         username = user_data['login']
         return zyGitHublogin(user_email, username)
-    return "获取用户信息失败"
+    return "Failed to retrieve user information"
