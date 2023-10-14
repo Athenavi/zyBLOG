@@ -789,9 +789,8 @@ def github_login():
 
 @app.route("/login/callback", methods=['GET'])
 def github_authorized():
-    if not github.authorized:
-        return redirect(url_for("github.login"))
-
+    if 'logged_in'  in session:
+        return redirect(url_for("login"))
     resp = github.get("/user")
     resp_email = github.get("/user/emails")
     if resp.ok and resp_email.ok:
