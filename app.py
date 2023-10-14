@@ -773,6 +773,7 @@ blueprint = make_github_blueprint(
     client_id=config.get('github', 'client_id').strip("'"),
     client_secret=config.get('github', 'client_secret').strip("'"),
     scope='user:email',
+    redirect_to=domain+"login/callback"
 )
 # 注册蓝图
 app.register_blueprint(blueprint, url_prefix="/")
@@ -782,9 +783,9 @@ def github_login():
     if not github.authorized:
         return redirect(url_for("github.login"))
     else:
-        return redirect(url_for("github_authorized"))
+        return redirect(url_for("github.authorized"))
 
-@app.route("/login/callback", methods=['POST'])
+@app.route("/login/callback", methods=['GET'])
 def github_authorized():
     resp = github.get("/user")
     resp_email = github.get("/user/emails")
