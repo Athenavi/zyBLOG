@@ -773,21 +773,19 @@ blueprint = make_github_blueprint(
     client_id=config.get('github', 'client_id').strip("'"),
     client_secret=config.get('github', 'client_secret').strip("'"),
     scope='user:email',
-    redirect_to="github_authorized"  # 设置回调视图函数的名称为 "github_authorized"
 )
 # 注册蓝图
-app.register_blueprint(blueprint, url_prefix="/login")
+app.register_blueprint(blueprint, url_prefix="/")
 
 @app.route("/login/github")
 def github_login():
     if not github.authorized:
         return redirect(url_for("github.login"))
-    return redirect(url_for("login"))
+    else:
+        return redirect(url_for("github_authorized"))
 
-@app.route("/login/authorized")
-def github_authorized():  # 更新为回调视图函数的名称为 "github_authorized"
-    if not github.authorized:
-        return redirect(url_for("github.login"))
+@app.route("/login/callback", methods=['POST'])
+def github_authorized():
     resp = github.get("/user")
     resp_email = github.get("/user/emails")
     if resp.ok and resp_email.ok:
@@ -796,4 +794,5 @@ def github_authorized():  # 更新为回调视图函数的名称为 "github_auth
         user_email = next((email.get('email') for email in email_data if email.get('primary')), None)
         username = user_data['login']
         return zyGitHublogin(user_email, username)
-    return redirect(url_for("login"))
+    else:
+        return redirect(url_for("login"))
