@@ -767,11 +767,12 @@ def send_message(message):
 
 from flask_dance.contrib.github import make_github_blueprint, github
 
+client_id=config['github']['client_id'].strip("'")
+client_secret=config['github']['client_secret'].strip("'")
+
 blueprint = make_github_blueprint(
-    client_id=config['github']['client_id'].strip("'"),
-    client_secret=config['github']['client_secret'].strip("'"),
-    scope='user:email',
-    redirect_to=domain + "oauth/github/authorized"
+    client_id=client_id,
+    client_secret=client_secret,
 )
 
 # 注册蓝图
@@ -796,8 +797,8 @@ def github_authorized():
     # 获取访问令牌
     token_url = "https://github.com/login/oauth/access_token"
     data = {
-        "client_id": config['github']['client_id'].strip("'"),
-        "client_secret": config['github']['client_secret'].strip("'"),
+        "client_id": client_id,
+        "client_secret": client_secret,
         "code": code,
         "state": state
     }
