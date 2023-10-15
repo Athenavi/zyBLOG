@@ -675,7 +675,12 @@ def delete_file(filename):
 
 @app.route('/robots.txt')
 def static_from_root():
-    return app.send_static_file('static/robots.txt')
+    with app.open_resource('static/robots.txt', 'r') as f:
+        content = f.read()
+        modified_content = content + '\nSitemap: '+domain+'sitemap.xml'  # Add your additional rule here
+
+    response = Response(modified_content, mimetype='text/plain')
+    return response
 
 
 
