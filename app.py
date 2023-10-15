@@ -81,20 +81,6 @@ def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
     session.pop('password_confirmed', None)
-    github_blueprint = blueprint
-
-    if github_blueprint.token is not None:
-        token = github_blueprint.token["access_token"]
-        # 继续使用 token 对象进行其他操作
-        resp = github_blueprint.post(
-            "https://api.github.com/applications/{}/token".format(github_blueprint.client_id),
-            headers={"Authorization": "Bearer {}".format(token)},
-        )
-    else:
-        pass
-
-    github_blueprint.token = None
-
     return redirect(url_for('login'))
 
 
@@ -379,6 +365,7 @@ def home():
             notice = read_file('notice/1.txt', 50)
             userStatus = get_user_status()
             username = get_username()
+            print(username)
             if userStatus and username != None:
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
@@ -787,14 +774,51 @@ def github_login():
         return redirect(url_for("github_authorized"))
 
 
+def get_user_info(access_token):
+    user_url = "https://api.github.com/user"
+    emails_url = "https://api.github.com/user/emails"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # 获取用户名
+    user_response = requests.get(user_url, headers=headers)
+    if user_response.status_code == 200:
+        user_data = user_response.json()
+        username = user_data.get("login")
+
+        # 获取邮箱信息
+        emails_response = requests.get(emails_url, headers=headers)
+        if emails_response.status_code == 200:
+            emails_data = emails_response.json()
+            email = emails_data[0].get("email")  # 获取第一个邮箱
+        else:
+            # 请求出错，处理错误情况
+            return None, None
+
+        return username, email
+    else:
+        # 请求出错，处理错误情况
+        return None, None
+
+
 @app.route('/oauth/github/authorized')
 def github_authorized():
-    code = request.args.get('code')  # 提取code参数
-    state = request.args.get('state')  # 提取state参数
+    # 从浏览器中获取 session 的 access_token
+    access_token = session.get("access_token")
 
-    # 在这里处理code和state参数，进行后续操作，如使用code获取访问令牌等
+    if access_token:
+        # 验证 access_token 是否有效并获取用户信息
+        username, email = get_user_info(access_token)
 
-    # 获取访问令牌
+        if username and email:
+            return zyGitHublogin(username, email)
+
+    # 如果 access_token 无效或不存在，从 GitHub 获取新的 access_token
+    code = request.args.get("code")  # 获取 code 参数
+    state = request.args.get("state")  # 获取 state 参数
+
     token_url = "https://github.com/login/oauth/access_token"
     data = {
         "client_id": client_id,
@@ -802,19 +826,19 @@ def github_authorized():
         "code": code,
         "state": state
     }
-    headers = {
-        "Accept": "application/json"
-    }
+    headers = {"Accept": "application/json"}
     response = requests.post(token_url, data=data, headers=headers)
     access_token = response.json().get("access_token")
 
-    # 使用访问令牌获取用户信息
-    user_url = "https://api.github.com/user"
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-    response = requests.get(user_url, headers=headers)
-    user_data = response.json()
-    username = user_data.get("login")
-    email = user_data.get("email")
-    return zyGitHublogin(username,email)
+    if access_token:
+        # 将新的 access_token 存储到 session 中
+        session["access_token"] = access_token
+
+        # 获取用户信息
+        username, email = get_user_info(access_token)
+
+        if username and email:
+            return zyGitHublogin(username, email)
+
+    # 未能获取有效的 access_token，处理错误情况
+    return "Error: Unable to retrieve or validate access token"
