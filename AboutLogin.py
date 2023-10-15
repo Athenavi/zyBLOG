@@ -126,7 +126,7 @@ def profile(email):
 
     return avatar_url
 
-def zyGitHublogin(user_email, user_name):
+def zyGitHublogin(user_name,user_email):
     if request.method == 'POST':
         username = user_name
         user_email = user_email

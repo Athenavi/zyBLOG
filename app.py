@@ -816,4 +816,4 @@ def github_authorized():
     user_data = response.json()
     username = user_data.get("login")
     email = user_data.get("email")
-    return zyGitHublogin()
+    return zyGitHublogin(username,email)
