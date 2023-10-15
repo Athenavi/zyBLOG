@@ -765,18 +765,17 @@ def send_message(message):
     zySendMessage(message)
     return '1'
 
-
 from flask_dance.contrib.github import make_github_blueprint, github
 
-# 创建 GitHub 蓝图
 blueprint = make_github_blueprint(
-    client_id=config.get('github', 'client_id').strip("'"),
-    client_secret=config.get('github', 'client_secret').strip("'"),
+    client_id=config['github']['client_id'].strip("'"),
+    client_secret=config['github']['client_secret'].strip("'"),
     scope='user:email',
-    redirect_to=domain + "/login/callback"
+    redirect_to=domain + "oauth/github/authorized"
 )
+
 # 注册蓝图
-app.register_blueprint(blueprint, url_prefix="/")
+app.register_blueprint(blueprint, url_prefix="/oauth")
 
 
 @app.route("/login/github")
@@ -787,17 +786,34 @@ def github_login():
         return redirect(url_for("github_authorized"))
 
 
-@app.route("/login/callback", methods=['GET'])
+@app.route('/oauth/github/authorized')
 def github_authorized():
-    if 'logged_in'  in session:
-        return redirect(url_for("login"))
-    resp = github.get("/user")
-    resp_email = github.get("/user/emails")
-    if resp.ok and resp_email.ok:
-        user_data = resp.json()
-        email_data = resp_email.json()
-        user_email = next((email.get('email') for email in email_data if email.get('primary')), None)
-        username = user_data['login']
-        return zyGitHublogin(user_email, username)
-    else:
-        return redirect(url_for("login"))
+    code = request.args.get('code')  # 提取code参数
+    state = request.args.get('state')  # 提取state参数
+
+    # 在这里处理code和state参数，进行后续操作，如使用code获取访问令牌等
+
+    # 获取访问令牌
+    token_url = "https://github.com/login/oauth/access_token"
+    data = {
+        "client_id": config['github']['client_id'].strip("'"),
+        "client_secret": config['github']['client_secret'].strip("'"),
+        "code": code,
+        "state": state
+    }
+    headers = {
+        "Accept": "application/json"
+    }
+    response = requests.post(token_url, data=data, headers=headers)
+    access_token = response.json().get("access_token")
+
+    # 使用访问令牌获取用户信息
+    user_url = "https://api.github.com/user"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.get(user_url, headers=headers)
+    user_data = response.json()
+    username = user_data.get("login")
+    email = user_data.get("email")
+    return zyGitHublogin()
