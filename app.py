@@ -673,7 +673,9 @@ def upload_file():
 def delete_file(filename):
     return zy_delete_file(filename)
 
-
+@app.route('/robots.txt')
+def static_from_root():
+    return app.send_static_file('static/robots.txt')
 
 
 

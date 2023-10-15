@@ -1,2 +1,4 @@
 AboutThis
 PyCharm
+Jupyter-Notebook-(Anaconda3)
+Spyder
