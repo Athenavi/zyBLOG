@@ -71,7 +71,30 @@ body {
 <script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
 <script>
+    // 刷新令牌的逻辑
+    function refreshToken() {
+        turnstile.refresh();
+    }
+
+    // Turnstile小部件的回调函数
+    function onloadTurnstileCallback() {
+        // 渲染Turnstile小部件
+        turnstile.render('.example-container', {
+            sitekey: '0x4AAAAAAALsscufPR3My50P',
+            callback: javascriptCallback
+        });
+
+        // 刷新令牌
+        refreshToken();
+    }
+
+    // 全局作用域内的Turnstile小部件回调函数
+    function javascriptCallback(token) {
+        console.log("Challenge Success", token);
+    }
+
     // 前端表单校验函数，可以根据实际需求进行扩展
     function validateForm() {
         var form = document.getElementById("login-form");
@@ -90,30 +113,9 @@ body {
 
         return true;
     }
-</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
-<script>
-    // Turnstile小部件的回调函数
-    function javascriptCallback(token) {
-        console.log("Challenge Success", token);
-    }
-
-    // 刷新令牌的逻辑
-    function refreshToken() {
-        turnstile.refresh();
-    }
 
     // 页面加载完成后执行的逻辑
-    window.onload = function() {
-        // 渲染Turnstile小部件
-        turnstile.render('.example-container', {
-            sitekey: '0x4AAAAAAALsscufPR3My50P',
-            callback: javascriptCallback
-        });
-
-        // 刷新令牌
-        refreshToken();
-    };
+    window.addEventListener('DOMContentLoaded', onloadTurnstileCallback);
 </script>
 
 </body>
