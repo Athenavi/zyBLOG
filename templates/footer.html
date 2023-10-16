@@ -3,7 +3,13 @@
 <!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
 <script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
-
+<script>
+    // 在页面加载完成后计算加载时间并显示
+    window.addEventListener('load', function() {
+      var loadTime = Date.now() - performance.timing.navigationStart;
+      document.getElementById("loadTime").innerText = "当前页面加载耗时：" + loadTime + " ms";
+    });
+  </script>
 <script type="text/javascript">function show_runtime(){window.setTimeout("show_runtime()",1000);X=new
 Date("08/23/2023 12:36:42");
 Y=new Date();T=(Y.getTime()-X.getTime());M=24*60*60*1000;
