@@ -188,27 +188,31 @@ def analyze_ip_location(ip_address):
 
 
 def update_visit(ip):
-    # 读取visit_ip.txt中的记录
-    with open('visit_ip.txt', 'r') as file:
-        lines = file.readlines()
+    try:
+        # 读取visit_ip.txt中的记录
+        with open('visit_ip.txt', 'r') as file:
+            lines = file.readlines()
 
-    # 检查是否存在该字段的记录
-    field_exists = False
-    for i, line in enumerate(lines):
-        if line.startswith(f'{ip} '):
-            field_exists = True
-            # 将字段的值加1
-            value = int(line.split()[1]) + 1
-            # 更新行的内容
-            lines[i] = f'{ip} {value}\n'
+        # 检查是否存在该字段的记录
+        field_exists = False
+        for i, line in enumerate(lines):
+            if line.startswith(f'{ip} '):
+                field_exists = True
+                # 将字段的值加1
+                value = int(line.split()[1]) + 1
+                # 更新行的内容
+                lines[i] = f'{ip} {value}\n'
 
-    # 如果不存在该字段的记录，则创建新的行
-    if not field_exists:
-        lines.append(f'{ip} 1\n')
+        # 如果不存在该字段的记录，则创建新的行
+        if not field_exists:
+            lines.append(f'{ip} 1\n')
 
-    # 将更新后的记录写回visit_ip.txt文件
-    with open('visit_ip.txt', 'w') as file:
-        file.writelines(lines)
+        # 将更新后的记录写回visit_ip.txt文件
+        with open('visit_ip.txt', 'w') as file:
+            file.writelines(lines)
+
+    except Exception as e:
+        print(f'An error occurred while updating visit_ip.txt: {e}')
 
 
 @app.route('/weather/<city_code>', methods=['GET'])
