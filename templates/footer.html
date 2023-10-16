@@ -4,12 +4,73 @@
 <script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
 <script>
-    // 在页面加载完成后计算加载时间并显示
-    window.addEventListener('load', function() {
-      var loadTime = Date.now() - performance.timing.navigationStart;
-      document.getElementById("loadTime").innerText = "当前页面加载耗时：" + loadTime + " ms";
-    });
-  </script>
+  window.addEventListener('DOMContentLoaded', function() {
+    // Set the page size in bytes
+    var pageSize = 0;
+
+    // Calculate the total size of external resources in bytes
+    var totalResourceSize = 2 * 1024 * 1024; // 2 MB
+
+    var observer;
+    if (window.PerformanceObserver) {
+      observer = new PerformanceObserver(function(list) {
+        var entries = list.getEntries();
+        entries.forEach(function(entry) {
+          totalResourceSize += entry.transferSize;
+        });
+      });
+
+      observer.observe({
+        entryTypes: ['resource']
+      });
+    } else {
+      // Alternative solution or API Polyfill library
+      // Add code here to get resource size
+    }
+
+    // Get the page size
+    pageSize = document.documentElement.innerHTML.length;
+
+    measureHeapSize();
+
+    function measureHeapSize() {
+      if (window.performance && window.performance.memory && window.performance.memory.usedJSHeapSize) {
+        var heapSize = window.performance.memory.usedJSHeapSize;
+        showResult(heapSize);
+      } else {
+        showResult(0);
+      }
+    }
+
+    function showResult(heapSize) {
+      var totalSize = pageSize + totalResourceSize + heapSize;
+
+      var ccc;
+if (totalSize >= 1024 * 1024) {
+  totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2) + ' MB';
+  ccc = ((totalSize / (1024 * 1024)).toFixed(2) * 0.22).toFixed(3) + ' mg';
+} else {
+  totalSizeMB = (totalSize / 1024).toFixed(2) + ' KB';
+  ccc = ((totalSize / (1024 * 1024)).toFixed(2) * 0.022).toFixed(3) + ' mg';
+}
+
+      var heapSizeMB;
+      if (heapSize >= 1024 * 1024) {
+        heapSizeMB = (heapSize / (1024 * 1024)).toFixed(2) + ' MB';
+      } else {
+        heapSizeMB = (heapSize / 1024).toFixed(2) + ' KB';
+      }
+
+      var resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '页面大小 ' + (pageSize / 1024).toFixed(2) + ' KB <br>' +
+                            '外部资源 ' + (totalResourceSize / (1024 * 1024)).toFixed(2) + ' MB <br>' +
+                            'js堆占用 ' + heapSizeMB + '<br>' +
+                            '约' + totalSizeMB+'<br>'+
+                             '节约碳消耗<br>'+ '<img src="../static/image/cc.svg" style="height: 15px" alt="碳消耗"></a>'+ccc;
+    }
+  });
+</script>
+<div id="result"></div>
 <script type="text/javascript">function show_runtime(){window.setTimeout("show_runtime()",1000);X=new
 Date("08/23/2023 12:36:42");
 Y=new Date();T=(Y.getTime()-X.getTime());M=24*60*60*1000;
