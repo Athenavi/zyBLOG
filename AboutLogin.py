@@ -3,12 +3,15 @@ import random
 from datetime import timedelta
 
 import bcrypt
+import requests
 from flask import request, session, redirect, url_for, render_template, app
 
 from database import get_database_connection
 
 
 import bleach  # 导入 bleach 库用于 XSS 防范
+
+from utils import get_client_ip
 
 
 def zylogin():
@@ -32,7 +35,25 @@ def zylogin():
                 app.permanent_session_lifetime = timedelta(minutes=120)
                 session['logged_in'] = True
                 session['username'] = result[1]
-                return redirect(url_for('home'))
+
+                # 在这里获取令牌值（假设您在前端JavaScript代码中将令牌值存储在名为token的变量中）
+                token = request.form.get('token')  # 根据实际情况更新这里的获取令牌值的逻辑
+
+                remoteip = get_client_ip()
+                data = {
+                    'secret': '0x4AAAAAAALsscufPR3My50P',
+                    'response': token,
+                    'remoteip': remoteip
+                }
+                verify_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+                response = requests.post(verify_url, json=data)
+                outcome = response.json()
+                if outcome.get('success'):
+                    return redirect(url_for('home'))
+                else:
+                    error_codes = outcome.get('error-codes', [])
+                    return render_template('login.html', error="Token verification failed", error_codes=error_codes)
+
             else:
                 return render_template('login.html', error="Invalid username or password")
 
