@@ -61,7 +61,7 @@ if (totalSize >= 1024 * 1024) {
         heapSizeMB = (heapSize / 1024).toFixed(2) + ' KB';
       }
 
-      var resultDiv = document.getElementById('result');
+      var resultDiv = document.getElementById('resultccc');
       resultDiv.innerHTML = '页面大小 ' + (pageSize / 1024).toFixed(2) + ' KB <br>' +
                             '外部资源 ' + (totalResourceSize / (1024 * 1024)).toFixed(2) + ' MB <br>' +
                             'js堆占用 ' + heapSizeMB + '<br>' +
@@ -70,7 +70,6 @@ if (totalSize >= 1024 * 1024) {
     }
   });
 </script>
-<div id="result"></div>
 <script type="text/javascript">function show_runtime(){window.setTimeout("show_runtime()",1000);X=new
 Date("08/23/2023 12:36:42");
 Y=new Date();T=(Y.getTime()-X.getTime());M=24*60*60*1000;

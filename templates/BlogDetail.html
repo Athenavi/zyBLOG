@@ -216,7 +216,7 @@
 </body>
 </html>
 <script>
-  function postComment(event) {
+    function postComment(event) {
     event.preventDefault();  // 防止默认的表单提交行为
 
     var articleName = document.getElementById('article_name').value;
@@ -278,7 +278,6 @@
         captchaImage.addEventListener('click', generateCaptcha);
       });
   }
-
   function generateCaptcha() {
   var captchaImage = document.getElementById('captcha-image');
   fetch('/generate_captcha')
