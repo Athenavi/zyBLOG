@@ -16,4 +16,4 @@ portalocker>=2.8.0
 Pillow==10.0.1
 Flask-Caching==2.0.2
 flask-dance==7.0.0
-DingtalkChatbot=2.1.1
+DingtalkChatbot==1.5.7
