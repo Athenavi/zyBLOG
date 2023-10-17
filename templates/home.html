@@ -70,22 +70,6 @@
 
 <div style="width: 1080px; height: 30px; background-color: transparent;">
   <a>公告:</a><span>{{ notice }}</span>
-  <div>
-        <a href="/profile"><img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;"></a>
-    {% if userStatus %}
-      <!-- 展示已登录的内容 -->
-        <a>欢迎您，{{ username }}</a>
-        {% if IPinfo %}
-      <!-- 展示已登录的内容 -->
-      <a>{{ IPinfo }}</a>
-    {% else %}
-      <a>未知状态</a>
-    {% endif %}
-    {% else %}
-      <!-- 展示未登录的内容 -->
-      <a href="/login">您还没有登录呢</a>
-    {% endif %}
-  </div>
 </div>
 
   <!-- 翻页按钮 -->
@@ -128,6 +112,22 @@
       </div>
     </div>
   <div class="col-md-2 d-none d-md-block" style="display: flex; align-items: center;">
+      <div>
+        <a href="/profile"><img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;"></a>
+    {% if userStatus %}
+      <!-- 展示已登录的内容 -->
+        <a>欢迎您，{{ username }}</a>
+        {% if IPinfo %}
+      <!-- 展示已登录的内容 -->
+      <a>{{ IPinfo }}</a>
+    {% else %}
+      <a>未知状态</a>
+    {% endif %}
+    {% else %}
+      <!-- 展示未登录的内容 -->
+      <a href="/login">您还没有登录呢</a>
+    {% endif %}
+  </div>
   <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
   <div id="weather-form" style="display: flex; align-items: center; margin-right: 5px;">
     <label for="city-input"></label>
