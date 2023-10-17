@@ -280,9 +280,21 @@
   }
 
   function generateCaptcha() {
-    var captchaImage = document.getElementById('captcha-image');
-    captchaImage.src = "/generate_captcha?" + new Date().getTime();
-  }
+  var captchaImage = document.getElementById('captcha-image');
+  fetch('/generate_captcha')
+    .then(function (response) {
+      return response.json(); // Parse the response as JSON
+    })
+    .then(function (result) {
+      // Update the captcha image source with the base64 image data
+      captchaImage.src = 'data:image/jpeg;base64,' + result.image;
+      captchaImage.alt = result.captcha_text;
+    })
+    .catch(function (error) {
+      console.error(error);
+      // Handle any errors if necessary
+    });
+}
 
   // 在表单提交时调用评论函数
   var form = document.getElementById('comment_form');
