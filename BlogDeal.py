@@ -3,9 +3,11 @@ import configparser
 import random
 import urllib
 import markdown
+from configparser import ConfigParser
+from database import get_database_connection
+from dingtalkchatbot.chatbot import DingtalkChatbot
 import os
-
-import requests
+from urllib.parse import quote_plus
 from user import error
 import datetime
 
@@ -113,8 +115,8 @@ def zy_post_comment(article_name, username, comment):
 
         # 打印成功消息
         message = '您的文章' + article_name + '有了新的评论'
-        zySendMessage(message)
-        return "评论成功"
+        return zySendMessage(message)
+
 
     except Exception as e:
         # 如果发生错误，回滚事务
@@ -171,20 +173,26 @@ def get_file_date(file_path):
         # 处理文件不存在的情况
         return None
 
-from configparser import ConfigParser
-from database import get_database_connection
-config = ConfigParser()
-config.read('config.ini')
-access_token = config.get('messageBot', 'access_token').strip("'")
+
 def zySendMessage(message):
-    print(message)
-    # 发送消息到钉钉机器人
-    webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token='+{access_token}
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        'msgtype': 'text',
-        'text': {
-            'content': message
-        }
-    }
-    requests.post(webhook_url, headers=headers, json=data)
+    config = ConfigParser()
+    config.read('config.ini')
+    access_token = config.get('messageBot', 'access_token').strip("'")
+    webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=' + access_token
+    dingbot = DingtalkChatbot(webhook_url)
+    #red_msg = '<font color="#dd0000">级别:危险</font>'
+    orange_msg = '<font color="#FFA500">级别:警告</font>'
+
+    now_time = datetime.now().strftime('%Y.%m.%d %H:%M:%S')
+    url = 'https://237127.xyz/'
+    dingbot.send_markdown(
+        title=f'新消息',
+        text=f'### **我是主内容的第一行**\n'
+             #f'**{red_msg}**\n\n'
+             f'**{orange_msg}**\n\n'
+             f'**{message}**\n\n'
+             f'**发送时间:**  {now_time}\n\n'
+             f'**相关网址:**[点击跳转]({url}) \n',
+        is_at_all=True)
+    return "评论成功"
+
