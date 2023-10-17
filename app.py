@@ -694,13 +694,18 @@ def undefined_route(undefined_path):
 
 
 
+import io
+import base64
+
+# ...
+
 @app.route('/generate_captcha')
 def generate_captcha():
     # 生成验证码文本
     captcha_text = generate_random_text()
 
     # 创建一个新的图像对象
-    image = Image.new('RGB', (135, 80), color = (255, 255, 255))
+    image = Image.new('RGB', (135, 80), color=(255, 255, 255))
 
     # 创建字体对象并设置字体大小
     font = ImageFont.truetype('arial.ttf', size=40)
@@ -709,38 +714,36 @@ def generate_captcha():
     d = ImageDraw.Draw(image)
     d.text((35, 20), captcha_text, font=font, fill=(0, 0, 0))
 
-    # 保存图像到临时文件
-    image.save('captcha.png')
-    convert_white_to_transparent('captcha.png')
-    # 将验证码文本存储在session中，用于校对
-    session['captcha_text'] = captcha_text
-
-    # 返回生成的验证码图像给用户
-    return send_file('captcha.png', mimetype='image/png')
-
-def convert_white_to_transparent(image_path):
-    # 打开图像
-    image = Image.open(image_path)
-    image = image.convert("RGBA")
-
-    # 获取图像的像素数据
+    # 将图像转换为 RGBA 模式
+    image = image.convert('RGBA')
     data = image.getdata()
 
-    # 创建一个新的像素数据列表，将白色的像素转换为透明，其他像素保持不变
+    # 修改图像像素，将白色像素变为透明
     new_data = []
     for item in data:
-        # 如果像素是白色
-        if item[:3] == (255, 255, 255):
+        # item 是一个表示像素颜色的元组，如 (255, 255, 255, 255) 表示白色不透明像素
+        # 将白色像素变为透明像素，将其 alpha 通道设置为 0
+        if item[0] == 255 and item[1] == 255 and item[2] == 255:
             new_data.append((255, 255, 255, 0))
         else:
             new_data.append(item)
 
-    # 将新的像素数据设置回图像
+    # 更新图像数据
     image.putdata(new_data)
 
-    # 保存图像
-    image.save("captcha.png", "PNG")
+    # 保存图像到内存中
+    image_bytes = io.BytesIO()
+    image.save(image_bytes, format='PNG')
+    image_bytes.seek(0)
 
+    # 将图像转换为 base64 编码字符串
+    image_base64 = base64.b64encode(image_bytes.getvalue()).decode('ascii')
+
+    # 将验证码文本存储在 session 中，用于校对
+    session['captcha_text'] = captcha_text
+
+    # 返回图像的 base64 编码给用户
+    return {'image': image_base64, 'captcha_text': captcha_text}
 @app.route('/verify_captcha', methods=['POST'])
 def verify_captcha():
     # 获取前端传来的验证码值
