@@ -115,7 +115,7 @@ def zy_post_comment(article_name, username, comment):
 
         # 打印成功消息
         message = '您的文章' + article_name + '有了新的评论'
-        return zySendMessage(message)
+        return "评论成功"
 
 
     except Exception as e:
@@ -194,5 +194,5 @@ def zySendMessage(message):
              f'**发送时间:**  {now_time}\n\n'
              f'**相关网址:**[点击跳转]({url}) \n',
         is_at_all=True)
-    return "评论成功"
+
 
