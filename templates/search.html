@@ -10,7 +10,7 @@
       <h3>搜索结果：</h3>
       <ul>
         {% for result in results %}
-            <li><a href="{{ result.link }}">{{ result.title }}</a><a href="{{ result.link }}" target="_blank" alt="新建标签页中开启" ><img src="../static/image/jump.svg" style="height: 28px" ></a></li></li>
+            <li><a href="{{ result.link }}" target="_blank">{{ result.title }}</a><a href="{{ result.link }}" target="_blank" alt="新建标签页中开启" ><img src="../static/image/jump.svg" style="height: 28px" ></a></li></li>
 
         {% endfor %}
       </ul>
@@ -34,3 +34,12 @@
   </head>
 </body>
 </html>
+<script>
+if (window !== window.top) {
+  if (window.parent !== window.top) {
+    // 当前窗口被嵌套在二级及以下的iframe中
+    alert("此视图将影响您的体验");
+    window.parent.location.href = "/search"; // 可自定义重定向的URL
+  }
+}
+</script>

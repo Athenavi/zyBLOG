@@ -353,3 +353,10 @@ if (pageContent.includes("author")) {
   sideList.insertBefore(button, sideList.firstChild);
 }
 </script>
+<script>
+    if (window !== window.top) {
+  // 当前窗口被嵌套在另一个iframe中
+  alert('当前视图会影响您的体验！！！\n请点击搜索结果后的小图标进行访问');
+  window.location.href = '/search';
+}
+    </script>

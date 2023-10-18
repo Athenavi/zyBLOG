@@ -56,9 +56,10 @@ def get_article_content(article, limit):
                 header_level = len(line.split()[0]) + 2  # 原始标题级别 + 2，降低两级
                 header_title = line.strip('#').strip()  # 去除开头的 # 并移除首尾的空格
                 anchor = header_title.lower().replace(" ", "-")  # 根据标题生成锚点
-                readNav.append(f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>')  # 为 readNav 中的标题添加链接
-            else:
-                continue
+                readNav.append(
+                    f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>')  # 为 readNav 中的标题添加链接
+                line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>' + line  # 添加带有唯一ID的标题元素
+            html_content += markdown.markdown(line)
 
         return html_content, '\n'.join(readNav)
 

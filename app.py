@@ -124,7 +124,7 @@ def search():
                 encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
                 article_url = domain + 'blog/' + encoded_article_name
                 date = get_file_date(encoded_article_name)
-                describe = get_article_content(article_name, 10)
+                describe = get_article_content(article_name, 50)#建议的值50以内
                 describe = clearHTMLFormat(describe)
 
                 if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
