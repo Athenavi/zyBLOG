@@ -37,11 +37,13 @@
 <div class="show-on-desktop">
   <span>扫描二维码于手机端进行阅读</span>
   <img src="{{ article_url }}" style="height:100px;" alt="手机上浏览"/>
+    <div class="col-lg-2 col-md-6 bg-light" id="sidebar">
+        {{ readNav|safe }}
+      </div>
 </div>
 
           <hr>
               <div class="{{ theme }}">
-
             {{ article_content|safe }}
                   </div>
             <div>
@@ -315,4 +317,37 @@
       }
     });
   }
+</script>
+<style>
+    #sidebar {
+  position: fixed;
+  top: 85px;
+  left: 10px;
+  right: 0;
+  background-color: transparent;
+        opacity: 0.8;
+
+}
+    </style>
+<script>
+    function toggleSidebar() {
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar.style.display === "none") {
+    sidebar.style.display = "block";
+  } else {
+    sidebar.style.display = "none";
+  }
+}
+var pageContent = document.body.innerText;
+// 检测是否包含作者单词
+if (pageContent.includes("author")) {
+  // 创建一个新的button元素
+  var button = document.createElement("button");
+  button.setAttribute("onclick", "toggleSidebar()");
+  button.innerText = "显示/隐藏侧边栏";
+
+  // 将按钮添加到<div id="SideList"></div>之间
+  var sideList = document.getElementById("SideList");
+  sideList.insertBefore(button, sideList.firstChild);
+}
 </script>
