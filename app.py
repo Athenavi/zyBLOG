@@ -408,7 +408,7 @@ def blog_detail(article):
             if 'theme' not in session:
                 session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
-            article_content = get_article_content(article, 215)
+            article_content,readNav_html = get_article_content(article, 215)
             article_summary = clearHTMLFormat(article_content)
             article_summary = article_summary[:30]
 
@@ -434,7 +434,7 @@ def blog_detail(article):
             return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
                                     theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
                                     url_for=url_for, username=username, article_url=article_url,
-                                    article_Surl=article_Surl, article_summary=article_summary)
+                                    article_Surl=article_Surl, article_summary=article_summary,readNav=readNav_html)
 
         except FileNotFoundError:
             return render_template('404.html'), 404

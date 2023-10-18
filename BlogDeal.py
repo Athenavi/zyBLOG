@@ -40,7 +40,6 @@ def read_hidden_articles():
         hidden_articles = hidden_file.read().splitlines()
     return hidden_articles
 
-
 def get_article_content(article, limit):
     lines_limit = limit
     try:
@@ -49,10 +48,22 @@ def get_article_content(article, limit):
 
         article_content = ''.join(lines[:lines_limit])
         html_content = markdown.markdown(article_content)
-        return html_content
+
+        # 生成 readNav，并将标题降两级
+        readNav = []
+        for line in lines[:lines_limit]:
+            if line.startswith('#'):
+                header_level = len(line.split()[0]) + 2  # 原始标题级别 + 2，降低两级
+                header_title = line.strip('#').strip()  # 去除开头的 # 并移除首尾的空格
+                anchor = header_title.lower().replace(" ", "-")  # 根据标题生成锚点
+                readNav.append(f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>')  # 为 readNav 中的标题添加链接
+            else:
+                continue
+
+        return html_content, '\n'.join(readNav)
 
     except FileNotFoundError:
-        # 文件不存在时重定向到404页面
+        # 文件不存在时返回 404 错误页面
         return error('No file', 404)
 
 import re
