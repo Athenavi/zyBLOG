@@ -41,17 +41,19 @@ def read_hidden_articles():
     return hidden_articles
 
 def get_article_content(article, limit):
-    lines_limit = limit
     try:
         with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        article_content = ''.join(lines[:lines_limit])
-        html_content = markdown.markdown(article_content)
-
-        # 生成 readNav，并将标题降两级
+        lines_limit = min(limit, len(lines))  # 获取限制行数和实际行数的较小值
+        line_counter = 0
+        html_content = ''
         readNav = []
-        for i, line in enumerate(lines[:lines_limit]):
+
+        for line in lines:
+            if line_counter >= lines_limit:
+                break
+
             if line.startswith('#'):
                 header_level = len(line.split()[0]) + 2
                 header_title = line.strip('#').strip()
@@ -60,7 +62,9 @@ def get_article_content(article, limit):
                     f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>'
                 )
                 line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
+
             html_content += markdown.markdown(line)
+            line_counter += 1
 
         return html_content, '\n'.join(readNav)
 
