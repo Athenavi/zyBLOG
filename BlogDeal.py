@@ -53,14 +53,13 @@ def get_article_content(article, limit):
         readNav = []
         for i, line in enumerate(lines[:lines_limit]):
             if line.startswith('#'):
-                header_level = len(line.split()[0]) + 2  # 原始标题级别 + 2，降低两级
-                header_title = line.strip('#').strip()  # 去除开头的 # 并移除首尾的空格
-                anchor = header_title.lower().replace(" ", "-")  # 根据标题生成锚点
+                header_level = len(line.split()[0]) + 2
+                header_title = line.strip('#').strip()
+                anchor = header_title.lower().replace(" ", "-")
                 readNav.append(
-                    f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>')  # 为 readNav 中的标题添加链接
-                line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'  # 添加带有唯一ID的标题元素
-            elif i > 0 and lines[i - 1].startswith('#'):
-                continue  # 跳过原始标题行
+                    f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>'
+                )
+                line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
             html_content += markdown.markdown(line)
 
         return html_content, '\n'.join(readNav)
