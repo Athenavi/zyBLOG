@@ -363,3 +363,32 @@ if (pageContent.includes("author")) {
   window.location.href = '/search';
 }
     </script>
+
+<script>
+// 使用 JavaScript 代码实现
+var sidebar = document.getElementById('sidebar');
+var initialX = null;
+
+sidebar.addEventListener('mousedown', function(event) {
+  event.preventDefault();
+  initialX = event.clientX;
+  document.addEventListener('mousemove', moveElement);
+
+  document.addEventListener('mouseup', function() {
+    document.removeEventListener('mousemove', moveElement);
+    initialX = null;
+  });
+
+  function moveElement(event) {
+    var deltaX = event.clientX - initialX;
+    var newX = sidebar.offsetLeft + deltaX;
+    sidebar.style.left = newX + 'px';
+    initialX = event.clientX;
+  }
+});
+
+// 使用 jQuery 实现
+$('#sidebar').draggable({
+  axis: 'x'  // 限制只能在水平方向拖动
+});
+</script>
