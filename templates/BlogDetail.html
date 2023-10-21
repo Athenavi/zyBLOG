@@ -75,6 +75,9 @@
     <!-- 账号 -->
     <div class="form-group">
         <label for="username">当前已登录: {{ username }}</label>
+        {% if username==None %}
+        <span><a href="/login">当前未登录，登陆后可参与评论</a></span>
+      {% endif %}
         <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
     </div>
     <!-- 评论 -->
