@@ -856,3 +856,19 @@ def github_authorized():
 
     # 未能获取有效的 access_token，处理错误情况
     return "Error: Unable to retrieve or validate access token"
+
+@app.route('/api/img')
+def random_image():
+    img_dir = os.path.join(app.root_path, 'img')  # 修改为实际的图片目录路径
+
+    # 获取目录中所有图片文件
+    img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
+
+    if not img_files:
+        return 'No image files found.'
+
+    # 从文件列表中随机选择一个图片文件
+    img_file = random.choice(img_files)
+    img_path = os.path.join(img_dir, img_file)
+
+    return send_file(img_path, mimetype='image/gif')
