@@ -103,31 +103,37 @@
 <div class="container" id="articles-container">
   <div class="row">
     <div class="col-md-8">
-      {% for article in articles %}
-        <div class="col-md-6">
-          <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
-            <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
-              <div class="card-body" style="display: flex;">
-                {% set i = range(1000)|random %}
-                <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
-                <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
-              </div>
-            </div>
-          </a>
+  {% for article in articles %}
+    <div class="col-md-6">
+      <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
+        <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
+          <div class="card-body" style="display: flex;">
+            {% set i = range(1000)|random %}
+            <!-- Check if the iteration is even -->
+            {% if loop.index is even %}
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+              <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+            {% else %}
+              <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+            {% endif %}
+          </div>
         </div>
-      {% endfor %}
-      <a href="#top">回到顶部</a>
-      <div style="width: 1080px; height: 30px; background-color: transparent;">
-        <!-- 翻页按钮 -->
-        {% if has_previous_page %}
-          <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
-        {% endif %}
-        <span>----------</span>
-        {% if has_next_page %}
-          <a href="{{ url_for('home', page=current_page+1) }}">Next</a>
-        {% endif %}
-      </div>
+      </a>
     </div>
+  {% endfor %}
+  <a href="#top">回到顶部</a>
+  <div style="width: 1080px; height: 30px; background-color: transparent;">
+    <!-- 翻页按钮 -->
+    {% if has_previous_page %}
+      <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
+    {% endif %}
+    <span>----------</span>
+    {% if has_next_page %}
+      <a href="{{ url_for('home', page=current_page+1) }}">Next</a>
+    {% endif %}
+  </div>
+</div>
   <div class="col-md-2 d-none d-md-block" style="display: flex; align-items: center;">
   <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
   <img style="height:95px" src="https://7trees.cn/wp-content/uploads/2023/08/348f5b9acc0605ea443058826975a8a1.png"/>
