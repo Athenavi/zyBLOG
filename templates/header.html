@@ -150,5 +150,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </script>
 
+<script type="text/javascript">
+  // 禁用右键菜单
+  window.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  }, false);
+</script>
 
 {% endmacro %}
