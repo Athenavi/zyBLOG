@@ -129,10 +129,9 @@ runtime_span.innerHTML="本站勉强运行: "+A+"天"+B+"小时"+C+"分"+D+"秒"
       </span> 搜索“奇客舒”体验GPT-3.5
     </a>&nbsp;&nbsp;&nbsp;
   </div>
-  <div class="close-button">
-    <img src="../static/image/close.png" style="height: 28px" alt="关闭按钮">
+      <span id="timer">30</span>秒后自动
+  <a id="close-btn">__关闭</a>
   </div>
-</div>
 </div>
 <script type="text/javascript">
   window.onload = function() {
@@ -219,5 +218,33 @@ window.onload = () => {
   }
 }
 </script>
+<script>
+// 获取 top-bar 元素和关闭按钮
+const topBar = document.querySelector('.top-bar');
+const closeButton = document.querySelector('#close-btn');
+const timerSpan = document.querySelector('#timer');
 
+let seconds = 30;
+timerSpan.textContent = seconds; // 初始化剩余时间
+
+// 计时器函数
+const countdown = () => {
+  if (seconds > 0) {
+    seconds--;
+    timerSpan.textContent = seconds;
+  } else {
+    clearInterval(intervalId); // 当时间到达零时，清除计时器
+    topBar.style.display = 'none';
+  }
+};
+
+// 1秒钟倒计时一次
+const intervalId = setInterval(countdown, 1000);
+
+// 关闭按钮点击事件
+closeButton.addEventListener('click', () => {
+  clearInterval(intervalId); // 关闭按钮被点击时，清除计时器
+  topBar.style.display = 'none';
+});
+</script>
 {% endmacro %}
