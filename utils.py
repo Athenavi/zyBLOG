@@ -68,8 +68,17 @@ def zy_upload_file():
 
 def get_client_ip():
     # 获取 X-Real-IP 请求头中的 IP 地址
-    ip_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    return ip_address
+    try:
+        response = requests.get('http://ip-api.com/json')
+        data = response.json()
+        if data['status'] == 'success':
+            public_ip = data['query']
+        else:
+            public_ip = ''
+    except requests.RequestException:
+        public_ip = ''
+
+    return public_ip
 
 
 

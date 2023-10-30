@@ -167,25 +167,14 @@ def analyze_ip_location(ip_address):
     # 加载GeoIP2数据库文件
     reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
 
-
     try:
-        # 查询IP地址的地理位置
         response = reader.city(ip_address)
-
-        # 提取相关信息
-        country = response.country.name
-        city = response.city.name
-
-        # 返回国家和城市信息
-        return country, city
-
+        city_name = response.city.names.get('zh-CN', '')
     except geoip2.errors.AddressNotFoundError:
-        print("未找到该IP地址的地理位置信息")
-        return None
+        city_name = ''
 
-    finally:
-        # 关闭数据库连接
-        reader.close()
+    reader.close()
+    return city_name
 
 
 
@@ -294,7 +283,6 @@ def get_city_code():
 
 @app.route('/profile', methods=['GET', 'POST'])
 def space():
-    city_code = 101010100
     avatar_url=profile('guest@7trees.cn')
     template = env.get_template('profile.html')
     session.setdefault('theme', 'day-theme')
@@ -305,7 +293,7 @@ def space():
         avatar_url=get_email(username)
         avatar_url=profile(avatar_url)
     return template.render(url_for=url_for, theme=session['theme'],
-                               notice=notice,avatar_url=avatar_url,userStatus=userStatus,username=username,city_code=city_code)
+                               notice=notice,avatar_url=avatar_url,userStatus=userStatus,username=username)
 
 
 @app.route('/settingRegion', methods=['POST'])
@@ -357,7 +345,9 @@ def zy_get_city_code(city_name):
 def home():
     IPinfo = get_client_ip()
     update_visit(IPinfo)
-    city_code = 101010100
+    IPinfo=analyze_ip_location(IPinfo)
+    #查询天气
+    city_code = ip_city_code(IPinfo)
     avatar_url=profile('guest@7trees.cn')
     if check_banned_ip(IPinfo):
         return render_template('error.html')
@@ -869,3 +859,31 @@ def random_image():
     img_path = os.path.join(img_dir, img_file)
 
     return send_file(img_path, mimetype='image/gif')
+
+def ip_city_code(city_name):
+    api_url = domain+"get_city_code"
+    form_data = {"city_name": city_name}
+
+    response = requests.post(api_url, data=form_data)
+    data = response.json()
+    city_code = data.get("city_code")
+
+    if city_code:
+        return city_code
+    else:
+        is_city = "市" in city_name
+        is_county = "县" in city_name
+
+        if not is_city and not is_county:
+            form_data["city_name"] = city_name + "市"
+            response2 = requests.post(api_url, data=form_data)
+            data2 = response2.json()
+            city_code2 = data2.get("city_code")
+            return city_code2
+        else:
+            city_name = city_name.rstrip("市") + "县"
+            form_data["city_name"] = city_name
+            response3 = requests.post(api_url, data=form_data)
+            data3 = response3.json()
+            city_code3 = data3.get("city_code")
+            return city_code3
