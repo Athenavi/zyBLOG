@@ -26,7 +26,9 @@ from user import zyadmin, zy_delete_file, zynewArticle, error
 from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
     check_banned_ip, get_weather_icon_url, allowed_file
 from flask_caching import Cache
-
+import io
+import base64
+from flask_dance.contrib.github import make_github_blueprint, github#未完善的功能
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))
@@ -692,11 +694,6 @@ def static_from_root():
 def undefined_route(undefined_path):
     return render_template('404.html'), 404
 
-
-
-import io
-import base64
-
 # ...
 
 @app.route('/generate_captcha')
@@ -766,8 +763,8 @@ def send_message(message):
     zySendMessage(message)
     return '1'
 
-from flask_dance.contrib.github import make_github_blueprint, github
 
+#github登录
 client_id=config['github']['client_id'].strip("'")
 client_secret=config['github']['client_secret'].strip("'")
 
