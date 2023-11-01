@@ -35,18 +35,8 @@
 
 <!-- 元素代码 -->
 <div class="show-on-desktop">
-  <span>扫描二维码于手机端进行阅读</span>
-  <img src="{{ article_url }}" style="height:100px;" alt="手机上浏览"/>
-    <div class="col-lg-2 col-md-6 bg-light" id="sidebar">
-        {{ readNav|safe }}
-      </div>
-</div>
-
-          <hr>
-              <div class="{{ theme }}">
-            {{ article_content|safe }}
-                  </div>
-            <div>
+  <span></span>
+  <div>
                 <a href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={{ article_Surl }}&title={{ articleName }}&pics=&summary={{ article_summary }}" target="_blank">
                    <button  style="border: none; background-color: transparent; height: 28px">
     <img src="../static/image/share-qzone.svg" alt="分享到QZone" height="28px"></button>
@@ -61,8 +51,18 @@
 </a>
 
     </div>
-            <span>本文来自奇客舒，作者：{{ author }}，转载请注明原文链接：<a href="{{ article_Surl }}" target="_blank">{{ article_Surl }}</a><span>
-        </div>
+    <div class="col-lg-2 col-md-6 bg-light" id="sidebar">
+        {{ readNav|safe }}
+      </div>
+</div>
+
+          <hr>
+              <div class="{{ theme }}">
+            {{ article_content|safe }}
+                  </div>
+
+            <span>本文来自奇客舒，作者：{{ author }}，转载请注明原文链接：<a href="{{ article_Surl }}" target="_blank">{{ article_Surl }}</a>
+            </span></div>
 
       </div>
   <div>
