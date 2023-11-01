@@ -66,7 +66,13 @@ def zy_upload_file():
 
     return make_response('success')
 
+
 def get_client_ip():
+    # 尝试从session中读取ip
+    public_ip = session.get('public_ip')
+    if public_ip:
+        return public_ip
+
     # 获取 X-Real-IP 请求头中的 IP 地址
     try:
         response = requests.get('http://ip-api.com/json')
@@ -78,8 +84,10 @@ def get_client_ip():
     except requests.RequestException:
         public_ip = ''
 
-    return public_ip
+    # 将ip存入session中
+    session['public_ip'] = public_ip
 
+    return public_ip
 
 
 # 登录页面
