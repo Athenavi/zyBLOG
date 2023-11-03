@@ -861,29 +861,40 @@ def random_image():
     return send_file(img_path, mimetype='image/gif')
 
 def ip_city_code(city_name):
-    api_url = domain+"get_city_code"
+    api_url = domain + "get_city_code"
     form_data = {"city_name": city_name}
 
-    response = requests.post(api_url, data=form_data)
-    data = response.json()
-    city_code = data.get("city_code")
+    try:
+        response = requests.post(api_url, data=form_data)
+        response.raise_for_status()  # 检查请求是否成功，若失败会引发异常
 
-    if city_code:
-        return city_code
-    else:
-        is_city = "市" in city_name
-        is_county = "县" in city_name
+        data = response.json()
+        city_code = data.get("city_code")
 
-        if not is_city and not is_county:
-            form_data["city_name"] = city_name + "市"
-            response2 = requests.post(api_url, data=form_data)
-            data2 = response2.json()
-            city_code2 = data2.get("city_code")
-            return city_code2
+        if city_code:
+            return city_code
         else:
-            city_name = city_name.rstrip("市") + "县"
-            form_data["city_name"] = city_name
-            response3 = requests.post(api_url, data=form_data)
-            data3 = response3.json()
-            city_code3 = data3.get("city_code")
-            return city_code3
+            is_city = "市" in city_name
+            is_county = "县" in city_name
+
+            if not is_city and not is_county:
+                form_data["city_name"] = city_name + "市"
+                response2 = requests.post(api_url, data=form_data)
+                response2.raise_for_status()  # 检查请求是否成功，若失败会引发异常
+
+                data2 = response2.json()
+                city_code2 = data2.get("city_code")
+                return city_code2
+            else:
+                city_name = city_name.rstrip("市") + "县"
+                form_data["city_name"] = city_name
+                response3 = requests.post(api_url, data=form_data)
+                response3.raise_for_status()  # 检查请求是否成功，若失败会引发异常
+
+                data3 = response3.json()
+                city_code3 = data3.get("city_code")
+                return city_code3
+
+    except requests.exceptions.RequestException as e:
+        print("发生请求异常:", str(e))
+        return None
