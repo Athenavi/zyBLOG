@@ -103,7 +103,8 @@ def zyregister():
 
 def get_email(username):
     email = 'guest@7trees.cn'
-    username = bleach.clean(username)  # 移除列表括号
+    if username is not None and isinstance(username, str):
+        username = bleach.clean(username)
     db = get_database_connection()
     cursor = db.cursor()
 
