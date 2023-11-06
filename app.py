@@ -19,7 +19,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile, zyGitHublogin
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
-    get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage
+    get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
+    zyShowArticle, zyFEditArticle
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
@@ -910,3 +911,37 @@ def ip_city_code(city_name):
     except requests.exceptions.RequestException as e:
         print("发生请求异常:", str(e))
         return None
+
+
+@app.route('/edit/<article>', methods=['GET', 'POST'])
+def markdown_editor(article):
+    template = env.get_template('editor.html')
+    if 'theme' not in session:
+        session['theme'] = 'day-theme'
+    #notice = read_file('notice/1.txt', 50)
+    userStatus = get_user_status()
+    username = get_username()
+    auth = False  # 设置默认值
+
+    if userStatus and username is not None:
+        # Auth 认证
+        auth = authArticles(article, username)
+
+    if auth == True:
+        if request.method == 'GET':
+            edit_html = zyFEditArticle(article)
+            show_edit = zyShowArticle(article)
+            # 渲染编辑页面并将转换后的HTML传递到模板中
+            return render_template('editor.html', edit_html=edit_html, show_edit=show_edit,articleName=article, theme=session['theme'])
+        elif request.method == 'POST':
+            content = request.json.get('content', '')
+            show_edit = zyShowArticle(content)
+            return jsonify({'show_edit': show_edit})
+        else:
+            # 渲染编辑页面
+            return render_template('editor.html')
+
+    else:
+        return error(message='您没有权限',status_code=503)
+
+
