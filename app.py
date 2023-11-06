@@ -22,7 +22,7 @@ from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
-from user import zyadmin, zy_delete_file, zynewArticle, error
+from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
 from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
     check_banned_ip, get_weather_icon_url, allowed_file
 from flask_caching import Cache
@@ -280,21 +280,33 @@ def get_city_code():
     return zy_get_city_code(city_name)
 
 
-
 @app.route('/profile', methods=['GET', 'POST'])
 def space():
-    avatar_url=profile('guest@7trees.cn')
+    avatar_url = profile('guest@7trees.cn')
     template = env.get_template('profile.html')
     session.setdefault('theme', 'day-theme')
     notice = read_file('notice/1.txt', 50)
     userStatus = get_user_status()
     username = get_username()
-    if userStatus and username != None:
-        avatar_url=get_email(username)
-        avatar_url=profile(avatar_url)
-    return template.render(url_for=url_for, theme=session['theme'],
-                               notice=notice,avatar_url=avatar_url,userStatus=userStatus,username=username)
 
+    ownerName = request.args.get('id')
+    ownerArticles = None
+
+    if userStatus and username is not None:
+        ownerName = request.args.get('id')
+        if ownerName is None or ownerName == '':
+            ownerName = username
+        ownerArticles = GetOwnerArticles(ownerName)
+        avatar_url = get_email(ownerName)
+        avatar_url = profile(avatar_url)
+
+    if ownerArticles is None:
+        ownerArticles = []  # 设置为空列表
+
+    return template.render(url_for=url_for, theme=session['theme'],
+                           notice=notice, avatar_url=avatar_url,
+                           userStatus=userStatus, username=username,
+                           Articles=ownerArticles)
 
 @app.route('/settingRegion', methods=['POST'])
 def setting_region():

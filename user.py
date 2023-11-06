@@ -97,3 +97,22 @@ def zy_delete_file(filename):
     return 'success'
 
 
+def GetOwnerArticles(ownername):
+    articles = []
+
+    # 读取mapper.ini文件内容
+    with open('author/mapper.ini', 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+
+    # 根据ownername获取拥有者的文章列表
+    for line in lines:
+        line = line.strip()
+        if line and '=' in line:  # 修改这行代码
+            article_info = line.split('=')
+            if len(article_info) == 2:
+                article_name = article_info[0].strip()
+                article_owner = article_info[1].strip().strip('\'')
+                if article_owner == ownername:
+                    articles.append(article_name)
+
+    return articles

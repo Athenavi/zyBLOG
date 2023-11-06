@@ -46,9 +46,29 @@
       <a href="/login">需要登录</a>
     {% endif %}
   </div>
-</div>
+{% if Articles %}
+      <!-- 展示已登录的内容 -->
+      <br><span><span id="idSpan"></span>的文章</span>
+    {% endif %}
+{% for article in Articles %}
+  <div class="col-md-6">
+      <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
+        <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
+          <div class="card-body" style="display: flex;">
+            {% set i = range(1000)|random %}
+            <!-- Check if the iteration is even -->
+            {% if loop.index is even %}
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+              <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+            {% else %}
+              <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+            {% endif %}
+          </div>
+        </div>
+      </a>
     </div>
-            </div>
+  {% endfor %}
 
 
 <!-- 引入注脚 -->
@@ -62,3 +82,23 @@
 </body>
 
 </html>
+
+<script>
+    // 获取URL参数的函数
+    function getParameterByName(name) {
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var url = window.location.href;
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+        var results = regex.exec(url);
+        if (!results) return '我';
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    // 在页面加载时获取URL参数id的值并显示
+    window.onload = function() {
+        var id = getParameterByName('id');
+        var span = document.getElementById('idSpan');
+        span.innerHTML = id;
+    }
+</script>
