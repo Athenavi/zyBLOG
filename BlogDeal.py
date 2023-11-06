@@ -213,3 +213,47 @@ def zySendMessage(message):
         is_at_all=True)
 
 
+def authArticles(articleName, username):
+    article_map = {}
+    with open('author/mapper.ini', 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+
+    for line in lines:
+        line = line.strip()
+        if line and '=' in line:
+            article_info = line.split('=')
+            if len(article_info) == 2:
+                article_name = article_info[0].strip()
+                article_owner = article_info[1].strip().strip('\'')
+                article_map[article_name] = article_owner
+
+    # Check if articleName exists in the article_map and owner matches the username
+    if articleName in article_map and article_map[articleName] == username:
+        print("edit Author check")
+        return True
+
+    return False
+
+
+
+
+def zyShowArticle(content):
+    try:
+        markdown_text = content
+        html = markdown.markdown(markdown_text)
+        return html
+    except:
+        # 发生任何异常时返回一个错误页面，可以根据需要自定义错误消息
+        return error('Error in displaying the article')
+
+def zyFEditArticle(article):
+    limit = 215  # 读取的最大行数
+    try:
+        with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        return ''.join(lines)
+
+    except FileNotFoundError:
+        # 文件不存在时返回 404 错误页面
+        return error('No file', 404)
