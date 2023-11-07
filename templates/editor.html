@@ -48,13 +48,9 @@
   </div>
 
     <div class="editor">
-    <button id="manual-refresh-button">Manual Refresh</button>
-      <textarea id="md-editor" style="width:100%">
-          {% if edit_html %}
-      {{ edit_html }}
-    {% endif %}
-
-      </textarea>
+    <button id="manual-refresh-button">预览</button><button id="save-button">保存</button>
+      <textarea id="md-editor" style="width:100%">{% if edit_html %}{{ edit_html }}
+    {% endif %}</textarea>
     </div>
     <div class="preview">
       <div id="md-preview">
@@ -80,6 +76,7 @@
     var editor = document.getElementById('md-editor');
     var preview = document.getElementById('md-preview');
     var manualRefreshButton = document.getElementById('manual-refresh-button');
+    var saveButton = document.getElementById('save-button');
 
     // 编辑区滚动条同步滚动效果
     editor.addEventListener('scroll', function() {
@@ -115,7 +112,7 @@
     // 手动触发刷新按钮点击事件
     manualRefreshButton.addEventListener('click', function() {
       var content = editor.value;
-      fetch('/update', {
+      fetch('/edit/{{ articleName }}', {
         method: 'POST',
         body: JSON.stringify({ content: content }),
         headers: {
@@ -130,4 +127,48 @@
       })
       .catch(error => console.error('Error:', error));
     });
+
+    // 为保存按钮添加点击事件的监听器
+// 为保存按钮添加点击事件的监听器
+saveButton.addEventListener('click', function(event) {
+  event.preventDefault(); // 阻止表单的默认提交行为
+
+  var articleName = '{{articleName}}'; // 替换为你的文章名称
+
+  // 获取编辑器的内容
+  var content = editor.value;
+
+  // 弹出确认对话框
+  var confirmation = confirm('数据无价，谨慎修改。确定要保存吗？');
+  if (!confirmation) {
+    // 用户点击了取消，终止本次请求
+    return;
+  }
+
+  // 发送内容到服务器进行保存
+  fetch('/save/edit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      article: articleName,
+      content: content
+    })
+  })
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {
+    if (data.show_edit_code === 'success') {
+      alert('保存成功');
+    } else {
+      alert('保存失败');
+    }
+  })
+  .catch(function(error) {
+    console.error('保存失败:', error);
+  });
+});
+
 </script>

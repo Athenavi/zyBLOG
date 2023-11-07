@@ -25,7 +25,7 @@ from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
 from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
-    check_banned_ip, get_weather_icon_url, allowed_file
+    check_banned_ip, get_weather_icon_url, allowed_file, zySaveEdit
 from flask_caching import Cache
 import io
 import base64
@@ -945,3 +945,28 @@ def markdown_editor(article):
         return error(message='您没有权限',status_code=503)
 
 
+@app.route('/save/edit', methods=['POST'])
+def editorSave():
+    content = request.json.get('content', '')
+    article = request.json.get('article')
+
+    if article is None:
+        return jsonify({'message': '404'}), 404
+
+    userStatus = get_user_status()
+    username = get_username()
+
+    if userStatus is None or username is None:
+        return jsonify({'message': '您没有权限'}), 503
+
+    # Auth 认证
+    auth = authArticles(article, username)
+
+    if not auth:
+        return jsonify({'message': '404'}), 404
+
+    save_edit_code = zySaveEdit(article, content)
+    if save_edit_code == 'success':
+        return jsonify({'show_edit_code': 'success'})
+    else:
+        return jsonify({'show_edit_code': 'failed'})
