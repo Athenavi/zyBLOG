@@ -229,7 +229,7 @@ def authArticles(articleName, username):
 
     # Check if articleName exists in the article_map and owner matches the username
     if articleName in article_map and article_map[articleName] == username:
-        print("edit Author check")
+        #print("edit Author check")
         return True
 
     return False
@@ -249,11 +249,21 @@ def zyShowArticle(content):
 def zyFEditArticle(article):
     limit = 215  # 读取的最大行数
     try:
-        with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+        with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8-sig', errors='replace') as f:
+            lines = []
+            for line in f:
+                try:
+                    lines.append(line)
+                except UnicodeDecodeError:
+                    # 在遇到解码错误时跳过当前行
+                    pass
+
+                if len(lines) >= limit:
+                    break
 
         return ''.join(lines)
-
     except FileNotFoundError:
         # 文件不存在时返回 404 错误页面
         return error('No file', 404)
+
+

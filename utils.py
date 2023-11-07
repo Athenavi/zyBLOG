@@ -181,3 +181,19 @@ def get_weather_icon_url(weather_type):
 
     iconUrl = f'static/image/weather/{iconFileName}'
     return iconUrl
+
+def zySaveEdit(articleName, content):
+    if articleName and content:
+        save_directory = 'articles/'
+
+        # Check if the save directory exists, create it if it doesn't
+        if not os.path.exists(save_directory):
+            os.makedirs(save_directory)
+
+        # Save the file to the specified directory on the server, overwriting any existing file
+        with open(os.path.join(save_directory, secure_filename(articleName + ".md")), 'w', encoding='utf-8') as file:
+            file.write(content)
+
+        return make_response('success')
+
+    return make_response('failed: articleName or content is empty')
