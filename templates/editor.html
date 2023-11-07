@@ -48,7 +48,7 @@
   </div>
 
     <div class="editor">
-    <button id="manual-refresh-button">预览</button><button id="save-button">保存</button><a href="/blog/{{ articleName }}" target="_blank">文章页</a>
+    <button id="manual-refresh-button">预览</button><button id="save-button">保存</button><a href="/blog/{{ articleName }}" target="_self">文章页</a>
       <textarea id="md-editor" style="width:100%">{% if edit_html %}{{ edit_html }}
     {% endif %}</textarea>
     </div>
