@@ -970,3 +970,53 @@ def editorSave():
         return jsonify({'show_edit_code': 'success'})
     else:
         return jsonify({'show_edit_code': 'failed'})
+
+
+@app.route('/hidden/article', methods=['POST'])
+def hideen_article():
+    article = request.json.get('article')
+    if article is None:
+        return jsonify({'message': '404'}), 404
+
+    userStatus = get_user_status()
+    username = get_username()
+
+    if userStatus is None or username is None:
+        return jsonify({'message': '您没有权限'}), 503
+
+    auth = authArticles(article, username)
+
+    if not auth:
+        return jsonify({'message': '404'}), 404
+
+    if is_hidden(article):
+        # 取消隐藏文章
+        unhide_article(article)
+        return jsonify({'deal': 'unhide'})
+    else:
+        # 隐藏文章
+        hide_article(article)
+        return jsonify({'deal': 'hide'})
+
+def hide_article(article):
+    with open('articles/hidden.txt', 'a', encoding='utf-8') as hidden_file:
+        # 将文章名写入hidden.txt的新的一行中
+        hidden_file.write(article + '\n')
+
+def unhide_article(article):
+    with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
+        hidden_articles = hidden_file.read().splitlines()
+
+    with open('articles/hidden.txt', 'w', encoding='utf-8') as hidden_file:
+        # 从hidden中移除完全匹配文章名的一行
+        for hidden_article in hidden_articles:
+            if hidden_article != article:
+                hidden_file.write(hidden_article + '\n')
+
+def is_hidden(article):
+    with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
+        hidden_articles = hidden_file.read().splitlines()
+        return article in hidden_articles
+
+
+

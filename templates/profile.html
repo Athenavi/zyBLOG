@@ -67,6 +67,7 @@
           </div>
         </div>
       </a><br/><a href="/edit/{{ article }}">编辑</a>
+    <a href="#" data-article={{ article }} class='hidden121'>隐藏/取消隐藏此文章</a>
     </div>
   {% endfor %}
 
@@ -101,4 +102,53 @@
         var span = document.getElementById('idSpan');
         span.innerHTML = id;
     }
+    // 设置隐藏/取消隐藏文章的请求参数
+const hiddenLinks = document.querySelectorAll('a.hidden121');
+
+// 为每个隐藏链接添加点击事件处理程序
+hiddenLinks.forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault(); // 阻止默认链接行为
+
+    // 获取链接上的 data-article 属性作为文章名
+    const article = link.getAttribute('data-article');
+
+    // 构建请求体
+    const requestBody = JSON.stringify({ article });
+
+    var confirmation = confirm('您正在尝试对文章进行一个操作，是否继续？');
+    if (!confirmation) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+    // 发起 POST 请求
+    fetch('/hidden/article', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: requestBody
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.deal === 'hide') {
+          // 处理隐藏文章的响应
+          console.log('文章已隐藏');
+          alert('文章已隐藏');
+        } else if (data.deal === 'unhide') {
+          // 处理取消隐藏文章的响应
+          console.log('文章已取消隐藏');
+          alert('已经取消隐藏');
+        } else {
+          // 处理其他响应
+          console.log(data.message);
+        }
+      })
+      .catch(error => {
+        alert('请求出错');
+        console.error('请求出错:', error);
+      });
+  });
+});
 </script>
