@@ -982,12 +982,12 @@ def hideen_article():
     username = get_username()
 
     if userStatus is None or username is None:
-        return jsonify({'message': '您没有权限'}), 503
+        return jsonify({'deal': 'noAuth'})
 
     auth = authArticles(article, username)
 
     if not auth:
-        return jsonify({'message': '404'}), 404
+        return jsonify({'deal': 'noAuth'})
 
     if is_hidden(article):
         # 取消隐藏文章

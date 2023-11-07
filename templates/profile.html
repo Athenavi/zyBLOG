@@ -140,6 +140,9 @@ hiddenLinks.forEach(link => {
           // 处理取消隐藏文章的响应
           console.log('文章已取消隐藏');
           alert('已经取消隐藏');
+        } else if (data.deal === 'noAuth') {
+          console.log('noAuth');
+          alert('无权限操作');
         } else {
           // 处理其他响应
           console.log(data.message);
