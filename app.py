@@ -1019,4 +1019,25 @@ def is_hidden(article):
         return article in hidden_articles
 
 
+@app.route('/travel', methods=['GET'])
+def travel():
+    response = requests.get(domain + 'sitemap.xml')  # 发起对/sitemap接口的请求
+    if response.status_code == 200:
+        tree = ET.fromstring(response.content)  # 使用xml.etree.ElementTree解析响应内容
 
+        urls = []  # 用于记录提取的URL列表
+        for url_element in tree.findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url'):
+            loc_element = url_element.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
+            if loc_element is not None:
+                urls.append(loc_element.text)  # 将标签中的内容添加到列表中
+
+        if urls:
+            random.shuffle(urls)  # 随机打乱URL列表的顺序
+            random_url = urls[0]  # 选择打乱后的第一个URL
+            return redirect(random_url)  # 跳转到选定的URL
+
+        # 如果没有找到任何<loc>标签，则返回适当的错误信息或默认页面
+        return "No URLs found in the response."
+    else:
+        # 处理无法获取响应内容的情况，例如返回错误页面或错误消息
+        return "Failed to fetch sitemap content."
