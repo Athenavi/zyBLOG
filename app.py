@@ -1106,3 +1106,6 @@ def vipBlog(articleName):
     else:
         return error(message='您没有权限', status_code=503)
 
+@app.route('/zyblogJS/<JS_name>')
+def getjs(JS_name):
+    return send_from_directory(os.path.join(app.root_path, 'static'), JS_name)
