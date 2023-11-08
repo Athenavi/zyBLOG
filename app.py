@@ -400,14 +400,15 @@ def blog_detail(article):
             # 根据文章名称获取相应的内容并处理
             article_name = article
             article_names = get_article_names()
-            if article_name not in article_names[0]:
-                return render_template('404.html'), 404
-
             hidden_articles = read_hidden_articles()
 
             if article_name in hidden_articles:
-                return render_template('404.html'), 404
+                #隐藏的文章
+                return vipBlog(article_name)
 
+
+            if article_name not in article_names[0]:
+                return render_template('404.html'), 404
             article_Surl = domain + 'blog/' + article_name
             article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
             author = get_blog_author(article_name)
@@ -1044,3 +1045,64 @@ def travel():
     else:
         # 处理无法获取响应内容的情况，例如返回错误页面或错误消息
         return "Failed to fetch sitemap content."
+
+def vipBlog(articleName):
+    article_name=articleName
+    userStatus = get_user_status()
+    username = get_username()
+    auth = False  # 设置默认值
+
+    if userStatus and username is not None:
+        # Auth 认证
+        auth = authArticles(article_name, username)
+
+    if auth == True:
+        if request.method == 'GET':
+            article_Surl = domain + 'blog/' + article_name
+            article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
+            author = get_blog_author(article_name)
+            blogDate = get_file_date(article_name)+ '——_______该文章处于隐藏模式(他人不可见)______——'
+
+            # 检查session中是否存在theme键
+            if 'theme' not in session:
+                session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
+
+            article_content, readNav_html = get_article_content(article_name, 215)
+            article_summary = clearHTMLFormat(article_content)
+            article_summary = article_summary[:30]
+
+            # 分页参数
+            page = request.args.get('page', default=1, type=int)
+            per_page = 10  # 每页显示的评论数量
+
+            username = None
+            comments = []
+            if session.get('logged_in'):
+                username = session.get('username')
+                if username:
+                    comments = zy_get_comment(article_name, page=page, per_page=per_page)
+                else:
+                    comments = None
+            else:
+                comments = None
+
+            if request.method == 'POST':
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
+
+            return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
+                                   theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
+                                   url_for=url_for, username=username, article_url=article_url,
+                                   article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html)
+
+        elif request.method == 'POST':
+            content = request.json.get('content', '')
+            show_edit = zyShowArticle(content)
+            return jsonify({'show_edit': show_edit})
+        else:
+            # 渲染编辑页面
+            return error(message='您没有权限', status_code=503)
+
+    else:
+        return error(message='您没有权限', status_code=503)
+
