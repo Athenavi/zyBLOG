@@ -713,7 +713,7 @@ def generate_captcha():
     image = Image.new('RGB', (135, 80), color=(255, 255, 255))
 
     # 创建字体对象并设置字体大小
-    font = ImageFont.truetype('arial.ttf', size=40)
+    font = ImageFont.truetype('harmony-2.otf', size=40)
 
     # 在图像上绘制验证码文本
     d = ImageDraw.Draw(image)

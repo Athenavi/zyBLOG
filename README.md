@@ -1,10 +1,6 @@
 # zyBLOG - 一个简易的博客程序
 
 
-## 231009更新
-Linux文章评论验证码无法显示请下载 arial.ttf 》》 https://qks.icu/ttf
-将其放置在程序根目录（与wsgi.py同文件夹）
-
 ## 简介
 
 [zyBLOG](https://github.com/Athenavi/zyBLOG) 是一个基于 Python Flask 和 WSGI 的简易博客程序
