@@ -55,6 +55,10 @@ from datetime import datetime, timedelta
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+@app.route('/123.jpg')
+def blackHoleicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               '123.jpg')
 
 @app.context_processor
 def inject_variables():
@@ -1034,8 +1038,7 @@ def travel():
         if urls:
             random.shuffle(urls)  # 随机打乱URL列表的顺序
             random_url = urls[0]  # 选择打乱后的第一个URL
-            return redirect(random_url)  # 跳转到选定的URL
-
+            return render_template('bh.html',jumpUrl=random_url)
         # 如果没有找到任何<loc>标签，则返回适当的错误信息或默认页面
         return "No URLs found in the response."
     else:
