@@ -92,21 +92,3 @@
         opacity: 0.8;
     }
 
-  .card-link:hover .card {
-    box-shadow: 0 0 10px #877725;
-  }
-
-  .card-body {
-    display: flex;
-    align-items: center;
-  }
-
-  .card-body img {
-    flex: 1;
-    max-width: 50%;
-    max-height: 125%;
-  }
-
-  .card-body h3 {
-    flex: 1;
-  }
