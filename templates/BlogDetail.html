@@ -177,30 +177,6 @@
     {% endif %}
   {% endif %}
 </div>
-
-  <script>
-    function loadPage(url, containerId) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-
-      xhr.onload = function () {
-        if (xhr.status === 200) {
-          var tempDiv = document.createElement('div');
-          tempDiv.innerHTML = xhr.responseText;
-
-          var newCommentsContainer = tempDiv.querySelector('#' + containerId);
-          var currentCommentsContainer = document.getElementById(containerId);
-
-          if (newCommentsContainer && currentCommentsContainer) {
-            currentCommentsContainer.innerHTML = newCommentsContainer.innerHTML;
-          }
-        }
-      };
-
-      xhr.send();
-    }
-  </script>
-
 </div>
   <!-- Your code for processing comments can go here -->
 </div>
@@ -256,10 +232,17 @@
                 document.getElementById('comment').value = '';
 
                 // 用新添加的评论更新现有评论部分
-                var commentsSection = document.getElementById('comments');
-                var newComment = document.createElement('div');
-                newComment.innerHTML = response.username + ": " + response.comment;
-                commentsSection.appendChild(newComment);
+                // 用新添加的评论更新现有评论部分
+                var commentsSection = document.getElementById('comments-container');
+                var newComment = document.createElement('li');
+                newComment.className = 'list-group-item';  // 应用相同的样式类
+                var commentUsername = document.createElement('span');
+                commentUsername.className = 'fw-bold';  // 应用相同的样式类
+                commentUsername.innerText = response.username + ": ";
+                newComment.appendChild(commentUsername);
+                var commentText = document.createTextNode(response.comment);
+                newComment.appendChild(commentText);
+                commentsSection.querySelector('ul').appendChild(newComment);
 
                 // 刷新验证码图像
                 generateCaptcha();
