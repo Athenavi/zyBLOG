@@ -20,7 +20,7 @@ from AboutLogin import zylogin, zyregister, get_email, profile, zyGitHublogin
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
-    zyShowArticle, zyFEditArticle
+    zyShowArticle, zyFEditArticle, zypwCheck
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
@@ -1115,11 +1115,72 @@ def vipBlog(articleName):
             return jsonify({'show_edit': show_edit})
         else:
             # 渲染编辑页面
-            return error(message='您没有权限', status_code=503)
+            return zyPWblog(article_name)
+
 
     else:
-        return error(message='您没有权限', status_code=503)
+        return zyPWblog(article_name)
 
 @app.route('/zyblogJS/<JS_name>')
 def getjs(JS_name):
     return send_from_directory(os.path.join(app.root_path, 'static'), JS_name)
+
+
+
+
+
+def zyPWblog(article_name):
+    template = env.get_template('hidden.html')
+    session.setdefault('theme', 'day-theme')
+    notice = read_file('notice/1.txt', 50)
+    if request.method == 'GET':
+        # 在此处添加密码验证的逻辑
+        codePass = zypwCheck(article_name, request.args.get('password'))
+        if codePass == 'success':
+            try:
+                # 根据文章名称获取相应的内容并处理
+                article_name = article_name
+                article_Surl = domain + 'blog/' + article_name
+                article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
+                author = get_blog_author(article_name)
+                blogDate = get_file_date(article_name) + '文章密码已认证'
+
+                # 检查session中是否存在theme键
+                if 'theme' not in session:
+                    session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
+
+                article_content, readNav_html = get_article_content(article_name, 215)
+                article_summary = clearHTMLFormat(article_content)
+                article_summary = article_summary[:30]
+
+                # 分页参数
+                page = request.args.get('page', default=1, type=int)
+                per_page = 10  # 每页显示的评论数量
+
+                username = None
+                comments = []
+                if session.get('logged_in'):
+                    username = session.get('username')
+                    if username:
+                        comments = zy_get_comment(article_name, page=page, per_page=per_page)
+                    else:
+                        comments = None
+                else:
+                    comments = None
+
+                if request.method == 'POST':
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
+
+                return render_template('hidden.html', article_content=article_content, articleName=article_name,
+                                       theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
+                                       url_for=url_for, username=username, article_url=article_url,
+                                       article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html,key="密码验证成功")
+
+            except FileNotFoundError:
+                return render_template('404.html'), 404
+
+        else:
+            return render_template('hidden.html',articleName=article_name,
+                                   theme=session['theme'],
+                                   url_for=url_for)

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!-- 网站主语言 -->
+<html lang="zh-cn">
+<head>
+    <!-- 网站采用的字符编码 -->
+    <meta charset="utf-8">
+    <!-- 预留网站标题的位置 -->
+    <title>{{ article_name }}</title>
+    <!-- 引入bootstrap的css文件 -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <!-- 引入layer.js -->
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+</head>
+{% import 'custom.py' as custom %}
+
+<body class="{{ theme }}" >
+{% from 'header.html' import zytopbar %}
+<!-- 调用topbar -->
+{{ zytopbar() }}
+
+
+<!-- 引入导航栏 -->
+<!-- 定义导航栏 -->
+<style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #fullscreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        #passwordForm {
+            max-width: 300px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #passwordForm input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        #passwordForm input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+<div id="fullscreen">
+
+        <form id="passwordForm">
+            {% if key %}
+      <!-- 展示已登录的内容 -->
+                <div id="message"><a style="font-size: 40px;color:green">{{ key }}</a></div>
+    {% else %}
+                <a>{{articleName}}需要</a>
+    {% endif %}
+            <label for="password">访问密码:</label>
+            <input type="password" id="password" name="password" placeholder="输入密码" required>
+            <input type="submit" value="提交">
+        </form>
+    </div>
+
+<script>
+        function submitForm() {
+            var passwordInput = document.getElementById("password");
+            var password = passwordInput.value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/blog/" + '{{ article }}', true);
+            xhr.setRequestHeader("Content-type", "application/json");
+
+            var data = JSON.stringify({
+            "article": '{{ article }}',   // 替换为实际文章参数值
+            "code": password   // 使用输入的密码作为code参数的值
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        alert("提交成功！");   // 请求成功的处理逻辑
+                    } else {
+                        alert("提交失败。请稍后再试。");   // 请求失败的处理逻辑
+                    }
+                }
+            };
+
+            xhr.send(data);
+        }
+    </script>
+
+
+
+
+
+
+
+<!-- 预留具体页面的位置 -->
+<div class="container">
+  <div class="row justify-content-md-center">
+      <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">{{ articleName }}</h3><span>author:<a href="/profile?id={{ author }}" target="_blank">{{ author }}</a></span><br/><span>最近一次修订的日期:{{ blogDate }}</span>
+
+<!-- 元素代码 -->
+<div class="show-on-desktop">
+  <span></span>
+  <div>
+                <a href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={{ article_Surl }}&title={{ articleName }}&pics=&summary={{ article_summary }}" target="_blank">
+                   <button  style="border: none; background-color: transparent; height: 28px">
+    <img src="../static/image/share-qzone.svg" alt="分享到QZone" height="28px"></button>
+</a>
+                <a href="https://service.weibo.com/share/share.php?url={{ article_Surl }}&title={{ article_summary }}&pic=&appkey=&searchPic=true" target="_blank">
+                   <button  style="border: none; background-color: transparent; height: 28px">
+    <img src="../static/image/share-weibo.svg" alt="分享到weibo" height="28px"></button>
+</a>
+                <a href="https://twitter.com/share?url={{ article_Surl }}" target="_blank">
+                   <button  style="border: none; background-color: transparent; height: 28px">
+    <img src="../static/image/x.svg" alt="分享到推特" height="28px"></button>
+</a>
+
+    </div>
+    <div class="col-lg-2 col-md-6 bg-light" id="sidebar">
+        {{ readNav|safe }}
+      </div>
+</div>
+
+          <hr>
+              <div class="{{ theme }}">
+            {{ article_content|safe }}
+                  </div>
+
+            <span>本文来自奇客舒，作者：{{ author }}，转载请注明原文链接：<a href="{{ article_Surl }}" target="_blank">{{ article_Surl }}</a>
+            </span></div>
+
+      </div>
+  <div>
+
+  <form method="post" action="/post_comment" id="comment_form">
+    <div class="form-group">
+        <label for="article_name">当前区域: {{ articleName }}</label>
+        <input type="text" class="form-control" id="article_name" name="article_name" value="{{ articleName }}" readonly style="display:none;">
+    </div>
+    <!-- 账号 -->
+    <div class="form-group">
+        <label for="username">当前已登录: {{ username }}</label>
+        {% if username==None %}
+        <span><a href="/login">当前未登录，登陆后可参与评论</a></span>
+      {% endif %}
+        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
+    </div>
+    <!-- 评论 -->
+    <div id="result"></div>
+    <div class="form-group">
+        <label for="comment">评论</label>
+        <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+        <img id="captcha-image" src="" alt="Captcha Image" onclick="generateCaptcha()">
+    </div>
+
+    <div class="form-group">
+        <label for="captcha">验证码:</label>
+        <input type="text" id="captcha" name="captcha" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">一键发送</button>
+</form>
+
+{% set per_page = 10 %}
+{% set page = 1 %}
+
+<div id="comments-container">
+  {% if comments %}
+    <h2>近期评论</h2>
+    <ul class="list-group">
+      {% set comment_count = comments|length %}
+      {% set total_pages = (comment_count // per_page) + (comment_count % per_page > 0) %}
+      {% set start_index = (page - 1) * per_page %}
+      {% set end_index = start_index + per_page %}
+      {% for comment in comments[start_index:end_index] %}
+        <li class="list-group-item">
+          <span class="fw-bold">{{ comment.username }}:</span> {{ comment.comment }}
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if total_pages > 1 %}
+      <nav aria-label="Comment navigation">
+        <ul class="pagination justify-content-center">
+          {% if page > 1 %}
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page-1) }}', 'comments-container')">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% if page != 1 %}
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=1) }}', 'comments-container')">1</a>
+            </li>
+          {% endif %}
+
+          {% if page > 4 %}
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+          {% endif %}
+
+          {% for p in range(1 | custom_max(page - 2), (page + 2) | custom_min(total_pages + 1)) %}
+            {% if p == page %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ p }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=p) }}', 'comments-container')">{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page < total_pages - 3 %}
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+          {% endif %}
+
+          {% if page != total_pages %}
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=total_pages) }}', 'comments-container')">{{ total_pages }}</a>
+            </li>
+          {% endif %}
+
+          {% if page < total_pages %}
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page+1) }}', 'comments-container')">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% endif %}
+</div>
+
+  <script>
+    function loadPage(url, containerId) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          var tempDiv = document.createElement('div');
+          tempDiv.innerHTML = xhr.responseText;
+
+          var newCommentsContainer = tempDiv.querySelector('#' + containerId);
+          var currentCommentsContainer = document.getElementById(containerId);
+
+          if (newCommentsContainer && currentCommentsContainer) {
+            currentCommentsContainer.innerHTML = newCommentsContainer.innerHTML;
+          }
+        }
+      };
+
+      xhr.send();
+    }
+  </script>
+
+</div>
+  <!-- Your code for processing comments can go here -->
+</div>
+
+  </div>
+<!-- 引入注脚 -->
+
+<div>
+    <br><br><br>
+
+
+</div>
+
+{% from 'footer.html' import zyfooter %}
+<!-- 调用footer -->
+{{ zyfooter() }}
+
+</body>
+</html>
+<script>
+    function postComment(event) {
+    event.preventDefault();  // 防止默认的表单提交行为
+
+    var articleName = document.getElementById('article_name').value;
+    var username = document.getElementById('username').value;
+    var comment = document.getElementById('comment').value;
+    var captcha = document.getElementById('captcha').value;
+
+    // 发送请求以验证验证码
+    fetch('/verify_captcha', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'captcha=' + captcha
+    })
+      .then(function(response) {
+        return response.text();
+      })
+      .then(function(result) {
+        // 如果验证码匹配成功，执行评论逻辑
+        if (result === '验证码匹配成功') {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/post_comment', true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              var response = JSON.parse(xhr.responseText);
+              document.getElementById('result').innerText = response.result;
+
+              // 如果评论成功，清空评论输入框
+              if (response.result === '评论成功') {
+                document.getElementById('comment').value = '';
+
+                // 用新添加的评论更新现有评论部分
+                var commentsSection = document.getElementById('comments');
+                var newComment = document.createElement('div');
+                newComment.innerHTML = response.username + ": " + response.comment;
+                commentsSection.appendChild(newComment);
+
+                // 刷新验证码图像
+                generateCaptcha();
+              }
+            }
+          };
+          xhr.send('article_name=' + articleName + '&username=' + username + '&comment=' + comment);
+        } else {
+          // 验证码不匹配，提示用户
+          alert('验证码不匹配');
+          // 刷新验证码图像
+          generateCaptcha();
+        }
+      })
+      .catch(function(error) {
+        console.error(error);
+      })
+      .finally(function() {
+        // 重新注册点击事件，以刷新验证码图像
+        var captchaImage = document.getElementById('captcha-image');
+        captchaImage.addEventListener('click', generateCaptcha);
+      });
+  }
+  function generateCaptcha() {
+  var captchaImage = document.getElementById('captcha-image');
+  fetch('/generate_captcha')
+    .then(function (response) {
+      return response.json(); // Parse the response as JSON
+    })
+    .then(function (result) {
+      // Update the captcha image source with the base64 image data
+      captchaImage.src = 'data:image/jpeg;base64,' + result.image;
+      captchaImage.alt = result.captcha_text;
+    })
+    .catch(function (error) {
+      console.error(error);
+      // Handle any errors if necessary
+    });
+}
+
+  // 在表单提交时调用评论函数
+  var form = document.getElementById('comment_form');
+  form.addEventListener('submit', postComment);
+
+  // 生成初始验证码图像
+  generateCaptcha();
+</script>
+<script>
+  // 检测设备类型
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // 根据设备类型添加样式
+  if (isMobile) {
+    document.addEventListener("DOMContentLoaded", function() {
+      var showOnDesktopDiv = document.querySelector(".show-on-desktop");
+      if (showOnDesktopDiv) {
+        showOnDesktopDiv.style.display = "none";
+      }
+    });
+  }
+</script>
+<style>
+    #sidebar {
+        max-height: 75vh;  /* 设置固定高度，这里示例为屏幕高度的 100% */
+  overflow-y: scroll;  /* 添加垂直滚动条 */
+  position: fixed;
+  top: 85px;
+  left: 10px;
+  right: 0;
+  background-color: transparent;
+        opacity: 0.8;
+
+}
+    </style>
+<script>
+    function toggleSidebar() {
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar.style.display === "none") {
+    sidebar.style.display = "block";
+  } else {
+    sidebar.style.display = "none";
+  }
+}
+var pageContent = document.body.innerText;
+// 检测是否包含作者单词
+if (pageContent.includes("author")) {
+  // 创建一个新的button元素
+  var button = document.createElement("button");
+  button.setAttribute("onclick", "toggleSidebar()");
+  button.innerText = "显示/隐藏侧边栏";
+
+  // 将按钮添加到<div id="SideList"></div>之间
+  var sideList = document.getElementById("SideList");
+  sideList.insertBefore(button, sideList.firstChild);
+}
+</script>
+<script>
+    if (window !== window.top) {
+  // 当前窗口被嵌套在另一个iframe中
+  alert('当前视图会影响您的体验！！！\n请点击搜索结果后的小图标进行访问');
+  window.location.href = '/search';
+}
+    </script>
+
+<script>
+// 使用 JavaScript 代码实现
+var sidebar = document.getElementById('sidebar');
+var initialX = null;
+
+sidebar.addEventListener('mousedown', function(event) {
+  event.preventDefault();
+  initialX = event.clientX;
+  document.addEventListener('mousemove', moveElement);
+
+  document.addEventListener('mouseup', function() {
+    document.removeEventListener('mousemove', moveElement);
+    initialX = null;
+  });
+
+  function moveElement(event) {
+    var deltaX = event.clientX - initialX;
+    var newX = sidebar.offsetLeft + deltaX;
+    sidebar.style.left = newX + 'px';
+    initialX = event.clientX;
+  }
+});
+
+// 使用 jQuery 实现
+$('#sidebar').draggable({
+  axis: 'x'  // 限制只能在水平方向拖动
+});
+</script>
+
+
+<script>
+// 监测#fullscreen元素的变化
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function (mutation) {
+      if (mutation.target.textContent.includes('密码验证成功')) {
+        animateFullScreen();
+      }
+    });
+  });
+
+  observer.observe(document.getElementById('message'), { characterData: true, childList: true });
+
+  // 在页面加载完成后触发动画函数
+  document.addEventListener('DOMContentLoaded', function () {
+    animateFullScreen();
+  });
+
+// 动画函数
+function animateFullScreen() {
+  var fullscreenElement = document.getElementById('fullscreen');
+    var startWidth = 100;
+    var startHeight = 100;
+    var endWidth = 1;
+    var endHeight = 1;
+    var duration = 1350; // 1秒钟
+
+    var startTime = null;
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var progress = timestamp - startTime;
+
+      fullscreenElement.style.width = easeOutQuad(progress, startWidth, endWidth - startWidth, duration) + '%';
+      fullscreenElement.style.height = easeOutQuad(progress, startHeight, endHeight - startHeight, duration) + '%';
+
+      if (progress < duration) {
+        window.requestAnimationFrame(step); // 继续下一帧动画
+      } else {
+        fullscreenElement.style.display = 'none'; // 动画结束后隐藏元素
+      }
+    }
+
+    // 缓动函数 - 使用二次贝塞尔曲线进行缓动计算
+    function easeOutQuad(t, b, c, d) {
+      t /= d;
+      return -c * t * (t - 2) + b;
+    }
+
+    // 开始执行动画
+    window.requestAnimationFrame(step);
+  }
+
+    </script>
