@@ -685,7 +685,21 @@ def upload_file():
 
 @app.route('/delete/<filename>', methods=['POST'])
 def delete_file(filename):
-    return zy_delete_file(filename)
+    userStatus = get_user_status()
+    username = get_username()
+    auth = False  # 设置默认值
+
+    if userStatus and username is not None:
+        article=filename
+        # Auth 认证
+        auth = authArticles(article, username)
+
+    if auth == True:
+        return zy_delete_file(filename)
+
+    else:
+        return error(message='您没有权限', status_code=503)
+
 
 @app.route('/robots.txt')
 def static_from_root():

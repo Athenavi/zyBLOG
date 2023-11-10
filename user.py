@@ -88,13 +88,30 @@ def zy_delete_file(filename):
     # 指定目录的路径
     directory = 'articles/'
 
+    mapper = 'author/mapper.ini'
+    lines = []
+    with open(mapper, 'r', encoding='utf-8') as file:
+        for line in file:
+            if not line.strip().startswith(filename + '='):
+                lines.append(line)
+
+    with open(mapper, 'w', encoding='utf-8') as file:
+        file.writelines(lines)
+
+
+    filename = filename + '.md'
     # 构建文件的完整路径
     file_path = os.path.join(directory, filename)
 
-    # 删除文件
-    os.remove(file_path)
+    try:
+        # 删除文件
+        os.remove(file_path)
 
-    return 'success'
+        return 'success'
+
+    except OSError as error:
+        # 处理出错的情况
+        return 'failed: ' + str(error)
 
 
 def GetOwnerArticles(ownername):

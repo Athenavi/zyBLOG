@@ -67,8 +67,9 @@
             {% endif %}
           </div>
         </div>
-      </a><br/><a href="/edit/{{ article }}">编辑</a>
+      </a><br/><a href="/edit/{{ article }}"style="color:greenyellow">编辑</a>
     <a href="#" data-article={{ article }} class='hidden121'>隐藏/取消隐藏此文章</a>
+    <a href="#" data-article={{ article }} class='delete121' style="color:red">删除此文章</a>
     </div>
   {% endfor %}
 
@@ -153,6 +154,53 @@ hiddenLinks.forEach(link => {
         alert('请求出错');
         console.error('请求出错:', error);
       });
+  });
+});
+
+
+//
+const deleteLinks = document.querySelectorAll('a.delete121');
+
+// 为每个隐藏链接添加点击事件处理程序
+deleteLinks.forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault(); // 阻止默认链接行为
+
+    // 获取链接上的 data-article 属性作为文章名
+    const article = link.getAttribute('data-article');
+
+    var confirmation = confirm('您正在尝试永久删除该文章！！！是否继续？');
+    if (!confirmation) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+    var confirmation0 = confirm('再次确认呢？是否继续？');
+    if (!confirmation0) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+
+    // 发起 POST 请求
+    fetch(`/delete/${article}`, {
+      method: 'POST'
+    })
+    .then(response => {
+      if (response.ok) {
+        // 成功删除文章
+        alert('文章删除成功！');
+        // 刷新页面或做其他处理
+        location.reload();
+      } else {
+        // 删除文章失败
+        alert('文章删除失败！');
+      }
+    })
+    .catch(error => {
+      // 请求出错
+      alert('请求出错：' + error);
+    });
   });
 });
 </script>
