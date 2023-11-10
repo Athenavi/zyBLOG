@@ -20,7 +20,7 @@ from AboutLogin import zylogin, zyregister, get_email, profile, zyGitHublogin
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
-    zyShowArticle, zyFEditArticle, zypwCheck
+    zyShowArticle, zyFEditArticle
 from templates.custom import custom_max, custom_min
 from database import get_database_connection
 from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
@@ -1184,3 +1184,39 @@ def zyPWblog(article_name):
             return render_template('hidden.html',articleName=article_name,
                                    theme=session['theme'],
                                    url_for=url_for)
+
+
+def zypwCheck(article, code):
+    try:
+        invitecodes = get_invitecode_data()  # 获取invitecode表数据
+
+        for result in invitecodes:
+            if result['uuid'] == article and result['code'] == code:
+                print('认证通过')
+                return 'success'
+
+        return 'failed'
+    except:
+        return 'failed'
+
+
+@cache.cached(timeout=600, key_prefix='invitecode')
+def get_invitecode_data():
+    db = get_database_connection()
+
+    cursor = db.cursor()
+    # 执行 MySQL 查询获取你想要缓存的表数据
+    query = "SELECT * FROM invitecode"
+    cursor.execute(query)
+
+    # 构建数据字典列表
+    data = []
+    columns = [desc[0] for desc in cursor.description]
+    for row in cursor.fetchall():
+        data.append(dict(zip(columns, row)))
+    current_time = datetime.now()
+    print("当前数据表更新时间：", current_time)
+    cursor.close()
+    db.close()
+
+    return data

@@ -268,23 +268,3 @@ def zyFEditArticle(article):
 
 
 
-def zypwCheck(article, code):
-    try:
-        db = get_database_connection()
-        cursor = db.cursor()
-
-        sql = f"SELECT * FROM `invitecode` WHERE `uuid` = '{article}'"
-        cursor.execute(sql)
-
-        result = cursor.fetchone()
-
-        if result and result[1] == code:
-            print('认证通过')
-            return 'success'
-        else:
-            return 'failed'
-    except:
-        return 'failed'
-    finally:
-        cursor.close()
-        db.close()
