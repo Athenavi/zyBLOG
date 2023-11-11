@@ -246,5 +246,24 @@ closeButton.addEventListener('click', () => {
   clearInterval(intervalId); // 关闭按钮被点击时，清除计时器
   topBar.style.display = 'none';
 });
+
+
+// 自动Nav跳转
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        var hash = window.location.hash;
+
+        if (hash !== '') {
+          var anchor = hash.slice(1);
+
+          var targetElement = document.getElementById(anchor);
+
+          if (targetElement) {
+            targetElement.scrollIntoView();
+          }
+        }
+      }, 1500);
+    });
+
 </script>
 {% endmacro %}
