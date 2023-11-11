@@ -1020,7 +1020,7 @@ def hideen_article():
 def hide_article(article):
     with open('articles/hidden.txt', 'a', encoding='utf-8') as hidden_file:
         # 将文章名写入hidden.txt的新的一行中
-        hidden_file.write(article + '\n')
+        hidden_file.write('\n'+article + '\n')
 
 def unhide_article(article):
     with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
@@ -1220,3 +1220,63 @@ def get_invitecode_data():
     db.close()
 
     return data
+
+@app.route('/change-article-pw/<filename>', methods=['POST'])
+def changeArticlePW(filename):
+    userStatus = get_user_status()
+    username = get_username()
+    auth = False  # 设置默认值
+
+    if userStatus and username is not None:
+        article=filename
+        # Auth 认证
+        auth = authArticles(article, username)
+
+    if auth == True:
+        newCode = request.get_json()['NewPass']
+        article = request.get_json()["Article"]
+        if newCode=='':newCode='0000'
+        return zy_change_article_pw(article,newCode)
+
+    else:
+        return error(message='您没有权限', status_code=503)
+
+
+def zy_change_article_pw(filename, newCode='1234'):
+    # Connect to the database
+    db = get_database_connection()
+
+    try:
+        with db.cursor() as cursor:
+            # Check if the uuid exists in the table
+            query = "SELECT * FROM invitecode WHERE uuid = %s"
+            cursor.execute(query, (filename,))
+            result = cursor.fetchone()
+
+            if result is not None:
+                # Update the code value
+                query = "UPDATE invitecode SET code = %s WHERE uuid = %s"
+                cursor.execute(query, (newCode, filename))
+            else:
+                # Insert a new row
+                # Check if the length of newCode is not greater than 4
+                if len(newCode) > 4:
+                    return "failed"
+
+                query = "INSERT INTO invitecode (uuid, code, is_used) VALUES (%s, %s, 0)"
+                cursor.execute(query, (filename, newCode))
+
+            # Commit the changes to the database
+            db.commit()
+
+            # Return success message
+            return "success"
+
+    except Exception as e:
+        # Return failure message if any error occurs
+        return "failed"
+
+    finally:
+        # Close the connection and cursor
+        cursor.close()
+        db.close()

@@ -51,6 +51,16 @@
       <!-- 展示已登录的内容 -->
       <br><span><span id="idSpan"></span>的文章</span>
     {% endif %}
+<div id="changeCodeModal">
+    <div class="modal-content">
+      <h2>修改密码 - <span id="currentArticle"></span></h2>
+        <span>不输入时保存可将密码重置为"0000"</span>
+      <label for="newCodeInput">新的密码：</label>
+      <input type="text" id="newCodeInput">
+        <button id="backButton">取消</button>
+      <button id="saveButton">保存</button>
+    </div>
+  </div>
 {% for article in Articles %}
   <div class="col-md-6">
       <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
@@ -70,8 +80,10 @@
       </a><br/><a href="/edit/{{ article }}"style="color:greenyellow">编辑</a>
     <a href="#" data-article={{ article }} class='hidden121'>隐藏/取消隐藏此文章</a>
     <a href="#" data-article={{ article }} class='delete121' style="color:red">删除此文章</a>
+    <a href="#" data-article="{{ article }}" class="changeCode" style="color:cadetblue">修改此文章密码</a>
     </div>
   {% endfor %}
+
 
 
 <!-- 引入注脚 -->
@@ -204,3 +216,98 @@ deleteLinks.forEach(link => {
   });
 });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const changeCodeLinks = document.querySelectorAll('a.changeCode');
+
+    changeCodeLinks.forEach(function(link) {
+      link.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const article = this.dataset.article;
+        const changeCodeModal = document.getElementById('changeCodeModal');
+        const currentArticle = document.getElementById('currentArticle');
+        const newCodeInput = document.getElementById('newCodeInput');
+        const saveButton = document.getElementById('saveButton');
+
+        // Set the current article in the modal
+        currentArticle.textContent = article;
+
+        // Fill in the input with the current password
+        newCodeInput.value = '';
+
+        // Show the modal
+        changeCodeModal.style.display = 'block';
+
+        saveButton.addEventListener('click', function() {
+          const newCode = newCodeInput.value;
+
+
+          var confirmation = confirm('您正在尝试修改密码！！！是否继续？');
+            if (!confirmation) {
+            // 用户点击了取消，终止本次请求
+             return;
+            }
+            var confirmation1 = confirm('密码修改后会在十分钟内生效，是否继续');
+            if (!confirmation1) {
+            // 用户点击了取消，终止本次请求
+             return;
+            }
+
+          // Send POST request to the server
+          fetch(`/change-article-pw/${article}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ NewPass: newCode, Article: article })
+          })
+          .then(response => response.text())
+          .then(data => {
+            if (data === 'success') {
+              alert('密码修改成功');
+            } else {
+              alert('密码修改失败');
+            }
+
+            // Hide the modal
+            changeCodeModal.style.display = 'none';
+          });
+        });
+      });
+    });
+  });
+
+  // 获取取消按钮
+const cancelButton = document.getElementById("backButton");
+
+// 点击取消按钮时触发的事件处理函数
+cancelButton.addEventListener("click", function() {
+    // 隐藏 changeCodeModal 元素
+    const changeCodeModal = document.getElementById("changeCodeModal");
+    changeCodeModal.style.display = "none";
+});
+
+
+</script>
+<style>
+    #changeCodeModal {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+    #changeCodeModal .modal-content {
+      width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+  </style>
