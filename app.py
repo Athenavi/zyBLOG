@@ -1302,21 +1302,14 @@ def zy_change_article_pw(filename, newCode='1234'):
 
 @app.route('/media', methods=['GET', 'POST'])
 def media_space():
-    id = request.args.get('id')
     page = request.args.get('page', default=1, type=int)
     userStatus = get_user_status()
     username = get_username()
     auth = False  # 设置默认值
-    if id is None or id == '':
-        id = username
-    # Auth 认证
-    if id and id is not None:
-        if userStatus and username is not None:
-            auth = bool(id == username)
-
-    if auth == True:
+    if userStatus and username is not None:
         if request.method == 'GET':
-            imgs, has_next_page, has_previous_page = get_ALL_img(id, page=page)
+            #id=username
+            imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
         elif request.method == 'POST':
             # 处理POST请求
             # 解析请求参数
@@ -1325,7 +1318,7 @@ def media_space():
                 return error(message='缺少图像名称', status_code=400)
 
             # 根据图片名获取图片路径或其他相关操作
-            image = get_image_path(id, img_name)
+            image = get_image_path(username, img_name)
             if image is None:
                 return error(message='未找到图像', status_code=404)
 
@@ -1337,9 +1330,9 @@ def media_space():
     else:
         return error(message='您没有权限', status_code=503)
 
-def get_ALL_img(id, page=1, per_page=10):
+def get_ALL_img(username, page=1, per_page=10):
     imgs = []
-    img_dir = os.path.join(app.root_path, 'media/'+id)  # 修改为实际的图片目录路径
+    img_dir = os.path.join(app.root_path, 'media/'+username)  # 修改为实际的图片目录路径
     # 检查文件夹是否存在，如果不存在则创建它
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
@@ -1360,10 +1353,22 @@ def get_ALL_img(id, page=1, per_page=10):
 
     return imgs, has_next_page, has_previous_page
 
-def get_image_path(id, img_name):
+
+@app.route('/get_image_path/<username>/<img_name>')
+def get_image_path(username, img_name):
     try:
-        img_dir = os.path.join(app.root_path, 'media', id)  # 修改为实际的图片目录路径
+        img_dir = os.path.join(app.root_path, 'media', username)  # 修改为实际的图片目录路径
         img_path = os.path.join(img_dir, img_name)  # 图片完整路径
+
+        # 从缓存中获取图像数据
+        img_data = cache.get(img_path)
+
+        # 如果缓存中没有图像数据，则从文件中读取并进行缓存
+        if img_data is None:
+            with open(img_path, 'rb') as f:
+                img_data = f.read()
+            cache.set(img_path, img_data)
+
         return send_file(img_path, mimetype='image/png')
     except Exception as e:
         print(f"Error in getting image path: {e}")
