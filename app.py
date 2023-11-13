@@ -45,7 +45,16 @@ app.secret_key = 'your_secret_key'
 app.permanent_session_lifetime = datetime.timedelta(hours=3)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)  # 添加 ProxyFix 中间件
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
+# 移除默认的日志处理程序
+app.logger.handlers = []
+
+# 新增日志处理程序
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+file_handler = logging.FileHandler('temp/app.log', encoding='utf-8')
+file_handler.setFormatter(log_formatter)
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
+
 
 config = ConfigParser()
 config.read('config.ini')
@@ -381,7 +390,7 @@ def home():
             notice = read_file('notice/1.txt', 50)
             userStatus = get_user_status()
             username = get_username()
-            print(username)
+            app.logger.info('当前访问的用户：{}'.format(username))
             if userStatus and username != None:
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
@@ -1195,7 +1204,7 @@ def zypwCheck(article, code):
 
         for result in invitecodes:
             if result['uuid'] == article and result['code'] == code:
-                print('认证通过')
+                app.logger.info('完成了一次数据表更新')
                 return 'success'
 
         return 'failed'
@@ -1218,7 +1227,7 @@ def get_invitecode_data():
     for row in cursor.fetchall():
         data.append(dict(zip(columns, row)))
     current_time = datetime.now()
-    print("当前数据表更新时间：", current_time)
+    app.logger.info('当前数据表更新时间：{}'.format(current_time))
     cursor.close()
     db.close()
 
