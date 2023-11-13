@@ -74,6 +74,12 @@ def get_client_ip():
         return public_ip
 
     # 获取 X-Real-IP 请求头中的 IP 地址
+    real_ip = request.headers.get('X-Real-IP')
+
+    if real_ip:
+        return real_ip
+
+    # 获取公共IP地址
     try:
         response = requests.get('http://ip-api.com/json')
         data = response.json()

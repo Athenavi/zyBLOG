@@ -373,7 +373,8 @@ def zy_get_city_code(city_name):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     IPinfo = get_client_ip()
-    update_visit(IPinfo)
+    ip1=get_client_ip()
+    #update_visit(IPinfo)
     IPinfo=analyze_ip_location(IPinfo)
     #查询天气
     city_code = ip_city_code(IPinfo)
@@ -390,7 +391,7 @@ def home():
             notice = read_file('notice/1.txt', 50)
             userStatus = get_user_status()
             username = get_username()
-            app.logger.info('当前访问的用户：{}'.format(username))
+            app.logger.info('当前访问的用户:{},IP:{},IP归属地:{} '.format(username,ip1,IPinfo))
             if userStatus and username != None:
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
@@ -404,7 +405,7 @@ def home():
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 def blog_detail(article):
     IPinfo = get_client_ip()
-    update_visit(IPinfo)
+    #update_visit(IPinfo)
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:

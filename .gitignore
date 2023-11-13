@@ -6,7 +6,7 @@
 /.github/
 /.idea/
 /articles/donate.md
-app.log
+temp/app.log
 config.ini
 .gitignore
 visit_ip.txt
