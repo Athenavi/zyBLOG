@@ -169,18 +169,21 @@ def search():
 
 
 def analyze_ip_location(ip_address):
+    city_name = ''
+
     # 加载GeoIP2数据库文件
-    reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
+    if ip_address:
+        reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
 
-    try:
-        response = reader.city(ip_address)
-        city_name = response.city.names.get('zh-CN', '')
-    except geoip2.errors.AddressNotFoundError:
-        city_name = ''
+        try:
+            response = reader.city(ip_address)
+            city_name = response.city.names.get('zh-CN', '')
+        except geoip2.errors.AddressNotFoundError:
+            city_name = ''
 
-    reader.close()
+        reader.close()
+
     return city_name
-
 
 
 def update_visit(ip):
