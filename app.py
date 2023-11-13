@@ -57,7 +57,7 @@ app.logger.setLevel(logging.INFO)
 
 
 config = ConfigParser()
-config.read('config.ini')
+config.read('config.ini', encoding='utf-8')
 # 应用分享配置参数
 from datetime import datetime, timedelta
 @app.route('/favicon.ico')
@@ -101,6 +101,7 @@ def logout():
 
 
 domain = config.get('general', 'domain').strip("'")
+title = config.get('general', 'title').strip("'")
 
 @app.route('/toggle_theme', methods=['POST'])  # 处理切换主题的请求
 def toggle_theme():
@@ -398,7 +399,7 @@ def home():
             if userStatus and username != None:
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
-            return template.render(articles=articles, url_for=url_for, theme=session['theme'],
+            return template.render(title=title,articles=articles, url_for=url_for, theme=session['theme'],
                                notice=notice,avatar_url=avatar_url,
                                has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo,city_code=city_code)
         else:
@@ -457,7 +458,7 @@ def blog_detail(article):
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
 
-            return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
+            return render_template('BlogDetail.html',title=title, article_content=article_content, articleName=article_name,
                                     theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
                                     url_for=url_for, username=username, article_url=article_url,
                                     article_Surl=article_Surl, article_summary=article_summary,readNav=readNav_html)

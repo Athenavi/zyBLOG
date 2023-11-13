@@ -4,7 +4,7 @@ import logging
 from flask import session, render_template, redirect, url_for
 from database import get_database_connection
 config = ConfigParser()
-config.read('config.ini')
+config.read('config.ini', encoding='utf-8')
 door_key = config.get('admin', 'key').strip("'")
 
 def error(message, status_code):

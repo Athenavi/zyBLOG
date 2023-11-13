@@ -193,7 +193,7 @@ def get_file_date(file_path):
 
 def zySendMessage(message):
     config = ConfigParser()
-    config.read('config.ini')
+    config.read('config.ini', encoding='utf-8')
     access_token = config.get('messageBot', 'access_token').strip("'")
     webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=' + access_token
     dingbot = DingtalkChatbot(webhook_url)

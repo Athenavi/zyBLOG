@@ -4,7 +4,7 @@ import configparser
 
 def get_database_connection():
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read('config.ini', encoding='utf-8')
 
     db_config = dict(config.items('database'))
 
