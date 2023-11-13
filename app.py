@@ -407,6 +407,7 @@ def home():
 
 
 @app.route('/blog/<article>', methods=['GET', 'POST'])
+@app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
     IPinfo = get_client_ip()
     #update_visit(IPinfo)
