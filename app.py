@@ -896,7 +896,7 @@ def github_authorized():
 
 @app.route('/api/img')
 def random_image():
-    img_dir = os.path.join(app.root_path, 'img')  # 修改为实际的图片目录路径
+    img_dir = os.path.join(app.root_path, 'media')  # 修改为实际的图片目录路径
 
     # 获取目录中所有图片文件
     img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
@@ -1298,3 +1298,73 @@ def zy_change_article_pw(filename, newCode='1234'):
         # Close the connection and cursor
         cursor.close()
         db.close()
+
+
+@app.route('/media', methods=['GET', 'POST'])
+def media_space():
+    id = request.args.get('id')
+    page = request.args.get('page', default=1, type=int)
+    userStatus = get_user_status()
+    username = get_username()
+    auth = False  # 设置默认值
+    if id is None or id == '':
+        id = username
+    # Auth 认证
+    if id and id is not None:
+        if userStatus and username is not None:
+            auth = bool(id == username)
+
+    if auth == True:
+        if request.method == 'GET':
+            imgs, has_next_page, has_previous_page = get_ALL_img(id, page=page)
+        elif request.method == 'POST':
+            # 处理POST请求
+            # 解析请求参数
+            img_name = request.json.get('img_name')
+            if img_name is None:
+                return error(message='缺少图像名称', status_code=400)
+
+            # 根据图片名获取图片路径或其他相关操作
+            image = get_image_path(id, img_name)
+            if image is None:
+                return error(message='未找到图像', status_code=404)
+
+            return image  # 返回图片路径
+
+        return render_template('media.html', imgs=imgs, title=title, url_for=url_for, theme=session['theme'],
+                               has_next_page=has_next_page, has_previous_page=has_previous_page,
+                               current_page=page, userid=username)
+    else:
+        return error(message='您没有权限', status_code=503)
+
+def get_ALL_img(id, page=1, per_page=10):
+    imgs = []
+    img_dir = os.path.join(app.root_path, 'media/'+id)  # 修改为实际的图片目录路径
+    # 检查文件夹是否存在，如果不存在则创建它
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+    # 获取目录中所有图片文件
+    img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
+
+
+
+    start_index = (page-1) * per_page
+    end_index = start_index + per_page
+
+    for file in img_files[start_index:end_index]:
+        imgs.append(file)
+
+
+    has_next_page = end_index < len(imgs)
+    has_previous_page = start_index > 0
+
+    return imgs, has_next_page, has_previous_page
+
+def get_image_path(id, img_name):
+    try:
+        img_dir = os.path.join(app.root_path, 'media', id)  # 修改为实际的图片目录路径
+        img_path = os.path.join(img_dir, img_name)  # 图片完整路径
+        return send_file(img_path, mimetype='image/png')
+    except Exception as e:
+        print(f"Error in getting image path: {e}")
+        return None

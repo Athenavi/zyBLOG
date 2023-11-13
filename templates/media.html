@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!-- 网站主语言 -->
+<html lang="zh-cn">
+<head>
+    <!-- 网站采用的字符编码 -->
+    <meta charset="utf-8">
+    <meta name="description" content="zyBLOG|基于flask的博客程序">
+    <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
+    <meta name="robots" content="index, follow">
+    <!-- 预留网站标题的位置 -->
+    <title>{{ title }} | zyBLOG</title>
+    <!-- 引入bootstrap的css文件 -->
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/card.css">
+    <script src="../static/main.js"></script>
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <!-- 引入layer.js -->
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+</head>
+<body class="{{ theme }}">
+{% from 'header.html' import zytopbar %}
+<!-- 调用topbar -->
+{{ zytopbar() }}
+
+<!-- 引入导航栏 -->
+<!-- 定义导航栏 -->
+
+<!-- 预留具体页面的位置 -->
+<div class="container d-none d-sm-block">
+
+
+<div style="width: 1080px; height: 70px; background-color: transparent;">
+    {% if userid %}
+      <!-- 展示已登录的内容 -->
+        <a>欢迎您，{{ userid }}</a>
+    {% else %}
+      <!-- 展示未登录的内容 -->
+      <a href="/login">您还没有登录呢</a>
+    {% endif %}
+</div>
+
+  <!-- 翻页按钮 -->
+
+
+<div class="container" id="imgs-container">
+  <div class="row">
+    <div class="col-md-8">
+      {% for img in imgs %}
+      <div class="col-md-6">
+        <a  class="card-link" onclick="showImage('{{ img }}')">
+          <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
+            <div class="card-body" style="display: flex;">
+              {% set i = range(1000)|random %}
+              <!-- Check if the iteration is even -->
+              {% if loop.index is even %}
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ img }}</h3>
+              {% else %}
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ img }}</h3>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+      <div style="width: 1080px; height: 30px; background-color: transparent;">
+        <!-- 翻页按钮 -->
+        {% if has_previous_page %}
+        <a href="{{ url_for('media', id=userid, page=current_page-1) }}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page %}
+        <a href="{{ url_for('media', id=userid, page=current_page+1) }}">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ <!-- 图像弹窗 -->
+<style>
+  #image-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .image-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .image-wrapper img {
+    max-width: 80%;
+    max-height: 80%;
+  }
+
+  .image-wrapper button {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+</style>
+
+
+
+    <div id="image-popup">
+      <div class="image-wrapper">
+        <img id="popup-image" src="" alt="Image">
+        <button class="btn btn-primary" onclick="closeImage()">关闭</button>
+      </div>
+    </div>
+
+    <script>
+      function showImage(img) {
+        // 发起POST请求获取图像数据
+        fetch('/media', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ img_name: img })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+          // 创建并设置图像URL
+          const imageURL = URL.createObjectURL(blob);
+
+          // 显示图片
+          const popupImage = document.getElementById('popup-image');
+          popupImage.src = imageURL;
+
+          // 显示图像弹窗
+          const imagePopup = document.getElementById('image-popup');
+          imagePopup.style.display = 'block';
+        })
+        .catch(error => {
+          console.error(error);
+        });
+      }
+
+      function closeImage() {
+        // 关闭图像弹窗
+        const imagePopup = document.getElementById('image-popup');
+        imagePopup.style.display = 'none';
+      }
+    </script>
+
+  </div>
+
+
+</div>
+  </div>
+</div>
+
+
+<!-- 引入注脚 -->
+
+<div>
+</div>
+{% from 'footer.html' import zyfooter %}
+<!-- 调用footer -->
+{{ zyfooter() }}
+
+</body>
+</html>
+</html>
+
+<style>
+  .card-link:hover .card {
+    box-shadow: 0 0 10px #877725;
+  }
+</style>
+<style>
+  .card-body {
+    display: flex;
+    align-items: center;
+  }
+
+  .card-body img {
+    flex: 1;
+    max-width: 50%;
+    max-height: 125%;
+  }
+
+  .card-body h3 {
+    flex: 1;
+  }
+</style>

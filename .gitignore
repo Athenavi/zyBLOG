@@ -10,4 +10,4 @@ temp/app.log
 config.ini
 .gitignore
 visit_ip.txt
-/img/*
+/media/*
