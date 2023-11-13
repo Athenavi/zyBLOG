@@ -178,6 +178,9 @@ def search():
 
 
 def analyze_ip_location(ip_address):
+    city_name = session.get('city_name')
+    if city_name:
+        return city_name
     city_name = ''
 
     # 加载GeoIP2数据库文件
@@ -191,7 +194,7 @@ def analyze_ip_location(ip_address):
             city_name = ''
 
         reader.close()
-
+    session['city_name'] = city_name
     return city_name
 
 
