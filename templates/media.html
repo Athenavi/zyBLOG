@@ -94,7 +94,7 @@
 
     {% for video in videos %}
       <div class="col-md-6" >
-        <a  class="card-link" onclick="">
+        <a  class="card-link" onclick="startVideo('{{ video }}')">
           <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
             <div class="card-body" style="display: flex;">
 
@@ -204,6 +204,13 @@
         const imagePopup = document.getElementById('image-popup');
         imagePopup.style.display = 'none';
       }
+
+      function startVideo(video) {
+  var username = "{{ username }}";  // Replace with the actual username
+  window.open("/zyVideo/" + username + "/" + video, "_blank");
+}
+
+
     </script>
 
   </div>

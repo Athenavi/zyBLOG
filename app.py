@@ -1433,3 +1433,14 @@ def upload_image_path(username1):
                 return 'failed'
     else:
         return 'failed'
+
+@app.route('/zyVideo/<username>/<video_name>')
+def start_video(username, video_name):
+    try:
+        video_dir = os.path.join(app.root_path, 'media', username)
+        video_path = os.path.join(video_dir, video_name)
+
+        return send_file(video_path, mimetype='video/mp4', as_attachment=False, conditional=True)
+    except Exception as e:
+        print(f"Error in getting video path: {e}")
+        return None
