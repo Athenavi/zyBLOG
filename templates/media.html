@@ -50,24 +50,32 @@
 
 </div>
 
+<div style="width: 1080px; height: 30px; background-color: transparent;">
+        <!-- 翻页按钮 -->
+        {% if has_previous_page %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1) }}">Next</a>
+        {% endif %}
+      </div>
+
+
   <!-- 翻页按钮 -->
 
 
 <div class="container" id="imgs-container">
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-8" id="imglist">
       {% for img in imgs %}
-      <div class="col-md-6">
+      <div class="col-md-6" >
         <a  class="card-link" onclick="showImage('{{ img }}')">
           <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
             <div class="card-body" style="display: flex;">
-              {% set i = range(1000)|random %}
-              <!-- Check if the iteration is even -->
-              {% if loop.index is even %}
+
               <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ img }}</h3>
-              {% else %}
-              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ img }}</h3>
-              {% endif %}
+
             </div>
           </div>
         </a>
@@ -76,11 +84,11 @@
       <div style="width: 1080px; height: 30px; background-color: transparent;">
         <!-- 翻页按钮 -->
         {% if has_previous_page %}
-        <a href="{{ url_for('media', id=userid, page=current_page-1) }}">Previous</a>
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
         {% endif %}
         <span>----------</span>
         {% if has_next_page %}
-        <a href="{{ url_for('media', id=userid, page=current_page+1) }}">Next</a>
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1) }}">Next</a>
         {% endif %}
       </div>
     </div>
@@ -217,28 +225,31 @@
       formData.append('file', file);
 
       try {
-  let response = await fetch(`/upload_image/{{ username }}`, {
-    method: 'POST',
-    body: formData
-  });
+        let response = await fetch(`/upload_image/{{ username }}`, {
+          method: 'POST',
+          body: formData
+        });
 
-  let responseText = await response.text(); // 获取响应内容
+        let responseText = await response.text(); // 获取响应内容
 
-  if (response.ok && responseText === 'success') {
-    // 文件上传成功
-    alert('File uploaded successfully.');
-    // 可以在这里执行其他操作，如更新页面内容等
-  } else if (responseText === 'failed') {
-    // 文件上传失败
-    alert('File upload failed.');
-  } else {
-    // 处理其他未预期的响应
-    console.error('Unexpected response:', responseText);
-  }
-} catch (error) {
-  console.error('File upload error:', error);
-  alert('File upload error.');
-}
+        if (response.ok && responseText === 'success') {
+          // 文件上传成功
+            alert('File upload failed.');
+            setTimeout(() => {
+                location.reload(); // Refresh the page
+                }, 1000); // Wait for 1 second
+
+        } else if (responseText === 'failed') {
+          // 文件上传失败
+          alert('File upload failed.');
+        } else {
+          // 处理其他未预期的响应
+          console.error('Unexpected response:', responseText);
+        }
+      } catch (error) {
+        console.error('File upload error:', error);
+        alert('File upload error.');
+      }
     }
   }
 </script>

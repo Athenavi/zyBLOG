@@ -1308,11 +1308,15 @@ def media_space():
     page = request.args.get('page', default=1, type=int)
     userStatus = get_user_status()
     username = get_username()
-    auth = False  # 设置默认值
+
     if userStatus and username is not None:
         if request.method == 'GET':
-            #id=username
             imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
+
+            return render_template('media.html', imgs=imgs, title=title, url_for=url_for, theme=session['theme'],
+                                   has_next_page=has_next_page, has_previous_page=has_previous_page,
+                                   current_page=page, userid=username)
+
         elif request.method == 'POST':
             # 处理POST请求
             # 解析请求参数
@@ -1327,35 +1331,30 @@ def media_space():
 
             return image  # 返回图片路径
 
-        return render_template('media.html', imgs=imgs, title=title, url_for=url_for, theme=session['theme'],
-                               has_next_page=has_next_page, has_previous_page=has_previous_page,
-                               current_page=page, userid=username)
-    else:
-        return error(message='您没有权限', status_code=503)
+    return error(message='您没有权限', status_code=503)
+
 
 def get_ALL_img(username, page=1, per_page=10):
     imgs = []
-    img_dir = os.path.join(app.root_path, 'media/'+username)  # 修改为实际的图片目录路径
+    img_dir = os.path.join(app.root_path, 'media/' + username)  # 修改为实际的图片目录路径
     # 检查文件夹是否存在，如果不存在则创建它
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
     # 获取目录中所有图片文件
     img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
 
+    total_img_count = len(img_files)  # 获取图片总数
 
-
-    start_index = (page-1) * per_page
-    end_index = start_index + per_page
+    start_index = (page - 1) * per_page  # 计算起始索引
+    end_index = start_index + per_page  # 计算结束索引
 
     for file in img_files[start_index:end_index]:
         imgs.append(file)
 
-
-    has_next_page = end_index < len(imgs)
-    has_previous_page = start_index > 0
+    has_next_page = end_index < total_img_count  # 判断是否有下一页
+    has_previous_page = start_index > 0  # 判断是否有上一页
 
     return imgs, has_next_page, has_previous_page
-
 
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
@@ -1396,11 +1395,13 @@ def upload_image_path(username1):
                         return 'Too large please use a file smaller than 10MB'
                     else:
                         if file:
-                            # Save the uploaded file to the specified path
                             img_dir = os.path.join(app.root_path, 'media', username)
-                            os.makedirs(img_dir, exist_ok=True)  # Create the directory if it doesn't exist
+                            os.makedirs(img_dir, exist_ok=True)
 
-                            file.save(os.path.join(img_dir, file.filename))
+                            file_path = os.path.join(img_dir, file.filename)
+
+                            with open(file_path, 'wb') as f:
+                                f.write(file.read())
 
                             return 'success'
                 else:
