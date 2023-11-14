@@ -35,6 +35,8 @@
     {% if userid %}
       <!-- 展示已登录的内容 -->
         <a>欢迎您，{{ userid }}</a>
+        <a href="{{ url_for('media_space', username=userid, page=1)}}">仅图片</a>
+        <a href="{{ url_for('media_space', username=userid, page=1,type='video')}}">仅视频</a>
     {% else %}
       <!-- 展示未登录的内容 -->
       <a href="/login">您还没有登录呢</a>
@@ -52,12 +54,20 @@
 
 <div style="width: 1080px; height: 30px; background-color: transparent;">
         <!-- 翻页按钮 -->
-        {% if has_previous_page %}
+        {% if has_previous_page and imgs %}
         <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
         {% endif %}
         <span>----------</span>
-        {% if has_next_page %}
-        <a href="{{ url_for('media_space', username=userid, page=current_page+1) }}">Next</a>
+        {% if has_next_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1)}}">Next</a>
+        {% endif %}
+
+      {% if has_previous_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1,type='video')}}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1,type='video')}}">Next</a>
         {% endif %}
       </div>
 
@@ -81,14 +91,37 @@
         </a>
       </div>
       {% endfor %}
+
+    {% for video in videos %}
+      <div class="col-md-6" >
+        <a  class="card-link" onclick="">
+          <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
+            <div class="card-body" style="display: flex;">
+
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ video }}</h3>
+
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+
       <div style="width: 1080px; height: 30px; background-color: transparent;">
         <!-- 翻页按钮 -->
-        {% if has_previous_page %}
+        {% if has_previous_page and imgs %}
         <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
         {% endif %}
         <span>----------</span>
-        {% if has_next_page %}
-        <a href="{{ url_for('media_space', username=userid, page=current_page+1) }}">Next</a>
+        {% if has_next_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1)}}">Next</a>
+        {% endif %}
+
+      {% if has_previous_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1,type='video')}}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1,type='video')}}">Next</a>
         {% endif %}
       </div>
     </div>

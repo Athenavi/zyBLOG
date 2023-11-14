@@ -1305,56 +1305,78 @@ def zy_change_article_pw(filename, newCode='1234'):
 
 @app.route('/media', methods=['GET', 'POST'])
 def media_space():
+    type = request.args.get('type', default='img')
     page = request.args.get('page', default=1, type=int)
     userStatus = get_user_status()
     username = get_username()
 
     if userStatus and username is not None:
         if request.method == 'GET':
-            imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
+            if not type or type == 'img':
+                imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
 
-            return render_template('media.html', imgs=imgs, title=title, url_for=url_for, theme=session['theme'],
-                                   has_next_page=has_next_page, has_previous_page=has_previous_page,
-                                   current_page=page, userid=username)
+                return render_template('media.html', imgs=imgs, title='Media', url_for=url_for,
+                                       theme=session.get('theme'), has_next_page=has_next_page,
+                                       has_previous_page=has_previous_page, current_page=page, userid=username)
+            if type == 'video':
+                videos, has_next_page, has_previous_page = get_ALL_video(username, page=page)
+
+                return render_template('media.html', videos=videos, title='Media', url_for=url_for,
+                                       theme=session.get('theme'), has_next_page=has_next_page,
+                                       has_previous_page=has_previous_page, current_page=page, userid=username)
 
         elif request.method == 'POST':
-            # 处理POST请求
-            # 解析请求参数
             img_name = request.json.get('img_name')
-            if img_name is None:
+            if not img_name:
                 return error(message='缺少图像名称', status_code=400)
 
-            # 根据图片名获取图片路径或其他相关操作
             image = get_image_path(username, img_name)
-            if image is None:
+            if not image:
                 return error(message='未找到图像', status_code=404)
 
-            return image  # 返回图片路径
+            return image
 
     return error(message='您没有权限', status_code=503)
 
 
 def get_ALL_img(username, page=1, per_page=10):
     imgs = []
-    img_dir = os.path.join(app.root_path, 'media/' + username)  # 修改为实际的图片目录路径
-    # 检查文件夹是否存在，如果不存在则创建它
+    img_dir = os.path.join(app.root_path, 'media', username)
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
-    # 获取目录中所有图片文件
+
     img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
+    total_img_count = len(img_files)
+    total_pages = (total_img_count + per_page - 1) // per_page
 
-    total_img_count = len(img_files)  # 获取图片总数
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+    imgs = img_files[start_index:end_index]
 
-    start_index = (page - 1) * per_page  # 计算起始索引
-    end_index = start_index + per_page  # 计算结束索引
-
-    for file in img_files[start_index:end_index]:
-        imgs.append(file)
-
-    has_next_page = end_index < total_img_count  # 判断是否有下一页
-    has_previous_page = start_index > 0  # 判断是否有上一页
+    has_next_page = page < total_pages
+    has_previous_page = page > 1
 
     return imgs, has_next_page, has_previous_page
+
+
+def get_ALL_video(username, page=1, per_page=10):
+    videos = []
+    video_dir = os.path.join(app.root_path, 'media', username)
+    if not os.path.exists(video_dir):
+        os.makedirs(video_dir)
+
+    video_files = [file for file in os.listdir(video_dir) if file.endswith(('.mp4', '.avi', '.mkv', '.webm', '.flv'))]
+    total_video_count = len(video_files)
+    total_pages = (total_video_count + per_page - 1) // per_page
+
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+    videos = video_files[start_index:end_index]
+
+    has_next_page = page < total_pages
+    has_previous_page = page > 1
+
+    return videos, has_next_page, has_previous_page
 
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
