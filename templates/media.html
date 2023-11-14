@@ -160,8 +160,44 @@
     font-size: 16px;
     margin-top: 10px;
   }
-</style>
 
+
+  #video-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .video-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .video-wrapper video {
+    max-width: 80%;
+    max-height: 80%;
+  }
+
+  .video-wrapper button {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+</style>
+<div id="video-popup">
+  <div class="video-wrapper">
+    <video id="video-image" src="" controls></video>
+    <button class="btn btn-primary" onclick="closeVideo()">关闭</button>
+  </div>
+</div>
 
 
     <div id="image-popup">
@@ -204,10 +240,21 @@
         const imagePopup = document.getElementById('image-popup');
         imagePopup.style.display = 'none';
       }
+      function closeVideo() {
+        // 关闭图像弹窗
+        const videoPopup = document.getElementById('video-popup');
+        videoPopup.style.display = 'none';
+      }
 
       function startVideo(video) {
   var username = "{{ username }}";  // Replace with the actual username
-  window.open("/zyVideo/" + username + "/" + video, "_blank");
+  var videoSrc = "/zyVideo/" + username + "/" + video;
+
+  var videoElement = document.getElementById("video-image");
+  videoElement.src = videoSrc;
+
+  var videoPopup = document.getElementById("video-popup");
+  videoPopup.style.display = "block";
 }
 
 
