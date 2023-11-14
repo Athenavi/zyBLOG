@@ -188,16 +188,24 @@ def get_weather_icon_url(weather_type):
     iconUrl = f'static/image/weather/{iconFileName}'
     return iconUrl
 
+
+# 获取系统默认编码
 def zySaveEdit(articleName, content):
     if articleName and content:
         save_directory = 'articles/'
 
-        # Check if the save directory exists, create it if it doesn't
+        # 将文章名转换为字节字符串
+        article_name_bytes = articleName.encode('utf-8')
+
+        # 将字节字符串和目录拼接为文件路径
+        file_path = os.path.join(save_directory, article_name_bytes.decode('utf-8') + ".md")
+
+        # 检查保存目录是否存在，如果不存在则创建它
         if not os.path.exists(save_directory):
             os.makedirs(save_directory)
 
-        # Save the file to the specified directory on the server, overwriting any existing file
-        with open(os.path.join(save_directory, secure_filename(articleName + ".md")), 'w', encoding='utf-8') as file:
+        # 将文件保存到指定的目录上，覆盖任何已存在的文件
+        with open(file_path, 'w', encoding='utf-8') as file:
             file.write(content)
 
         return make_response('success')
