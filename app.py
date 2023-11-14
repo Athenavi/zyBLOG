@@ -665,7 +665,10 @@ def newArticle():
         else:
             if file:
                 # 保存上传的文件到指定路径
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+                upload_folder = os.path.join(app.root_path, 'temp/upload')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, file.filename)
+                file.save(file_path)
 
                 # 检查文件是否存在于articles文件夹下
                 if os.path.isfile(os.path.join('articles', file.filename)):
@@ -686,7 +689,7 @@ def newArticle():
                     with open('author/mapper.ini', 'w', encoding='utf-8') as configfile:
                         authorMapper.write(configfile)
 
-                    message = '上传成功。但需要通过管理员确认'
+                    message = '上传成功。但目前处于隐藏状态，以便于你检查错误以及编辑'
 
                 return render_template('postNewArticle.html', message=message)
 
