@@ -399,9 +399,9 @@ def home():
             if userStatus and username != None:
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
-            return template.render(title=title,articles=articles, url_for=url_for, theme=session['theme'],
+            return template.render(title=title,articles=articles, url_for=url_for, theme=session['theme'],IPinfo=IPinfo,
                                notice=notice,avatar_url=avatar_url,
-                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,IPinfo=IPinfo,city_code=city_code)
+                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,city_code=city_code)
         else:
             return render_template('home.html')
 
