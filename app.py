@@ -1376,3 +1376,37 @@ def get_image_path(username, img_name):
     except Exception as e:
         print(f"Error in getting image path: {e}")
         return None
+
+
+@app.route('/upload_image/<username1>', methods=['POST'])
+def upload_image_path(username1):
+    userStatus = get_user_status()
+    username = get_username()
+    Auth = bool(username1 == username)
+
+    if userStatus and username is not None and Auth:
+        if request.method == 'POST':
+            try:
+                file = None
+                if 'file' in request.files:
+                    file = request.files['file']
+
+                if file is not None and file.filename.lower().endswith(('.jpg', '.png', '.webp','.jfif','.pjpeg','.jpeg','.pjp')):
+                    if file.content_length > 10 * 1024 * 1024:
+                        return 'Too large please use a file smaller than 10MB'
+                    else:
+                        if file:
+                            # Save the uploaded file to the specified path
+                            img_dir = os.path.join(app.root_path, 'media', username)
+                            os.makedirs(img_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+                            file.save(os.path.join(img_dir, file.filename))
+
+                            return 'success'
+                else:
+                    return 'Invalid file format. Only image files are allowed.'
+            except Exception as e:
+                print(f"Error in getting image path: {e}")
+                return 'failed'
+    else:
+        return 'failed'

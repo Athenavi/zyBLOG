@@ -39,6 +39,15 @@
       <!-- 展示未登录的内容 -->
       <a href="/login">您还没有登录呢</a>
     {% endif %}
+
+
+<form method="POST" action="/upload_image/{{ username }}">
+      <input type="file" name="file" id="file-input" accept="image/png, image/webp, image/jpeg">
+      <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+
+
+
 </div>
 
   <!-- 翻页按钮 -->
@@ -197,3 +206,39 @@
     flex: 1;
   }
 </style>
+
+<script>
+  async function uploadFile() {
+    let fileInput = document.getElementById('file-input');
+    let file = fileInput.files[0];
+
+    if (file) {
+      let formData = new FormData();
+      formData.append('file', file);
+
+      try {
+  let response = await fetch(`/upload_image/{{ username }}`, {
+    method: 'POST',
+    body: formData
+  });
+
+  let responseText = await response.text(); // 获取响应内容
+
+  if (response.ok && responseText === 'success') {
+    // 文件上传成功
+    alert('File uploaded successfully.');
+    // 可以在这里执行其他操作，如更新页面内容等
+  } else if (responseText === 'failed') {
+    // 文件上传失败
+    alert('File upload failed.');
+  } else {
+    // 处理其他未预期的响应
+    console.error('Unexpected response:', responseText);
+  }
+} catch (error) {
+  console.error('File upload error:', error);
+  alert('File upload error.');
+}
+    }
+  }
+</script>
