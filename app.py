@@ -1317,13 +1317,13 @@ def media_space():
 
                 return render_template('media.html', imgs=imgs, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
-                                       has_previous_page=has_previous_page, current_page=page, userid=username)
+                                       has_previous_page=has_previous_page, current_page=page, userid=username,domain=domain)
             if type == 'video':
                 videos, has_next_page, has_previous_page = get_ALL_video(username, page=page)
 
                 return render_template('media.html', videos=videos, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
-                                       has_previous_page=has_previous_page, current_page=page, userid=username)
+                                       has_previous_page=has_previous_page, current_page=page, userid=username,domain=domain)
 
         elif request.method == 'POST':
             img_name = request.json.get('img_name')
@@ -1378,6 +1378,7 @@ def get_ALL_video(username, page=1, per_page=10):
 
     return videos, has_next_page, has_previous_page
 
+@app.route('/zyImg/<username>/<img_name>')
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
     try:

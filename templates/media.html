@@ -84,7 +84,8 @@
           <div class="card mb-4" style="background-color: transparent; width: 675px; height: 180px;">
             <div class="card-body" style="display: flex;">
 
-              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ img }}</h3>
+              <h3 class="card-title" id="InBOX">&nbsp;{{ img }}</h3>
+                <button class="btn btn-primary" onclick="copyImgURL('{{ img }}')">复制外链</button>
 
             </div>
           </div>
@@ -99,6 +100,7 @@
             <div class="card-body" style="display: flex;">
 
               <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ video }}</h3>
+                <button class="btn btn-primary" onclick="copyVideoURL('{{ video }}')">复制外链</button>
 
             </div>
           </div>
@@ -246,6 +248,25 @@
         videoPopup.style.display = 'none';
       }
 
+      function copyImgURL(img){
+          const URL="{{ domain }}"+"zyImg/{{ userid }}/"+img;
+          navigator.clipboard.writeText(URL).then(function () {
+      alert("已复制到剪切板，可在在博客中使用此外链图片");
+    }).catch(function (error) {
+      alert("复制失败：" + error);
+    });}
+
+      function copyVideoURL(video){
+          const URL="{{ domain }}"+"zyVideo/{{ userid }}/"+video;
+          navigator.clipboard.writeText(URL).then(function () {
+      alert("已复制到剪切板，可在在博客中使用此外链视频");
+    }).catch(function (error) {
+      alert("复制失败：" + error);
+    });}
+
+
+
+
       function startVideo(video) {
   var username = "{{ username }}";  // Replace with the actual username
   var videoSrc = "/zyVideo/" + username + "/" + video;
@@ -256,6 +277,19 @@
   var videoPopup = document.getElementById("video-popup");
   videoPopup.style.display = "block";
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const h3Elements = document.querySelectorAll('.card-title');
+
+  h3Elements.forEach(element => {
+    if (element.textContent.trim().length > 26) {
+      const h2Element = document.createElement('h5');
+      h2Element.innerHTML = element.innerHTML;
+      element.parentNode.replaceChild(h2Element, element);
+    }
+  });
+});
+
 
 
     </script>
