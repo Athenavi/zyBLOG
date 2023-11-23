@@ -73,7 +73,7 @@
 </div>
 
 <div style="width: 1080px; height: 70px; background-color: transparent;">
-  <a>公告:</a><span>{{ notice }}</span>
+  <a>公告:</a><span>{{ notice|safe }}</span>
     <div>
         <a href="/profile"><img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;"></a>
     {% if userStatus %}

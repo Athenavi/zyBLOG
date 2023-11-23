@@ -36,7 +36,7 @@
     }
   </style>
 <div style="width: 1080px; height: 30px; background-color: transparent;">
-  <a>公告:</a><span>{{ notice }}</span>
+  <a>公告:</a><span>{{ notice|safe }}</span>
   <div>
     <img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;">
     {% if userStatus %}

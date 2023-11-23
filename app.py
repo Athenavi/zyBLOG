@@ -1346,6 +1346,7 @@ def get_ALL_img(username, page=1, per_page=10):
         os.makedirs(img_dir)
 
     img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
+    img_files = sorted(img_files, key=lambda x: os.path.getctime(os.path.join(img_dir, x)), reverse=True)
     total_img_count = len(img_files)
     total_pages = (total_img_count + per_page - 1) // per_page
 
@@ -1366,6 +1367,7 @@ def get_ALL_video(username, page=1, per_page=10):
         os.makedirs(video_dir)
 
     video_files = [file for file in os.listdir(video_dir) if file.endswith(('.mp4', '.avi', '.mkv', '.webm', '.flv'))]
+    video_files = sorted(video_files, key=lambda x: os.path.getctime(os.path.join(video_dir, x)), reverse=True)
     total_video_count = len(video_files)
     total_pages = (total_video_count + per_page - 1) // per_page
 
