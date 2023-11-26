@@ -3,15 +3,12 @@ import random
 from datetime import timedelta
 
 import bcrypt
-import requests
 from flask import request, session, redirect, url_for, render_template, app
 
 from database import get_database_connection
 
 
 import bleach  # 导入 bleach 库用于 XSS 防范
-
-from utils import get_client_ip
 
 
 def zylogin():
@@ -132,31 +129,25 @@ def profile(email):
 
     return avatar_url
 
-def zyGitHublogin(user_name, user_email):
-    username = user_name
-    user_email = user_email
-    if username is None:
-        username='gh'+random.randint(1000, 9999)
+def zyMaillogin(user_email):
+    username = 'qks' + format(random.randint(1000, 9999))
     password = '123456'
     db = get_database_connection()
     cursor = db.cursor()
 
     try:
         # 判断用户是否已存在
-        query = "SELECT * FROM users WHERE (username = %s)"
-        cursor.execute(query, username)
-        existing_user = cursor.fetchone()
+        query = "SELECT * FROM users WHERE (username = %s OR email = %s) AND username <> 'guest@7trees.cn'"
+        cursor.execute(query, (user_email, user_email))
+        result = cursor.fetchone()
 
-        if existing_user:
-            try:
-                if username is not None:
-                    return render_template('login.html', error="需要重试")
-                else:
-                    return render_template('login.html', error="Invalid username or password")
+        if result is not None:
+            session.permanent = True
+            app.permanent_session_lifetime = timedelta(minutes=120)
+            session['logged_in'] = True
+            session['username'] = result[1]
 
-            except Exception as e:
-                logging.error(f"Error logging in: {e}")
-                return "登录失败"
+            return render_template('success.html', message="授权通过!你可以关闭此页面")
 
         else:
             # 执行用户注册的逻辑
@@ -175,3 +166,41 @@ def zyGitHublogin(user_name, user_email):
         cursor.close()
         db.close()
 
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
+import ssl
+import configparser
+
+
+config = configparser.ConfigParser()
+config.read('config.ini', encoding='utf-8')
+mail_config = dict(config.items('mail'))
+mail_host=mail_config['host'].strip("'"),
+mail_port=mail_config['port'].strip("'"),  # 将端口转换为整数类型，并去除单引号
+mail_user=mail_config['user'].strip("'"),
+mail_password=mail_config['password'].strip("'")
+mail_title=mail_config['title'].strip("'")
+
+
+def zySendMail(code, toMail):
+    # 创建MIMEMultipart对象
+    msg = MIMEMultipart()
+    # 设置邮件主题、发件人和收件人
+    msg['Subject'] = mail_title
+    msg['From'] = "mail_user"  # 需要替换为实际的发件人
+    msg['To'] = toMail
+
+    # 添加邮件正文
+    body = "您的验证码为" + code + "（打死也不要告诉他人）"
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+    # 创建SSL对象
+    context = ssl.create_default_context()
+    # 连接到发信服务器
+    with smtplib.SMTP_SSL(host="mail_host", port=int(mail_port), context=context) as server:
+        # 登录发信服务器
+        server.login("mail_user", "mail_password")  # 需要替换为实际的发件人和密码
+        # 发送邮件
+        server.sendmail("mail_user", toMail, msg.as_string())

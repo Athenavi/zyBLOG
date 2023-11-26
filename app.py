@@ -2,6 +2,7 @@ import configparser
 import datetime
 import logging
 import random
+import re
 import shutil
 import time
 import urllib
@@ -16,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, redirect, session, request, url_for, Response,jsonify,send_from_directory,send_file
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
-from AboutLogin import zylogin, zyregister, get_email, profile, zyGitHublogin
+from AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
@@ -781,7 +782,7 @@ def generate_captcha():
 
     # 将验证码文本存储在 session 中，用于校对
     session['captcha_text'] = captcha_text
-
+    print(captcha_text)
     # 返回图像的 base64 编码给用户
     return {'image': image_base64, 'captcha_text': captcha_text}
 @app.route('/verify_captcha', methods=['POST'])
@@ -806,96 +807,6 @@ def send_message(message):
     zySendMessage(message)
     return '1'
 
-
-#github登录
-client_id=config['github']['client_id'].strip("'")
-client_secret=config['github']['client_secret'].strip("'")
-
-blueprint = make_github_blueprint(
-    client_id=client_id,
-    client_secret=client_secret,
-)
-
-# 注册蓝图
-app.register_blueprint(blueprint, url_prefix="/oauth")
-
-
-@app.route("/login/github")
-def github_login():
-    if not github.authorized:
-        return redirect(url_for("github.login"))
-    else:
-        return redirect(url_for("github_authorized"))
-
-
-def get_user_info(access_token):
-    user_url = "https://api.github.com/user"
-    emails_url = "https://api.github.com/user/emails"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-
-    # 获取用户名
-    user_response = requests.get(user_url, headers=headers)
-    if user_response.status_code == 200:
-        user_data = user_response.json()
-        username = user_data.get("login")
-
-        # 获取邮箱信息
-        emails_response = requests.get(emails_url, headers=headers)
-        if emails_response.status_code == 200:
-            emails_data = emails_response.json()
-            email = emails_data[0].get("email")  # 获取第一个邮箱
-        else:
-            # 请求出错，处理错误情况
-            return None, None
-
-        return username, email
-    else:
-        # 请求出错，处理错误情况
-        return None, None
-
-
-@app.route('/oauth/github/authorized')
-def github_authorized():
-    # 从浏览器中获取 session 的 access_token
-    access_token = session.get("access_token")
-
-    if access_token:
-        # 验证 access_token 是否有效并获取用户信息
-        username, email = get_user_info(access_token)
-
-        if username and email:
-            return zyGitHublogin(username, email)
-
-    # 如果 access_token 无效或不存在，从 GitHub 获取新的 access_token
-    code = request.args.get("code")  # 获取 code 参数
-    state = request.args.get("state")  # 获取 state 参数
-
-    token_url = "https://github.com/login/oauth/access_token"
-    data = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "code": code,
-        "state": state
-    }
-    headers = {"Accept": "application/json"}
-    response = requests.post(token_url, data=data, headers=headers)
-    access_token = response.json().get("access_token")
-
-    if access_token:
-        # 将新的 access_token 存储到 session 中
-        session["access_token"] = access_token
-
-        # 获取用户信息
-        username, email = get_user_info(access_token)
-
-        if username and email:
-            return zyGitHublogin(username, email)
-
-    # 未能获取有效的 access_token，处理错误情况
-    return "Error: Unable to retrieve or validate access token"
 
 @app.route('/api/img')
 def random_image():
@@ -1447,3 +1358,20 @@ def start_video(username, video_name):
     except Exception as e:
         print(f"Error in getting video path: {e}")
         return None
+
+
+
+@app.route('/mailloginpage', methods=['POST', 'GET'])
+def maillogin_page():
+    if request.method == 'POST':
+        input_value = request.form['username']  # 用户输入的邮箱
+        code = clearHTMLFormat(request.form['password'])
+        if input_value == 'guest@7trees.cn':
+            return render_template('error.html', error="授权未通过")
+        captcha_text = session['captcha_text']
+        code = str(code)
+        if (code == captcha_text):
+            return zyMaillogin(input_value)
+        else:
+            return render_template('Maillogin.html', error="验证码不匹配")
+    return render_template('Maillogin.html')
