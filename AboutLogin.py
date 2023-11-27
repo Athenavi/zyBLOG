@@ -1,3 +1,4 @@
+import configparser
 import logging
 import random
 from datetime import timedelta
@@ -167,40 +168,49 @@ def zyMaillogin(user_email):
         db.close()
 
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import smtplib
-import ssl
-import configparser
-
+from email.mime.text import MIMEText
+from email.header import Header
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 mail_config = dict(config.items('mail'))
-mail_host=mail_config['host'].strip("'"),
-mail_port=mail_config['port'].strip("'"),  # 将端口转换为整数类型，并去除单引号
-mail_user=mail_config['user'].strip("'"),
-mail_password=mail_config['password'].strip("'")
-mail_title=mail_config['title'].strip("'")
+mail_host=mail_config['host']
+mail_port=mail_config['port']
+mail_user=mail_config['user']
+mail_password=mail_config['password']
+mail_title=mail_config['title']
 
 
+import asyncio
 def zySendMail(code, toMail):
-    # 创建MIMEMultipart对象
-    msg = MIMEMultipart()
-    # 设置邮件主题、发件人和收件人
-    msg['Subject'] = mail_title
-    msg['From'] = "mail_user"  # 需要替换为实际的发件人
-    msg['To'] = toMail
+    # 发件人邮箱地址和密码
+    smtp_server = mail_host
+    smtp_port = mail_port
+    sender_email = mail_user  # 这里替换为您自己的发件人邮箱地址
+    sender_password = mail_password  # 这里是你的授权码？ 非邮箱登录密码
 
-    # 添加邮件正文
-    body = "您的验证码为" + code + "（打死也不要告诉他人）"
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    # 收件人邮箱地址
+    recipient_email = str(toMail)
 
-    # 创建SSL对象
-    context = ssl.create_default_context()
-    # 连接到发信服务器
-    with smtplib.SMTP_SSL(host="mail_host", port=int(mail_port), context=context) as server:
-        # 登录发信服务器
-        server.login("mail_user", "mail_password")  # 需要替换为实际的发件人和密码
+    # 创建一封邮件，文本内容为 "Hello, World!"
+    message = MIMEText('您的验证码为'+code+"请勿泄露", 'plain', 'utf-8')
+    message['From'] = Header('发件人昵称 <{}>'.format(sender_email), 'utf-8')  # 设置发件人昵称
+    message['To'] = Header('收件人昵称 <{}>'.format(recipient_email), 'utf-8')  # 设置收件人昵称
+    message['Subject'] = Header('邮件主题', 'utf-8')  # 设置邮件主题
+
+    try:
+        # 连接邮件服务器并登录
+        smtp_connection = smtplib.SMTP(smtp_server, smtp_port)
+        smtp_connection.login(sender_email, sender_password)
+
         # 发送邮件
-        server.sendmail("mail_user", toMail, msg.as_string())
+        smtp_connection.sendmail(sender_email, recipient_email, message.as_string())
+
+        # 关闭连接
+        smtp_connection.quit()
+
+        print("邮件发送成功！")
+
+    except Exception as e:
+        print("邮件发送失败：", e)

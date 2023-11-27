@@ -14,7 +14,8 @@ import xml.etree.ElementTree as ET
 import geoip2.database
 from configparser import ConfigParser
 from PIL import Image, ImageDraw, ImageFont
-from flask import Flask, render_template, redirect, session, request, url_for, Response,jsonify,send_from_directory,send_file
+from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify, send_from_directory, \
+    send_file, make_response
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 from AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
@@ -1368,10 +1369,34 @@ def maillogin_page():
         code = clearHTMLFormat(request.form['password'])
         if input_value == 'guest@7trees.cn':
             return render_template('error.html', error="授权未通过")
-        captcha_text = session['captcha_text']
+        captcha_text = session.get('captcha_text', 'default_value_if_not_exists')
         code = str(code)
+        zySendMail(captcha_text, input_value)
         if (code == captcha_text):
-            return zyMaillogin(input_value)
+
+                app.logger.info('用户:{},获取了验证码:{} '.format(input_value,  code))
+                return zyMaillogin(input_value)
         else:
             return render_template('Maillogin.html', error="验证码不匹配")
     return render_template('Maillogin.html')
+
+@app.route('/get_login_status', methods=['POST'])
+def get_login_status():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        username = get_username()
+        if username:
+            response = make_response(jsonify({'result': 'true'}))
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+        else:
+            response = make_response(jsonify({'result': 'false'}))
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+    else:
+        return 'Invalid request method'
+
+

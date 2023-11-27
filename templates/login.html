@@ -31,7 +31,7 @@ body {
         <div>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="/register">去注册</a>
+
                 </li>
             </ul>
         </div>
@@ -60,9 +60,26 @@ body {
                 <div class="form-group">
                     <label for="password">密码</label>
                     <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="example-container" data-sitekey="0x4AAAAAAALsscufPR3My50P"></div>
                 </div>
-                <div class="example-container" data-sitekey="0x4AAAAAAALsscufPR3My50P"></div>
                 <button type="submit" class="btn btn-primary btn-block">安全登录</button>
+                <div class="form-group" style="align-items: center">
+                    <input name="" type="checkbox"  autocomplete="on" required>
+                    <label for="" style="padding-left: 5px;">阅读并接受</label>
+                    <a target="_blank" href="/blog/legal-agreement">法律声明</a>和
+                    <a target="_blank" href="/blog/privacy">隐私协议</a>
+                </div>
+                <span>一键登录</span>
+                <a onclick="openSmallWindow()"><img src="../static/image/mail.svg" alt=""></a>
+                <a  href="/register">立即注册</a>
+                <script>
+        function openSmallWindow() {
+            var screenWidth = document.documentElement.clientWidth;
+            var screenHeight = document.documentElement.clientHeight;
+            window.open('/mailloginpage', 'newWindow', 'width=' + (screenWidth / 2) + ', height=' + (screenHeight / 2));
+
+        }
+    </script>
             </form>
         </div>
     </div>
@@ -71,30 +88,7 @@ body {
 <script src="../static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
 <script>
-    // 刷新令牌的逻辑
-    function refreshToken() {
-        turnstile.refresh();
-    }
-
-    // Turnstile小部件的回调函数
-    function onloadTurnstileCallback() {
-        // 渲染Turnstile小部件
-        turnstile.render('.example-container', {
-            sitekey: '0x4AAAAAAALsscufPR3My50P',
-            callback: javascriptCallback
-        });
-
-        // 刷新令牌
-        refreshToken();
-    }
-
-    // 全局作用域内的Turnstile小部件回调函数
-    function javascriptCallback(token) {
-        console.log("Challenge Success", token);
-    }
-
     // 前端表单校验函数，可以根据实际需求进行扩展
     function validateForm() {
         var form = document.getElementById("login-form");
@@ -113,10 +107,22 @@ body {
 
         return true;
     }
-
-    // 页面加载完成后执行的逻辑
-    window.addEventListener('DOMContentLoaded', onloadTurnstileCallback);
 </script>
-
 </body>
 </html>
+<script>
+const getLoginStatus = async () => {
+    const response = await fetch('/get_login_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+    const data = await response.json();
+    if (data.result === 'true') {
+        location.href = '/';
+    }
+};
+// 每隔3秒执行一次getLoginStatus函数
+setInterval(getLoginStatus, 5000);</script>
