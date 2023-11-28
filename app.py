@@ -1378,6 +1378,8 @@ def maillogin_page():
                 return zyMaillogin(input_value)
         else:
             return render_template('Maillogin.html', error="验证码不匹配")
+
+    generate_captcha()
     return render_template('Maillogin.html')
 
 @app.route('/get_login_status', methods=['POST'])
