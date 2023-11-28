@@ -5,13 +5,27 @@
     <!-- 网站采用的字符编码 -->
     <meta charset="utf-8">
     <!-- 预留网站标题的位置 -->
-    <title>{% block title %}{% endblock %}</title>
+    <title>{{ title }}</title>
     <style>
 body {
     background-image: url("../static/image/day.jpg");
     background-size: 120%;
     background-repeat: no-repeat;
     background-position: center;
+}
+div{
+    font-size:28px;
+    align-items: center;
+    [type="text"]{
+    font-size: 25px; /* 更改为您所需的字体大小 */
+}
+    [type="password"] {
+    font-size: 25px; /* 更改为您所需的字体大小 */
+}
+    [type="checkbox"] {
+        height:24px;
+        width:24px;
+}
 }
 </style>
     <!-- 引入bootstrap的css文件 -->
@@ -31,7 +45,7 @@ body {
         <div>
             <ul class="navbar-nav">
                 <li class="nav-item">
-
+                <a class="nav-link" href="/register">立即注册</a>
                 </li>
             </ul>
         </div>
@@ -43,7 +57,7 @@ body {
 <div class="container">
     <div class="row justify-content-md-center">
         <div class="col-md-6">
-            <h3>zyBLOG/奇客舒</h3>
+            <h3 align="center" style="color: greenyellow">zyBLOG/奇客舒</h3>
             <br>
             <form id="login-form" method="post" action="/login" onsubmit="return validateForm()">
                 {% if error %}
@@ -71,7 +85,6 @@ body {
                 </div>
                 <span>一键登录</span>
                 <a onclick="openSmallWindow()"><img src="../static/image/mail.svg" alt=""></a>
-                <a  href="/register">立即注册</a>
                 <script>
         function openSmallWindow() {
             var screenWidth = document.documentElement.clientWidth;

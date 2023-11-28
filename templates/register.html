@@ -5,7 +5,19 @@
     <!-- 网站采用的字符编码 -->
     <meta charset="utf-8">
     <!-- 预留网站标题的位置 -->
-    <title>{% block title %}{% endblock %}</title>
+    <title>{{  title }}</title>
+    <style>
+body {
+    background-image: url("../static/image/day.jpg");
+    background-size: 120%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+div{
+    color: #7D2027;
+    font-size:30px;
+}
+</style>
     <!-- 引入bootstrap的css文件 -->
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>

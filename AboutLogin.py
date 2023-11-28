@@ -46,7 +46,7 @@ def zylogin():
             cursor.close()
             db.close()
 
-    return render_template('login.html')
+    return render_template('login.html', title="登录")
 
 
 def zyregister():
@@ -97,7 +97,7 @@ def zyregister():
             cursor.close()
             db.close()
 
-    return render_template('register.html')
+    return render_template('register.html', title="注册新用户")
 
 def get_email(username):
     email = 'guest@7trees.cn'
