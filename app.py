@@ -576,8 +576,11 @@ def generate_rss():
             response = Response(cached_xml_data, mimetype='application/rss+xml')
             return response
 
+    hidden_articles = read_hidden_articles()
+    hidden_articles = [ha + ".md" for ha in hidden_articles]
     files = os.listdir('articles')
     markdown_files = [file for file in files if file.endswith('.md')]
+    markdown_files = markdown_files[:10]
 
     # 创建XML文件头及其他信息...
     xml_data = '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -595,8 +598,14 @@ def generate_rss():
         encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
         article_url = domain+'blog/' + encoded_article_name
         date = get_file_date(encoded_article_name)
-        describe = get_article_content(article_name,3)
-        describe = clearHTMLFormat(describe)
+        if file in hidden_articles:
+            describe = "本文章属于加密文章"
+            content = "本文章属于加密文章\n" + f'<a href="{article_url}" target="_blank" rel="noopener">带密码访问</a>'
+        else:
+            content, *_ = get_article_content(article_name, 10)
+            describe = encoded_article_name
+
+
 
         # 创建item标签并包含内容
         xml_data += '<item>\n'
@@ -605,6 +614,7 @@ def generate_rss():
         xml_data += f'\t<guid>{article_url}</guid>\n'
         xml_data += f'\t<pubDate>{date}</pubDate>\n'
         xml_data += f'\t<description>{describe}</description>\n'
+        xml_data += f'\t<content:encoded><![CDATA[{content}]]></content:encoded>'
         xml_data += '</item>\n'
 
     # 关闭channel和rss标签
