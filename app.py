@@ -390,8 +390,9 @@ def home():
     else:
         if request.method == 'GET':
             page = request.args.get('page', default=1, type=int)  # 获取 URL 参数中的页码，默认为第一页
+            if page<=0:
+                page=1
             articles, has_next_page, has_previous_page = get_article_names(page=page)  # 获取分页后的文章列表和翻页信息
-
             template = env.get_template('home.html')
             session.setdefault('theme', 'day-theme')
             notice = read_file('notice/1.txt', 50)
@@ -402,7 +403,7 @@ def home():
                 avatar_url=get_email(username)
                 avatar_url=profile(avatar_url)
             return template.render(title=title,articles=articles, url_for=url_for, theme=session['theme'],IPinfo=IPinfo,
-                               notice=notice,avatar_url=avatar_url,
+                               notice=notice,#avatar_url=avatar_url,
                                has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,city_code=city_code)
         else:
             return render_template('home.html')
@@ -529,6 +530,7 @@ def generate_sitemap():
 
     # 创建XML文件头
     xml_data = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_data +='<?xml-stylesheet type="text/xsl" href="./static/sitemap.xsl"?>\n'
     xml_data += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 
     for file in markdown_files:
@@ -718,6 +720,7 @@ def delete_file(filename):
         auth = authArticles(article, username)
 
     if auth == True:
+
         return zy_delete_file(filename)
 
     else:
