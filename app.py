@@ -376,44 +376,57 @@ def zy_get_city_code(city_name):
 
 
 # 主页
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    # 获取客户端IP地址
     IPinfo = get_client_ip()
-    ip1=get_client_ip()
-    #update_visit(IPinfo)
-    IPinfo=analyze_ip_location(IPinfo)
-    #查询天气
+    ip1 = IPinfo
+    IPinfo = analyze_ip_location(IPinfo)
     city_code = ip_city_code(IPinfo)
-    avatar_url=profile('guest@7trees.cn')
+
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:
         if request.method == 'GET':
-            page = request.args.get('page', default=1, type=int)  # 获取 URL 参数中的页码，默认为第一页
-            if page<=0:
-                page=1
-            articles, has_next_page, has_previous_page = get_article_names(page=page)  # 获取分页后的文章列表和翻页信息
+            page = request.args.get('page', default=1, type=int)
+            if page <= 0:
+                page = 1
+
+            theme = session.get('theme', 'day-theme')  # 获取当前主题
+            cache_key = f'page_content:{page}:{theme}'  # 根据页面值和主题生成缓存键
+
+            # 从缓存中获取页面内容
+            content = cache.get(cache_key)
+            if content:
+                return content
+
+            # 重新获取页面内容
+            articles, has_next_page, has_previous_page = get_article_names(page=page)
             template = env.get_template('home.html')
             session.setdefault('theme', 'day-theme')
             notice = read_file('notice/1.txt', 50)
             userStatus = get_user_status()
             username = get_username()
-            app.logger.info('当前访问的用户:{},IP:{},IP归属地:{} '.format(username,ip1,IPinfo))
-            if userStatus and username != None:
-                avatar_url=get_email(username)
-                avatar_url=profile(avatar_url)
-            return template.render(title=title,articles=articles, url_for=url_for, theme=session['theme'],IPinfo=IPinfo,
-                               notice=notice,#avatar_url=avatar_url,
-                               has_next_page=has_next_page, has_previous_page=has_previous_page, current_page=page, userStatus=userStatus,username=username,city_code=city_code)
+            app.logger.info('当前访问的用户:{},IP:{},IP归属地:{} '.format(username, ip1, IPinfo))
+
+            # 渲染模板并存储渲染后的页面内容到缓存中
+            rendered_content = template.render(
+                title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
+                notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
+                current_page=page, userStatus=userStatus, username=username, city_code=city_code
+            )
+            # 将渲染后的页面内容保存到缓存，并设置过期时间为75秒
+            cache.set(cache_key, rendered_content, timeout=75)
+
+            return rendered_content
         else:
             return render_template('home.html')
-
 
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 @app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
     IPinfo = get_client_ip()
-    #update_visit(IPinfo)
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:
