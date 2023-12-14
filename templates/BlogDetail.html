@@ -213,12 +213,31 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/default.min.css">
-<script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/highlight.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
-    document.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightBlock(block);
+    window.addEventListener('DOMContentLoaded', function() {
+  // 获取所有class='math'的div元素
+  var mathDivs = document.getElementsByClassName('math');
+
+  // 遍历div元素并转换为数学公式
+  for (var i = 0; i < mathDivs.length; i++) {
+    var mathDiv = mathDivs[i];
+    var tex = mathDiv.innerHTML; // 获取div中的文本内容
+
+    // 创建MathJax的span元素包裹数学公式
+    var mathjaxNode = document.createElement('span');
+    mathjaxNode.setAttribute('class', 'math');
+    mathjaxNode.setAttribute('display', 'block'); // 设置为块级元素以换行显示
+    mathDiv.parentNode.replaceChild(mathjaxNode, mathDiv); // 替换原div元素
+
+    // 使用MathJax进行转换
+    MathJax.tex2svgPromise(tex, {display: true}).then(function (node) {
+      mathjaxNode.appendChild(node); // 将转换后的数学公式添加到span元素中
+      MathJax.startup.document.clear(); // 清除MathJax缓存
+      MathJax.startup.document.updateDocument(); // 更新数学公式
     });
+  }
 });
+
 </script>

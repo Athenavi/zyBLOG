@@ -9,6 +9,7 @@ import os
 from urllib.parse import quote_plus
 from user import error
 import datetime
+import re
 
 def get_article_names(page=1, per_page=10):
     articles = []
@@ -45,6 +46,7 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 from pygments.styles import default
+import html
 
 class HighlightRenderer(misaka.HtmlRenderer):
     def blockcode(self, text, lang):
@@ -55,7 +57,8 @@ class HighlightRenderer(misaka.HtmlRenderer):
         style = default.DefaultStyle
         formatter = HtmlFormatter(style=style)
         highlighted_code = highlight(text.rstrip(), lexer, formatter)
-        return f'<div class="highlight"><pre>{highlighted_code}</pre></div>'
+        escaped_code = html.escape(highlighted_code)
+        return f'<div class="highlight"><pre>{escaped_code}</pre></div>'
 
 
 
@@ -73,7 +76,9 @@ def get_article_content(article, limit):
         html_content = ''
         readNav = []
         in_code_block = False
+        in_math_block = False
         code_block_content = ''
+        math_content = ''
 
         for line in lines:
             if line_counter >= lines_limit:
@@ -81,8 +86,9 @@ def get_article_content(article, limit):
 
             if line.startswith('```'):
                 if in_code_block:
-                    code_lang = line.split('```')[1].strip()
-                    html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{code_block_content.strip()}</code></pre></div>'
+                    # code_lang = line.split('```')[1].strip()
+                    escaped_code_block_content = html.escape(code_block_content.strip())
+                    html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{escaped_code_block_content}</code></pre></div>'
                     in_code_block = False
                     code_block_content = ''
                 else:
@@ -90,7 +96,20 @@ def get_article_content(article, limit):
                     code_lang = line.split('```')[1].strip()
             elif in_code_block:
                 code_block_content += line + '\n'
+            elif line.startswith('$$'):
+                if not in_math_block:
+                    in_math_block = True
+                else:
+                    in_math_block = False
+                    html_content += f'<div class="math">{math_content.strip()}</div>'
+                    math_content = ''
+            elif in_math_block:
+                math_content += line.strip() + ' '
             else:
+                if re.match(r'^\s*<.*?>', line):
+                    # Skip HTML tags and their content in non-code block lines
+                    continue
+
                 if line.startswith('#'):
                     header_level = len(line.split()[0]) + 2
                     header_title = line.strip('#').strip()
@@ -113,7 +132,6 @@ def get_article_content(article, limit):
         # 文件不存在时返回404错误页面
         return error('No file', 404)
 
-import re
 
 
 def clearHTMLFormat(text):
