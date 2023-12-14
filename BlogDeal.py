@@ -1,4 +1,3 @@
-import codecs
 import configparser
 import random
 import urllib
@@ -40,36 +39,75 @@ def read_hidden_articles():
         hidden_articles = hidden_file.read().splitlines()
     return hidden_articles
 
+import codecs
+import misaka
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+
+class HighlightRenderer(misaka.HtmlRenderer):
+    def blockcode(self, text, lang):
+        if lang:
+            lexer = get_lexer_by_name(lang, stripall=True)
+        else:
+            lexer = get_lexer_by_name('text')
+        formatter = HtmlFormatter()
+        highlighted_code = highlight(text.rstrip(), lexer, formatter)
+        return f'<div class="highlight"><pre>{highlighted_code}</pre></div>'
+
+
+
+
 def get_article_content(article, limit):
     try:
         with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+            content = f.read()
 
-        lines_limit = min(limit, len(lines))  # 获取限制行数和实际行数的较小值
+        renderer = HighlightRenderer()
+        md = misaka.Markdown(renderer, extensions=misaka.EXT_FENCED_CODE)
+        lines = content.split('\n')
+        lines_limit = min(limit, len(lines))
         line_counter = 0
         html_content = ''
         readNav = []
+        in_code_block = False
+        code_block_content = ''
 
         for line in lines:
             if line_counter >= lines_limit:
                 break
 
-            if line.startswith('#'):
-                header_level = len(line.split()[0]) + 2
-                header_title = line.strip('#').strip()
-                anchor = header_title.lower().replace(" ", "-")
-                readNav.append(
-                    f'<a href="#{anchor}">{markdown.markdown("#" * header_level + " " + header_title)}</a>'
-                )
-                line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
+            if line.startswith('```'):
+                if in_code_block:
+                    html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{code_block_content.strip()}</code></pre></div>'
+                    in_code_block = False
+                    code_block_content = ''
+                else:
+                    in_code_block = True
+                    code_lang = line.split('```')[1].strip()
+            elif in_code_block:
+                code_block_content += line + '\n'
+            else:
+                if line.startswith('#'):
+                    header_level = len(line.split()[0]) + 2
+                    header_title = line.strip('#').strip()
+                    anchor = header_title.lower().replace(" ", "-")
+                    readNav.append(
+                        f'<a href="#{anchor}">{md("#" * header_level + " " + header_title)}</a>'
+                    )
+                    line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
 
-            html_content += markdown.markdown(line)
+                html_content += md(line)
+
             line_counter += 1
+
+        if in_code_block:
+            html_content += '</code></pre></div>'
 
         return html_content, '\n'.join(readNav)
 
     except FileNotFoundError:
-        # 文件不存在时返回 404 错误页面
+        # 文件不存在时返回404错误页面
         return error('No file', 404)
 
 import re
