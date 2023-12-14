@@ -44,6 +44,7 @@ import misaka
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
+from pygments.styles import default
 
 class HighlightRenderer(misaka.HtmlRenderer):
     def blockcode(self, text, lang):
@@ -51,7 +52,8 @@ class HighlightRenderer(misaka.HtmlRenderer):
             lexer = get_lexer_by_name(lang, stripall=True)
         else:
             lexer = get_lexer_by_name('text')
-        formatter = HtmlFormatter()
+        style = default.DefaultStyle
+        formatter = HtmlFormatter(style=style)
         highlighted_code = highlight(text.rstrip(), lexer, formatter)
         return f'<div class="highlight"><pre>{highlighted_code}</pre></div>'
 
@@ -79,6 +81,7 @@ def get_article_content(article, limit):
 
             if line.startswith('```'):
                 if in_code_block:
+                    code_lang = line.split('```')[1].strip()
                     html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{code_block_content.strip()}</code></pre></div>'
                     in_code_block = False
                     code_block_content = ''
