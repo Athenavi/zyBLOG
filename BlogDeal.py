@@ -126,7 +126,6 @@ def zy_get_comment(article_name, page=1, per_page=10):
 
         offset = (page - 1) * per_page
         cursor.execute(query, (article_name, offset))
-        #print("Total rows fetched:", cursor.rowcount)
 
         results = []
         rows = cursor.fetchall()
