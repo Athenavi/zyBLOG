@@ -42,34 +42,13 @@ def read_hidden_articles():
 
 import codecs
 import misaka
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import HtmlFormatter
-from pygments.styles import default
 import html
-
-class HighlightRenderer(misaka.HtmlRenderer):
-    def blockcode(self, text, lang):
-        if lang:
-            lexer = get_lexer_by_name(lang, stripall=True)
-        else:
-            lexer = get_lexer_by_name('text')
-        style = default.DefaultStyle
-        formatter = HtmlFormatter(style=style)
-        highlighted_code = highlight(text.rstrip(), lexer, formatter)
-        escaped_code = html.escape(highlighted_code)
-        return f'<div class="highlight"><pre>{escaped_code}</pre></div>'
-
-
-
 
 def get_article_content(article, limit):
     try:
         with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
             content = f.read()
 
-        renderer = HighlightRenderer()
-        md = misaka.Markdown(renderer, extensions=misaka.EXT_FENCED_CODE)
         lines = content.split('\n')
         lines_limit = min(limit, len(lines))
         line_counter = 0
@@ -86,10 +65,10 @@ def get_article_content(article, limit):
 
             if line.startswith('```'):
                 if in_code_block:
-                    # code_lang = line.split('```')[1].strip()
+                    in_code_block = False
+                    #code_lang = line.split('```')[1].strip()
                     escaped_code_block_content = html.escape(code_block_content.strip())
                     html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{escaped_code_block_content}</code></pre></div>'
-                    in_code_block = False
                     code_block_content = ''
                 else:
                     in_code_block = True
@@ -115,21 +94,18 @@ def get_article_content(article, limit):
                     header_title = line.strip('#').strip()
                     anchor = header_title.lower().replace(" ", "-")
                     readNav.append(
-                        f'<a href="#{anchor}">{md("#" * header_level + " " + header_title)}</a>'
+                        f'<a href="#{anchor}">{"#" * header_level + " " + header_title}</a>'
                     )
                     line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
 
-                html_content += md(line)
+                html_content += line
 
             line_counter += 1
-
-        if in_code_block:
-            html_content += '</code></pre></div>'
 
         return html_content, '\n'.join(readNav)
 
     except FileNotFoundError:
-        # 文件不存在时返回404错误页面
+        # Return a 404 error page if the file does not exist
         return error('No file', 404)
 
 
