@@ -58,19 +58,23 @@ file_handler.setFormatter(log_formatter)
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
-
 config = ConfigParser()
 config.read('config.ini', encoding='utf-8')
 # 应用分享配置参数
 from datetime import datetime, timedelta
+
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+
 @app.route('/123.jpg')
 def blackHoleicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                '123.jpg')
+
 
 @app.context_processor
 def inject_variables():
@@ -82,7 +86,7 @@ def inject_variables():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if 'logged_in'  in session:
+    if 'logged_in' in session:
         return redirect(url_for('home'))
     else:
         return zylogin()
@@ -106,6 +110,7 @@ def logout():
 domain = config.get('general', 'domain').strip("'")
 title = config.get('general', 'title').strip("'")
 
+
 @app.route('/toggle_theme', methods=['POST'])  # 处理切换主题的请求
 def toggle_theme():
     if session['theme'] == 'day-theme':
@@ -114,7 +119,6 @@ def toggle_theme():
         session['theme'] = 'day-theme'  # 如果当前主题为夜晚，则切换为白天（day-theme）
 
     return 'success'  # 返回切换成功的消息
-
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -144,7 +148,7 @@ def search():
                 encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
                 article_url = domain + 'blog/' + encoded_article_name
                 date = get_file_date(encoded_article_name)
-                describe = get_article_content(article_name, 50)#建议的值50以内
+                describe = get_article_content(article_name, 50)  # 建议的值50以内
                 describe = clearHTMLFormat(describe)
 
                 if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
@@ -177,8 +181,6 @@ def search():
             matched_content.append(content)
 
     return render_template('search.html', results=matched_content)
-
-
 
 
 def analyze_ip_location(ip_address):
@@ -297,6 +299,7 @@ def get_weather(city_code):
     error_message = {'error': 'Failed to create cache file'}
     return jsonify(error_message), 500
 
+
 @app.route('/get_city_code', methods=['POST'])
 def get_city_code():
     city_name = request.form.get('city_name')
@@ -332,13 +335,13 @@ def space():
                            userStatus=userStatus, username=username,
                            Articles=ownerArticles)
 
+
 @app.route('/settingRegion', methods=['POST'])
 def setting_region():
     username = get_username()
     if username is not None:
         return 1
     return 1
-
 
 
 @cache.cached(timeout=None, key_prefix='cities')
@@ -361,6 +364,7 @@ def get_table_data():
 
     return data
 
+
 def zy_get_city_code(city_name):
     table_data = get_table_data()
 
@@ -372,8 +376,6 @@ def zy_get_city_code(city_name):
         return jsonify({'city_code': result['city_code']})
     else:
         return jsonify({'error': '城市不存在'})
-
-
 
 
 # 主页
@@ -424,6 +426,7 @@ def home():
         else:
             return render_template('home.html')
 
+
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 @app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
@@ -438,9 +441,8 @@ def blog_detail(article):
             hidden_articles = read_hidden_articles()
 
             if article_name in hidden_articles:
-                #隐藏的文章
+                # 隐藏的文章
                 return vipBlog(article_name)
-
 
             if article_name not in article_names[0]:
                 return render_template('404.html'), 404
@@ -453,7 +455,7 @@ def blog_detail(article):
             if 'theme' not in session:
                 session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
-            article_content,readNav_html = get_article_content(article, 215)
+            article_content, readNav_html = get_article_content(article, 215)
             article_summary = clearHTMLFormat(article_content)
             article_summary = article_summary[:30]
 
@@ -476,15 +478,19 @@ def blog_detail(article):
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
 
-            return render_template('BlogDetail.html',title=title, article_content=article_content, articleName=article_name,
-                                    theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                                    url_for=url_for, username=username, article_url=article_url,
-                                    article_Surl=article_Surl, article_summary=article_summary,readNav=readNav_html)
+            return render_template('BlogDetail.html', title=title, article_content=article_content,
+                                   articleName=article_name,
+                                   theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
+                                   url_for=url_for, username=username, article_url=article_url,
+                                   article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html)
 
         except FileNotFoundError:
             return render_template('404.html'), 404
 
+
 last_comment_time = {}  # 全局变量，用于记录用户最后评论时间
+
+
 @app.route('/post_comment', methods=['POST'])
 def post_comment():
     article_name = request.form.get('article_name')
@@ -518,10 +524,6 @@ def post_comment():
     return json.dumps(response)
 
 
-
-
-
-
 @app.route('/sitemap.xml')
 @app.route('/sitemap')
 def generate_sitemap():
@@ -544,12 +546,12 @@ def generate_sitemap():
 
     # 创建XML文件头
     xml_data = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml_data +='<?xml-stylesheet type="text/xsl" href="./static/sitemap.xsl"?>\n'
+    xml_data += '<?xml-stylesheet type="text/xsl" href="./static/sitemap.xsl"?>\n'
     xml_data += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 
     for file in markdown_files:
         article_name = file[:-3]  # 移除文件扩展名 (.md)
-        article_url = domain+'blog/' + article_name
+        article_url = domain + 'blog/' + article_name
         date = get_file_date(article_name)
 
         # 创建url标签并包含链接
@@ -569,8 +571,6 @@ def generate_sitemap():
 
     response = Response(xml_data, mimetype='text/xml')
     return response
-
-
 
 
 @app.route('/feed')
@@ -601,16 +601,16 @@ def generate_rss():
     xml_data += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n'
     xml_data += '<channel>\n'
     xml_data += '<title>Your RSS Feed Title</title>\n'
-    xml_data += '<link>'+domain+'</link>\n'
+    xml_data += '<link>' + domain + '</link>\n'
     xml_data += '<description>Your RSS Feed Description</description>\n'
     xml_data += '<language>en-us</language>\n'
     xml_data += '<lastBuildDate>' + datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z") + '</lastBuildDate>\n'
-    xml_data += '<atom:link href="'+domain+'rss" rel="self" type="application/rss+xml" />\n'
+    xml_data += '<atom:link href="' + domain + 'rss" rel="self" type="application/rss+xml" />\n'
 
     for file in markdown_files:
         article_name = file[:-3]  # 移除文件扩展名 (.md)
         encoded_article_name = urllib.parse.quote(article_name)  # 对文件名进行编码处理
-        article_url = domain+'blog/' + encoded_article_name
+        article_url = domain + 'blog/' + encoded_article_name
         date = get_file_date(encoded_article_name)
         if file in hidden_articles:
             describe = "本文章属于加密文章"
@@ -618,8 +618,6 @@ def generate_rss():
         else:
             content, *_ = get_article_content(article_name, 10)
             describe = encoded_article_name
-
-
 
         # 创建item标签并包含内容
         xml_data += '<item>\n'
@@ -643,7 +641,6 @@ def generate_rss():
     return response
 
 
-
 @app.route('/confirm-password', methods=['GET', 'POST'])
 def confirm_password():
     return zyconfirm_password()
@@ -663,6 +660,8 @@ def admin(key):
 last_newArticle_time = {}  # 全局变量，用于记录用户最后递交时间
 app.config['UPLOAD_FOLDER'] = 'temp/upload'
 authorMapper = configparser.ConfigParser()
+
+
 @app.route('/newArticle', methods=['GET', 'POST'])
 def newArticle():
     if request.method == 'GET':
@@ -707,7 +706,7 @@ def newArticle():
                     shutil.copy(os.path.join(app.config['UPLOAD_FOLDER'], file.filename), 'articles')
                     file_name = os.path.splitext(file.filename)[0]  # 获取文件名（不包含后缀）
                     with open('articles/hidden.txt', 'a', encoding='utf-8') as f:
-                        f.write('\n'+file_name + '\n')
+                        f.write('\n' + file_name + '\n')
                     authorMapper.read('author/mapper.ini', encoding='utf-8')
                     author_value = session.get('username')
                     # 更新 [author] 节中的键值对
@@ -725,8 +724,6 @@ def newArticle():
                 return redirect('/newArticle')
 
 
-
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     return zy_upload_file()
@@ -739,7 +736,7 @@ def delete_file(filename):
     auth = False  # 设置默认值
 
     if userStatus and username is not None:
-        article=filename
+        article = filename
         # Auth 认证
         auth = authArticles(article, username)
 
@@ -755,16 +752,16 @@ def delete_file(filename):
 def static_from_root():
     with app.open_resource('static/robots.txt', 'r') as f:
         content = f.read()
-        modified_content = content + '\nSitemap: '+domain+'sitemap.xml'  # Add your additional rule here
+        modified_content = content + '\nSitemap: ' + domain + 'sitemap.xml'  # Add your additional rule here
 
     response = Response(modified_content, mimetype='text/plain')
     return response
 
 
-
 @app.route('/<path:undefined_path>')
 def undefined_route(undefined_path):
     return render_template('404.html'), 404
+
 
 # ...
 
@@ -813,6 +810,8 @@ def generate_captcha():
     print(captcha_text)
     # 返回图像的 base64 编码给用户
     return {'image': image_base64, 'captcha_text': captcha_text}
+
+
 @app.route('/verify_captcha', methods=['POST'])
 def verify_captcha():
     # 获取前端传来的验证码值
@@ -851,6 +850,7 @@ def random_image():
     img_path = os.path.join(img_dir, img_file)
 
     return send_file(img_path, mimetype='image/gif')
+
 
 def ip_city_code(city_name):
     api_url = domain + "get_city_code"
@@ -897,7 +897,7 @@ def markdown_editor(article):
     template = env.get_template('editor.html')
     if 'theme' not in session:
         session['theme'] = 'day-theme'
-    #notice = read_file('notice/1.txt', 50)
+    # notice = read_file('notice/1.txt', 50)
     userStatus = get_user_status()
     username = get_username()
     auth = False  # 设置默认值
@@ -911,7 +911,8 @@ def markdown_editor(article):
             edit_html = zyFEditArticle(article)
             show_edit = zyShowArticle(article)
             # 渲染编辑页面并将转换后的HTML传递到模板中
-            return render_template('editor.html', edit_html=edit_html, show_edit=show_edit,articleName=article, theme=session['theme'])
+            return render_template('editor.html', edit_html=edit_html, show_edit=show_edit, articleName=article,
+                                   theme=session['theme'])
         elif request.method == 'POST':
             content = request.json.get('content', '')
             show_edit = zyShowArticle(content)
@@ -921,7 +922,7 @@ def markdown_editor(article):
             return render_template('editor.html')
 
     else:
-        return error(message='您没有权限',status_code=503)
+        return error(message='您没有权限', status_code=503)
 
 
 @app.route('/save/edit', methods=['POST'])
@@ -977,10 +978,12 @@ def hideen_article():
         hide_article(article)
         return jsonify({'deal': 'hide'})
 
+
 def hide_article(article):
     with open('articles/hidden.txt', 'a', encoding='utf-8') as hidden_file:
         # 将文章名写入hidden.txt的新的一行中
-        hidden_file.write('\n'+article + '\n')
+        hidden_file.write('\n' + article + '\n')
+
 
 def unhide_article(article):
     with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
@@ -991,6 +994,7 @@ def unhide_article(article):
         for hidden_article in hidden_articles:
             if hidden_article != article:
                 hidden_file.write(hidden_article + '\n')
+
 
 def is_hidden(article):
     with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
@@ -1013,15 +1017,16 @@ def travel():
         if urls:
             random.shuffle(urls)  # 随机打乱URL列表的顺序
             random_url = urls[0]  # 选择打乱后的第一个URL
-            return render_template('bh.html',jumpUrl=random_url)
+            return render_template('bh.html', jumpUrl=random_url)
         # 如果没有找到任何<loc>标签，则返回适当的错误信息或默认页面
         return "No URLs found in the response."
     else:
         # 处理无法获取响应内容的情况，例如返回错误页面或错误消息
         return "Failed to fetch sitemap content."
 
+
 def vipBlog(articleName):
-    article_name=articleName
+    article_name = articleName
     userStatus = get_user_status()
     username = get_username()
     auth = False  # 设置默认值
@@ -1035,7 +1040,7 @@ def vipBlog(articleName):
             article_Surl = domain + 'blog/' + article_name
             article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
             author = get_blog_author(article_name)
-            blogDate = get_file_date(article_name)+ '——_______该文章处于隐藏模式(他人不可见)______——'
+            blogDate = get_file_date(article_name) + '——_______该文章处于隐藏模式(他人不可见)______——'
 
             # 检查session中是否存在theme键
             if 'theme' not in session:
@@ -1081,12 +1086,10 @@ def vipBlog(articleName):
     else:
         return zyPWblog(article_name)
 
+
 @app.route('/zyblogJS/<JS_name>')
 def getjs(JS_name):
     return send_from_directory(os.path.join(app.root_path, 'static'), JS_name)
-
-
-
 
 
 def zyPWblog(article_name):
@@ -1135,13 +1138,14 @@ def zyPWblog(article_name):
                 return render_template('hidden.html', article_content=article_content, articleName=article_name,
                                        theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
                                        url_for=url_for, username=username, article_url=article_url,
-                                       article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html,key="密码验证成功")
+                                       article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html,
+                                       key="密码验证成功")
 
             except FileNotFoundError:
                 return render_template('404.html'), 404
 
         else:
-            return render_template('hidden.html',articleName=article_name,
+            return render_template('hidden.html', articleName=article_name,
                                    theme=session['theme'],
                                    url_for=url_for)
 
@@ -1181,6 +1185,7 @@ def get_invitecode_data():
 
     return data
 
+
 @app.route('/change-article-pw/<filename>', methods=['POST'])
 def changeArticlePW(filename):
     userStatus = get_user_status()
@@ -1188,15 +1193,15 @@ def changeArticlePW(filename):
     auth = False  # 设置默认值
 
     if userStatus and username is not None:
-        article=filename
+        article = filename
         # Auth 认证
         auth = authArticles(article, username)
 
     if auth == True:
         newCode = request.get_json()['NewPass']
         article = request.get_json()["Article"]
-        if newCode=='':newCode='0000'
-        return zy_change_article_pw(article,newCode)
+        if newCode == '': newCode = '0000'
+        return zy_change_article_pw(article, newCode)
 
     else:
         return error(message='您没有权限', status_code=503)
@@ -1256,13 +1261,15 @@ def media_space():
 
                 return render_template('media.html', imgs=imgs, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
-                                       has_previous_page=has_previous_page, current_page=page, userid=username,domain=domain)
+                                       has_previous_page=has_previous_page, current_page=page, userid=username,
+                                       domain=domain)
             if type == 'video':
                 videos, has_next_page, has_previous_page = get_ALL_video(username, page=page)
 
                 return render_template('media.html', videos=videos, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
-                                       has_previous_page=has_previous_page, current_page=page, userid=username,domain=domain)
+                                       has_previous_page=has_previous_page, current_page=page, userid=username,
+                                       domain=domain)
 
         elif request.method == 'POST':
             img_name = request.json.get('img_name')
@@ -1319,6 +1326,7 @@ def get_ALL_video(username, page=1, per_page=10):
 
     return videos, has_next_page, has_previous_page
 
+
 @app.route('/zyImg/<username>/<img_name>')
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
@@ -1354,7 +1362,8 @@ def upload_image_path(username1):
                 if 'file' in request.files:
                     file = request.files['file']
 
-                if file is not None and file.filename.lower().endswith(('.jpg', '.png', '.webp','.jfif','.pjpeg','.jpeg','.pjp')):
+                if file is not None and file.filename.lower().endswith(
+                        ('.jpg', '.png', '.webp', '.jfif', '.pjpeg', '.jpeg', '.pjp')):
                     if file.content_length > 10 * 1024 * 1024:
                         return 'Too large please use a file smaller than 10MB'
                     else:
@@ -1376,6 +1385,7 @@ def upload_image_path(username1):
     else:
         return 'failed'
 
+
 @app.route('/zyVideo/<username>/<video_name>')
 def start_video(username, video_name):
     try:
@@ -1386,7 +1396,6 @@ def start_video(username, video_name):
     except Exception as e:
         print(f"Error in getting video path: {e}")
         return None
-
 
 
 @app.route('/mailloginpage', methods=['POST', 'GET'])
@@ -1401,13 +1410,14 @@ def maillogin_page():
         zySendMail(captcha_text, input_value)
         if (code == captcha_text):
 
-                app.logger.info('用户:{},获取了验证码:{} '.format(input_value,  code))
-                return zyMaillogin(input_value)
+            app.logger.info('用户:{},获取了验证码:{} '.format(input_value, code))
+            return zyMaillogin(input_value)
         else:
             return render_template('Maillogin.html', error="验证码不匹配")
 
     generate_captcha()
     return render_template('Maillogin.html')
+
 
 @app.route('/get_login_status', methods=['POST'])
 def get_login_status():
@@ -1427,5 +1437,3 @@ def get_login_status():
             return response
     else:
         return 'Invalid request method'
-
-

@@ -1,16 +1,18 @@
-<html>
+<html lang="">
 <body class="{{ theme }}">
   <form class="js-search search-form search-form--modal is-visible" method="post" action="/search" role="search">
     <div class="search-form__inner">
       <div class="micro">
         <p class="micro mb-">想要找点什么呢？</p>
-        <input class="text-input" type="search" name="keyword" placeholder="搜索" required="">
-          {% if results %}
-    <div class="results">
+          <label>
+              <input class="text-input" type="search" name="keyword" placeholder="搜索" required="">
+              {% if results %}
+          </label>
+          <div class="results">
       <h3>搜索结果：</h3>
       <ul>
         {% for result in results %}
-            <li><a href="{{ result.link }}" target="_blank">{{ result.title }}</a><a href="{{ result.link }}" target="_blank" alt="新建标签页中开启" ><img src="../static/image/jump.svg" style="height: 28px" ></a></li></li>
+            <li><a href="{{ result.link }}" target="_blank">{{ result.title }}</a><a href="{{ result.link }}" target="_blank"><img src="../static/image/jump.svg" style="height: 28px"  alt=""></a></li>
 
         {% endfor %}
       </ul>
@@ -26,11 +28,12 @@
 
 
   <head>
-    <link rel="stylesheet" href="static/css/style.css" type="text/css" media="all">
+    <link rel="stylesheet" href="../static/css/style.css" type="text/css" media="all">
     <style>
       html {overflow-y: hidden;}
-      .search-form.is-visible{background-image: url(static/image/iloli.gif);}
+      .search-form.is-visible{background-image: url(../static/image/iloli.gif);}
     </style>
+      <title></title>
   </head>
 </body>
 </html>

@@ -115,7 +115,7 @@ window.onload = () => {
       let flag = true;
       for (let arr in json) {
         let icur = 0;
-        if (arr == "opacity") {
+        if (arr === "opacity") {
           icur = Math.round(parseFloat(getStyle(obj, arr)) * 100);
         } else {
           icur = parseInt(getStyle(obj, arr));
@@ -123,11 +123,11 @@ window.onload = () => {
         let speed = (json[arr] - icur) * sp;
         speed = speed > 0 ? Math.ceil(speed) : Math.floor(speed);
 
-        if (icur != json[arr]) {
+        if (icur !== json[arr]) {
           flag = false;
         }
 
-        if (arr == "opacity") {
+        if (arr === "opacity") {
           obj.style.filter = "alpha(opacity : ' + (icur + speed) + ' )";
           obj.style.opacity = (icur + speed) / 100;
         } else {
