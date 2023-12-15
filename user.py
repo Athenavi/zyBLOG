@@ -1,14 +1,19 @@
+import logging
 import os
 from configparser import ConfigParser
-import logging
-from flask import session, render_template, redirect, url_for
+
+from flask import session, render_template
+
 from database import get_database_connection
+
 config = ConfigParser()
 config.read('config.ini', encoding='utf-8')
 door_key = config.get('admin', 'key').strip("'")
 
+
 def error(message, status_code):
-    return render_template('error.html', error=message,status_code=status_code), status_code
+    return render_template('error.html', error=message, status_code=status_code), status_code
+
 
 def read_hidden_articles():
     hidden_articles = []
@@ -22,6 +27,7 @@ def zyadmin(key):
         return back()
     else:
         return error("页面不存在", 404)
+
 
 def back():
     if session.get('logged_in'):
@@ -50,12 +56,13 @@ def back():
 
 
 def admin_dashboard():
-        if 'theme' not in session:
-            session['theme'] = 'night-theme'
-        files = show_files('articles/')
-        hiddenList=read_hidden_articles()
-        print(hiddenList)
-        return render_template('admin.html',theme=session['theme'],hiddenList=hiddenList)
+    if 'theme' not in session:
+        session['theme'] = 'night-theme'
+    files = show_files('articles/')
+    hiddenList = read_hidden_articles()
+    print(hiddenList)
+    return render_template('admin.html', theme=session['theme'], hiddenList=hiddenList)
+
 
 def zynewArticle():
     if session.get('logged_in'):
@@ -70,11 +77,6 @@ def zynewArticle():
             return error("请先登录", 401)
     else:
         return error("请先登录", 401)
-
-
-
-
-
 
 
 def show_files(path):
@@ -97,7 +99,6 @@ def zy_delete_file(filename):
 
     with open(mapper, 'w', encoding='utf-8') as file:
         file.writelines(lines)
-
 
     filename = filename + '.md'
     # 构建文件的完整路径

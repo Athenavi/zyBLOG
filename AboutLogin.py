@@ -4,12 +4,10 @@ import random
 from datetime import timedelta
 
 import bcrypt
+import bleach  # 导入 bleach 库用于 XSS 防范
 from flask import request, session, redirect, url_for, render_template, app
 
 from database import get_database_connection
-
-
-import bleach  # 导入 bleach 库用于 XSS 防范
 
 
 def zylogin():
@@ -182,7 +180,6 @@ mail_password=mail_config['password']
 mail_title=mail_config['title']
 
 
-import asyncio
 def zySendMail(code, toMail):
     # 发件人邮箱地址和密码
     smtp_server = mail_host

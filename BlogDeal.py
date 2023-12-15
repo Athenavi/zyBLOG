@@ -85,7 +85,7 @@ def get_article_content(article, limit):
             elif in_math_block:
                 math_content += line.strip() + ' '
             else:
-                if re.match(r'^\s*<.*?>', line):
+                if re.search(r'^\s*<.*?>', line):
                     # Skip HTML tags and their content in non-code block lines
                     continue
 

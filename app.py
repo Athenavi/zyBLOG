@@ -1,37 +1,38 @@
+import base64
 import configparser
 import datetime
+import io
+import json
 import logging
+import os
 import random
-import re
 import shutil
 import time
 import urllib
-import json
-import os
+import xml.etree.ElementTree as ET
+from configparser import ConfigParser
+
+import geoip2.database
 import portalocker
 import requests
-import xml.etree.ElementTree as ET
-import geoip2.database
-from configparser import ConfigParser
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify, send_from_directory, \
     send_file, make_response
+from flask_caching import Cache
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
+
 from AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
 from AboutPW import zychange_password, zyconfirm_password
 from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
     zyShowArticle, zyFEditArticle
-from templates.custom import custom_max, custom_min
 from database import get_database_connection
-from user import zyadmin, zy_delete_file, zynewArticle, error,GetOwnerArticles
+from templates.custom import custom_max, custom_min
+from user import zyadmin, zy_delete_file, zynewArticle, error, GetOwnerArticles
 from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
-    check_banned_ip, get_weather_icon_url, allowed_file, zySaveEdit
-from flask_caching import Cache
-import io
-import base64
-from flask_dance.contrib.github import make_github_blueprint, github#未完善的功能
+    check_banned_ip, get_weather_icon_url, zySaveEdit
+
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))

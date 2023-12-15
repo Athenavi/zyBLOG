@@ -27,6 +27,7 @@ def test_database_connection():
 
 
 def CheckDatabase():
+    global cursor, db
     try:
         db = get_database_connection()
         cursor = db.cursor()
