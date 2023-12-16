@@ -315,8 +315,6 @@ def space():
     notice = read_file('notice/1.txt', 50)
     userStatus = get_user_status()
     username = get_username()
-
-    ownerName = request.args.get('id')
     ownerArticles = None
 
     if userStatus and username is not None:
