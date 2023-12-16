@@ -478,9 +478,10 @@ def blog_detail(article):
             article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
             author = get_blog_author(article_name)
             blogDate = get_file_date(article_name)
+            theme = session.get('theme', 'day-theme')  # 获取当前主题
 
             response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
-                                   articleName=article_name,
+                                   articleName=article_name,theme=theme,
                                    author=author, blogDate=blogDate, comments=comments,
                                    url_for=url_for, article_url=article_url,
                                    article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
