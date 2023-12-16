@@ -13,4 +13,4 @@ Pillow==10.0.1
 DingtalkChatbot==1.5.7
 misaka~=2.1.1
 waitress~=2.1.2
-Flask-Caching==2.0.2
+Flask-Caching==2.1.0
