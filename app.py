@@ -409,20 +409,22 @@ def home():
             template = env.get_template('home.html')
             session.setdefault('theme', 'day-theme')
             notice = read_file('notice/1.txt', 50)
-            userStatus = get_user_status()
-            username = get_username()
-            app.logger.info('当前访问的用户:{},IP:{},IP归属地:{} '.format(username, ip1, IPinfo))
+
+            # 获取用户名
+            username = session.get('username')
+            app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{}'.format(username, ip1, IPinfo))
 
             # 渲染模板并存储渲染后的页面内容到缓存中
             rendered_content = template.render(
                 title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
                 notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
-                current_page=page, userStatus=userStatus, username=username, city_code=city_code
+                current_page=page, city_code=city_code, username=username
             )
-            # 将渲染后的页面内容保存到缓存，并设置过期时间为75秒
-            cache.set(cache_key, rendered_content, timeout=75)
+            # 将渲染后的页面内容保存到缓存，并设置过期时间
+            cache.set(cache_key, rendered_content, timeout=30)
 
             return rendered_content
+
         else:
             return render_template('home.html')
 
@@ -446,47 +448,54 @@ def blog_detail(article):
 
             if article_name not in article_names[0]:
                 return render_template('404.html'), 404
-            article_Surl = domain + 'blog/' + article_name
-            article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
-            author = get_blog_author(article_name)
-            blogDate = get_file_date(article_name)
 
-            # 检查session中是否存在theme键
-            if 'theme' not in session:
-                session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
+            # 通过关键字缓存内容
+            @cache.cached(timeout=180, key_prefix=f"article_{article_name}")
+            def get_article_content_cached():
+                return get_article_content(article, 215)
 
-            article_content, readNav_html = get_article_content(article, 215)
-            article_summary = clearHTMLFormat(article_content)
-            article_summary = article_summary[:30]
+            article_content, readNav_html = get_article_content_cached()
+            article_summary = clearHTMLFormat(article_content)[:30]
 
             # 分页参数
             page = request.args.get('page', default=1, type=int)
             per_page = 10  # 每页显示的评论数量
 
             username = None
-            comments = []
             if session.get('logged_in'):
                 username = session.get('username')
-                if username:
-                    comments = zy_get_comment(article_name, page=page, per_page=per_page)
+
+            # 通过关键字缓存评论内容
+            @cache.cached(timeout=180, key_prefix=f"comments_{article_name}_{username}")
+            def get_comments_cached():
+                if username is not None:
+                    return zy_get_comment(article_name, page=page, per_page=per_page)
                 else:
-                    comments = None
-            else:
-                comments = None
+                    return None
 
-            if request.method == 'POST':
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
+            comments = get_comments_cached()
+            article_Surl = domain + 'blog/' + article_name
+            article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
+            author = get_blog_author(article_name)
+            blogDate = get_file_date(article_name)
 
-            return render_template('BlogDetail.html', title=title, article_content=article_content,
+            response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
                                    articleName=article_name,
-                                   theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
-                                   url_for=url_for, username=username, article_url=article_url,
-                                   article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html)
+                                   author=author, blogDate=blogDate, comments=comments,
+                                   url_for=url_for, article_url=article_url,
+                                   article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
+
+            # 设置服务器端缓存时间
+            response.cache_control.max_age = 180
+            response.expires = datetime.utcnow() + timedelta(seconds=180)
+
+            # 设置浏览器端缓存时间
+            response.headers['Cache-Control'] = 'public, max-age=180'
+
+            return response
 
         except FileNotFoundError:
             return render_template('404.html'), 404
-
 
 last_comment_time = {}  # 全局变量，用于记录用户最后评论时间
 

@@ -74,15 +74,11 @@
 
 <div style="width: 1080px; height: 70px; background-color: transparent;">
   <a>公告:</a><span>{{ notice|safe }}</span>
-    <div>
-        <a href="/profile"><img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;"></a>
-    {% if userStatus %}
-      <!-- 展示已登录的内容 -->
-        <a href="/profile">欢迎您，{{ username }}</a>
-    {% else %}
-      <!-- 展示未登录的内容 -->
-      <a href="/login">您还没有登录呢</a>
-    {% endif %}
+    <div> <label for="username">欢迎您:<a href="/profile"> {{ username }}</a></label>
+        {% if username==None %}
+        <span><a href="/login">当前未登录，登陆后可参与评论</a></span>
+      {% endif %}
+        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
   </div>
 </div>
 

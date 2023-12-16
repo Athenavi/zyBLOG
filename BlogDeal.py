@@ -45,6 +45,7 @@ import misaka
 import html
 
 def get_article_content(article, limit):
+    global code_lang
     try:
         with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8') as f:
             content = f.read()
@@ -278,7 +279,7 @@ def zyShowArticle(content):
         return html
     except:
         # 发生任何异常时返回一个错误页面，可以根据需要自定义错误消息
-        return error('Error in displaying the article')
+        return error('Error in displaying the article',404)
 
 def zyFEditArticle(article):
     limit = 215  # 读取的最大行数
