@@ -72,28 +72,28 @@ def get_client_ip(request, session):
     if public_ip:
         return public_ip
 
-
     # 按顺序尝试获取真实 IP 地址
-    for header in ["X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "X-Real-IP"]:
+    headers = ["X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "X-Real-IP"]
+    for header in headers:
         ip = request.headers.get(header)
         if ip:
+            session['public_ip'] = ip
             return ip
 
-
-
     # 获取公共 IP 地址
-    try:
-        response = requests.get('http://ip-api.com/json')
-        data = response.json()
-        if data['status'] == 'success':
-            public_ip = data['query']
-        else:
+    if 'public_ip' not in session:
+        try:
+            response = requests.get('http://ip-api.com/json')
+            data = response.json()
+            if data.get('status') == 'success':
+                public_ip = data.get('query')
+            else:
+                public_ip = ''
+        except requests.RequestException:
             public_ip = ''
-    except requests.RequestException:
-        public_ip = ''
 
-    # 将 IP 存入 session 中
-    session['public_ip'] = public_ip
+        # 将 IP 存入 session 中
+        session['public_ip'] = public_ip
 
     return public_ip
 
