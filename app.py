@@ -381,7 +381,7 @@ def zy_get_city_code(city_name):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     # 获取客户端IP地址
-    IPinfo = get_client_ip()
+    IPinfo = get_client_ip(request,session)
     ip1 = IPinfo
     IPinfo = analyze_ip_location(IPinfo)
     city_code = ip_city_code(IPinfo)
@@ -420,8 +420,13 @@ def home():
             )
             # 将渲染后的页面内容保存到缓存，并设置过期时间
             cache.set(cache_key, rendered_content, timeout=30)
+            resp = make_response(rendered_content)
+            if username is None:
+                username = 'qks' + format(random.randint(1000, 9999))  # 可以设置一个默认值或者抛出异常，具体根据需求进行处理
 
-            return rendered_content
+            resp.set_cookie('key', 'zyBLOG' + username, 7200)
+            # 设置 cookie
+            return resp
 
         else:
             return render_template('home.html')
@@ -430,7 +435,7 @@ def home():
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 @app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
-    IPinfo = get_client_ip()
+    IPinfo = get_client_ip(request,session)
     if check_banned_ip(IPinfo):
         return render_template('error.html')
     else:
@@ -483,6 +488,7 @@ def blog_detail(article):
                                    author=author, blogDate=blogDate, comments=comments,
                                    url_for=url_for, article_url=article_url,
                                    article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
+
 
             # 设置服务器端缓存时间
             response.cache_control.max_age = 180
@@ -1427,21 +1433,21 @@ def maillogin_page():
     return render_template('Maillogin.html')
 
 
-@app.route('/get_login_status', methods=['POST'])
-def get_login_status():
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        username = get_username()
-        if username:
-            response = make_response(jsonify({'result': 'true'}))
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response.headers['Pragma'] = 'no-cache'
-            response.headers['Expires'] = '0'
-            return response
-        else:
-            response = make_response(jsonify({'result': 'false'}))
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response.headers['Pragma'] = 'no-cache'
-            response.headers['Expires'] = '0'
-            return response
-    else:
-        return 'Invalid request method'
+# @app.route('/get_login_status', methods=['POST'])
+# def get_login_status():
+#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#         username = get_username()
+#         if username:
+#             response = make_response(jsonify({'result': 'true'}))
+#             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+#             response.headers['Pragma'] = 'no-cache'
+#             response.headers['Expires'] = '0'
+#             return response
+#         else:
+#             response = make_response(jsonify({'result': 'false'}))
+#             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+#             response.headers['Pragma'] = 'no-cache'
+#             response.headers['Expires'] = '0'
+#             return response
+#     else:
+#         return 'Invalid request method'

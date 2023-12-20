@@ -66,19 +66,22 @@ def zy_upload_file():
     return make_response('success')
 
 
-def get_client_ip():
-    # 尝试从session中读取ip
+def get_client_ip(request, session):
+    # 尝试从 session 中读取 IP 地址
     public_ip = session.get('public_ip')
     if public_ip:
         return public_ip
 
-    # 获取 X-Real-IP 请求头中的 IP 地址
-    real_ip = request.headers.get('X-Real-IP')
 
-    if real_ip:
-        return real_ip
+    # 按顺序尝试获取真实 IP 地址
+    for header in ["X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "X-Real-IP"]:
+        ip = request.headers.get(header)
+        if ip:
+            return ip
 
-    # 获取公共IP地址
+
+
+    # 获取公共 IP 地址
     try:
         response = requests.get('http://ip-api.com/json')
         data = response.json()
@@ -89,7 +92,7 @@ def get_client_ip():
     except requests.RequestException:
         public_ip = ''
 
-    # 将ip存入session中
+    # 将 IP 存入 session 中
     session['public_ip'] = public_ip
 
     return public_ip

@@ -126,18 +126,20 @@ div{
 </body>
 </html>
 <script>
-const getLoginStatus = async () => {
-    const response = await fetch('/get_login_status', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    });
-    const data = await response.json();
-    if (data.result === 'true') {
-        location.href = '/';
+setInterval(function() {
+  var cookieValue = getCookie('login_statu');
+  if (cookieValue && cookieValue === '1') {
+    location.href = '/';
+  }
+}, 3000);
+
+function getCookie(name) {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i].trim();
+    if (cookie.startsWith(name + '=')) {
+      return cookie.substring(name.length + 1);
     }
-};
-// 每隔3秒执行一次getLoginStatus函数
-setInterval(getLoginStatus, 5000);</script>
+  }
+  return null;
+}</script>

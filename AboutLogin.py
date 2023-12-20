@@ -5,7 +5,7 @@ from datetime import timedelta
 
 import bcrypt
 import bleach  # 导入 bleach 库用于 XSS 防范
-from flask import request, session, redirect, url_for, render_template, app
+from flask import request, session, redirect, url_for, render_template, app, make_response
 
 from database import get_database_connection
 
@@ -146,7 +146,11 @@ def zyMaillogin(user_email):
             session['logged_in'] = True
             session['username'] = result[1]
 
-            return render_template('success.html', message="授权通过!你可以关闭此页面")
+            resp = make_response(render_template('success.html', message="授权通过!你可以关闭此页面"))
+
+            # 设置 cookie
+            resp.set_cookie('login_statu', '1',30)
+            return resp
 
         else:
             # 执行用户注册的逻辑
@@ -155,7 +159,11 @@ def zyMaillogin(user_email):
             cursor.execute(insert_query, (username, hashed_password, user_email))
             db.commit()
             message = '已经为您自动注册账号\n' + '账号' + username + '默认密码：123456 请尽快修改'
-            return render_template('success.html', message=message)
+            resp = make_response(render_template('success.html', message=message))
+
+            # 设置 cookie
+            resp.set_cookie('login_statu', '1',30)
+            return resp
 
     except Exception as e:
         logging.error(f"Error registering user: {e}")
