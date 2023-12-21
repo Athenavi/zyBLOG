@@ -7,7 +7,7 @@ import bcrypt
 import bleach  # 导入 bleach 库用于 XSS 防范
 from flask import request, session, redirect, url_for, render_template, app, make_response
 
-from database import get_database_connection
+from src.database import get_database_connection
 
 
 def zylogin():

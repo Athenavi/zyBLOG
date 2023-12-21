@@ -17,20 +17,21 @@ import portalocker
 import requests
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify, send_from_directory, \
-    send_file, make_response
+    send_file, make_response, send_from_directory
 from flask_caching import Cache
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.security import safe_join
 
-from AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
-from AboutPW import zychange_password, zyconfirm_password
-from BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
+from src.AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
+from src.AboutPW import zychange_password, zyconfirm_password
+from src.BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
     zyShowArticle, zyFEditArticle
-from database import get_database_connection
+from src.database import get_database_connection
 from templates.custom import custom_max, custom_min
-from user import zyadmin, zy_delete_file, zynewArticle, error, GetOwnerArticles
-from utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
+from src.user import zyadmin, zy_delete_file, zynewArticle, error, GetOwnerArticles
+from src.utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
     check_banned_ip, get_weather_icon_url, zySaveEdit
 
 template_dir = 'templates'  # 模板文件的目录
@@ -40,7 +41,7 @@ env.filters['custom_max'] = custom_max
 env.filters['custom_min'] = custom_min
 env.add_extension('jinja2.ext.loopcontrols')
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../static")
 app.config['CACHE_TYPE'] = 'simple'
 cache = Cache(app)
 app.jinja_env = env
@@ -62,18 +63,6 @@ config = ConfigParser()
 config.read('config.ini', encoding='utf-8')
 # 应用分享配置参数
 from datetime import datetime, timedelta
-
-
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
-
-@app.route('/123.jpg')
-def blackHoleicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               '123.jpg')
 
 
 @app.context_processor
@@ -484,10 +473,10 @@ def blog_detail(article):
             theme = session.get('theme', 'day-theme')  # 获取当前主题
 
             response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
-                                   articleName=article_name,theme=theme,
-                                   author=author, blogDate=blogDate, comments=comments,
-                                   url_for=url_for, article_url=article_url,
-                                   article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
+                                                     articleName=article_name, theme=theme,
+                                                     author=author, blogDate=blogDate, comments=comments,
+                                                     url_for=url_for, article_url=article_url,
+                                                     article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
 
 
             # 设置服务器端缓存时间
@@ -706,7 +695,7 @@ def newArticle():
         else:
             if file:
                 # 保存上传的文件到指定路径
-                upload_folder = os.path.join(app.root_path, 'temp/upload')
+                upload_folder = os.path.join('temp/upload')
                 os.makedirs(upload_folder, exist_ok=True)
                 file_path = os.path.join(upload_folder, file.filename)
                 file.save(file_path)
@@ -788,7 +777,7 @@ def generate_captcha():
     image = Image.new('RGB', (135, 80), color=(255, 255, 255))
 
     # 创建字体对象并设置字体大小
-    font = ImageFont.truetype('babyground.ttf', size=40)
+    font = ImageFont.truetype('static/babyground.ttf', size=40)
 
     # 在图像上绘制验证码文本
     d = ImageDraw.Draw(image)
@@ -848,22 +837,6 @@ def send_message(message):
     zySendMessage(message)
     return '1'
 
-
-@app.route('/api/img')
-def random_image():
-    img_dir = os.path.join(app.root_path, 'media')  # 修改为实际的图片目录路径
-
-    # 获取目录中所有图片文件
-    img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
-
-    if not img_files:
-        return 'No image files found.'
-
-    # 从文件列表中随机选择一个图片文件
-    img_file = random.choice(img_files)
-    img_path = os.path.join(img_dir, img_file)
-
-    return send_file(img_path, mimetype='image/gif')
 
 
 def ip_city_code(city_name):
@@ -1101,11 +1074,6 @@ def vipBlog(articleName):
         return zyPWblog(article_name)
 
 
-@app.route('/zyblogJS/<JS_name>')
-def getjs(JS_name):
-    return send_from_directory(os.path.join(app.root_path, 'static'), JS_name)
-
-
 def zyPWblog(article_name):
     template = env.get_template('hidden.html')
     session.setdefault('theme', 'day-theme')
@@ -1301,7 +1269,7 @@ def media_space():
 
 def get_ALL_img(username, page=1, per_page=10):
     imgs = []
-    img_dir = os.path.join(app.root_path, 'media', username)
+    img_dir = os.path.join('media', username)
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
@@ -1322,7 +1290,7 @@ def get_ALL_img(username, page=1, per_page=10):
 
 def get_ALL_video(username, page=1, per_page=10):
     videos = []
-    video_dir = os.path.join(app.root_path, 'media', username)
+    video_dir = os.path.join('media', username)
     if not os.path.exists(video_dir):
         os.makedirs(video_dir)
 
@@ -1345,7 +1313,7 @@ def get_ALL_video(username, page=1, per_page=10):
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
     try:
-        img_dir = os.path.join(app.root_path, 'media', username)  # 修改为实际的图片目录路径
+        img_dir = os.path.join('media', username)  # 修改为实际的图片目录路径
         img_path = os.path.join(img_dir, img_name)  # 图片完整路径
 
         # 从缓存中获取图像数据
@@ -1382,7 +1350,7 @@ def upload_image_path(username1):
                         return 'Too large please use a file smaller than 10MB'
                     else:
                         if file:
-                            img_dir = os.path.join(app.root_path, 'media', username)
+                            img_dir = os.path.join('media', username)
                             os.makedirs(img_dir, exist_ok=True)
 
                             file_path = os.path.join(img_dir, file.filename)
@@ -1403,7 +1371,7 @@ def upload_image_path(username1):
 @app.route('/zyVideo/<username>/<video_name>')
 def start_video(username, video_name):
     try:
-        video_dir = os.path.join(app.root_path, 'media', username)
+        video_dir = os.path.join('media', username)
         video_path = os.path.join(video_dir, video_name)
 
         return send_file(video_path, mimetype='video/mp4', as_attachment=False, conditional=True)
@@ -1451,3 +1419,9 @@ def maillogin_page():
 #             return response
 #     else:
 #         return 'Invalid request method'
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    parts = filename.split('/')
+    directory = safe_join('/'.join(parts[:-1]))
+    file = parts[-1]
+    return send_from_directory(directory, file)

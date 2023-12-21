@@ -1,6 +1,6 @@
 import bcrypt
 from flask import session, flash, redirect, url_for, render_template, request
-from database import get_database_connection
+from src.database import get_database_connection
 
 
 def zychange_password():

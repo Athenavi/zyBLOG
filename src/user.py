@@ -4,7 +4,7 @@ from configparser import ConfigParser
 
 from flask import session, render_template
 
-from database import get_database_connection
+from src.database import get_database_connection
 
 config = ConfigParser()
 config.read('config.ini', encoding='utf-8')

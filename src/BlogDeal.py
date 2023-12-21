@@ -3,11 +3,11 @@ import random
 import urllib
 import markdown
 from configparser import ConfigParser
-from database import get_database_connection
+from src.database import get_database_connection
 from dingtalkchatbot.chatbot import DingtalkChatbot
 import os
 from urllib.parse import quote_plus
-from user import error
+from src.user import error
 import datetime
 import re
 
@@ -17,7 +17,8 @@ def get_article_names(page=1, per_page=10):
     markdown_files = [file for file in files if file.endswith('.md')]
 
     # Sort markdown_files in reverse order based on modified date
-    markdown_files = sorted(markdown_files, key=lambda f: datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join('articles', f))), reverse=True)
+    markdown_files = sorted(markdown_files, key=lambda f: datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(
+        'articles', f))), reverse=True)
 
     start_index = (page-1) * per_page
     end_index = start_index + per_page
@@ -41,7 +42,6 @@ def read_hidden_articles():
     return hidden_articles
 
 import codecs
-import misaka
 import html
 
 def get_article_content(article, limit):
