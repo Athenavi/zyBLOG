@@ -73,7 +73,7 @@ def get_client_ip(request, session):
         return public_ip
 
     # 按顺序尝试获取真实 IP 地址
-    headers = ["X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "X-Real-IP"]
+    headers = ["X-Real-IP", "X-Forwarded-For"]
     for header in headers:
         ip = request.headers.get(header)
         if ip:

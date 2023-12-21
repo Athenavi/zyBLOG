@@ -23,46 +23,50 @@
 <!-- 引入导航栏 -->
 <!-- 定义导航栏 -->
 
-<!-- 预留具体页面的位置 -->
 <div class="container">
   <div class="row justify-content-md-center">
-
-  <style>
-    .carousel-inner .carousel-item img {
-      max-height: 430px; /* 调整图片的最大高度 */
-      object-fit: cover; /* 图片保持比例缩放，并填满容器 */
-    }
-  </style>
-<div style="width: 1080px; height: 30px; background-color: transparent;">
-  <a></a><span>{{ notice }}</span>
-  <div>
-    <img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;">
-    {% if userStatus %}
+    <style>
+      .carousel-inner .carousel-item img {
+        max-height: 430px;
+        /* 调整图片的最大高度 */
+        object-fit: cover;
+        /* 图片保持比例缩放，并填满容器 */
+      }
+    </style>
+    <div style="width: 1080px; height: 30px; background-color: transparent;">
+      <a></a><span>{{ notice }}</span>
+    </div>
+    <div>
+      <img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;" alt="">
+      {% if userStatus %}
       <!-- 展示已登录的内容 -->
       <a>欢迎您，{{ username }}</a><a href="/logout">点击这里直接注销</a>　　<a href="/change-password">修改我的密码</a>
-    {% else %}
+      {% else %}
       <!-- 展示未登录的内容 -->
       <a href="/login">需要登录</a>
-    {% endif %}
-  </div>
+      {% endif %}
+    </div>
 
     <div class="editor">
-    <button id="manual-refresh-button">预览</button><button id="save-button">保存</button><a href="/blog/{{ articleName }}" target="_self">文章页</a>
-        <label for="md-editor"></label><textarea id="md-editor" style="width:100%">{% if edit_html %}{{ edit_html }}
-    {% endif %}</textarea>
+      <button id="manual-refresh-button">预览</button>
+      <button id="save-button">保存</button>
+      <a href="/blog/{{ articleName }}" target="_self">文章页</a>
+      <label for="md-editor"></label>
+      <textarea id="md-editor" style="width:100%">{% if edit_html %}{{ edit_html }}{% endif %}</textarea>
     </div>
     <div class="preview">
       <div id="md-preview">
-          {% if show_edit %}
-      {{ show_edit|safe }}
-    {% endif %}
+        {% if show_edit %}
+        {{ show_edit|safe }}
+        {% endif %}
       </div>
     </div>
   </div>
-<!-- 引入注脚 -->
+  <!-- 引入注脚 -->
+</div>
 
 <div>
-    <br><br><br>
+  <br><br><br>
 </div>
 {% from 'footer.html' import zyfooter %}
 <!-- 调用footer -->
