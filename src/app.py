@@ -32,7 +32,7 @@ from src.database import get_database_connection
 from templates.custom import custom_max, custom_min
 from src.user import zyadmin, zy_delete_file, zynewArticle, error, GetOwnerArticles
 from src.utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
-    check_banned_ip, get_weather_icon_url, zySaveEdit
+     get_weather_icon_url, zySaveEdit
 
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
@@ -349,60 +349,53 @@ def home():
     ip1 = IPinfo
     IPinfo = analyze_ip_location(IPinfo)
     city_code = ip_city_code(IPinfo)
+    if request.method == 'GET':
+        page = request.args.get('page', default=1, type=int)
+        if page <= 0:
+            page = 1
 
-    if check_banned_ip(IPinfo):
-        return render_template('error.html')
+        theme = session.get('theme', 'day-theme')  # 获取当前主题
+        cache_key = f'page_content:{page}:{theme}'  # 根据页面值和主题生成缓存键
+
+        # 从缓存中获取页面内容
+        content = cache.get(cache_key)
+        if content:
+            return content
+
+        # 重新获取页面内容
+        articles, has_next_page, has_previous_page = get_article_names(page=page)
+        template = env.get_template('home.html')
+        session.setdefault('theme', 'day-theme')
+        notice = read_file('notice/1.txt', 50)
+
+        # 获取用户名
+        username = session.get('username')
+        app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{}'.format(username, ip1, IPinfo))
+
+        # 渲染模板并存储渲染后的页面内容到缓存中
+        rendered_content = template.render(
+            title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
+            notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
+            current_page=page, city_code=city_code, username=username
+        )
+        # 将渲染后的页面内容保存到缓存，并设置过期时间
+        cache.set(cache_key, rendered_content, timeout=30)
+        resp = make_response(rendered_content)
+        if username is None:
+            username = 'qks' + format(random.randint(1000, 9999))  # 可以设置一个默认值或者抛出异常，具体根据需求进行处理
+
+        resp.set_cookie('key', 'zyBLOG' + username, 7200)
+        # 设置 cookie
+        return resp
+
     else:
-        if request.method == 'GET':
-            page = request.args.get('page', default=1, type=int)
-            if page <= 0:
-                page = 1
+        return render_template('home.html')
 
-            theme = session.get('theme', 'day-theme')  # 获取当前主题
-            cache_key = f'page_content:{page}:{theme}'  # 根据页面值和主题生成缓存键
-
-            # 从缓存中获取页面内容
-            content = cache.get(cache_key)
-            if content:
-                return content
-
-            # 重新获取页面内容
-            articles, has_next_page, has_previous_page = get_article_names(page=page)
-            template = env.get_template('home.html')
-            session.setdefault('theme', 'day-theme')
-            notice = read_file('notice/1.txt', 50)
-
-            # 获取用户名
-            username = session.get('username')
-            app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{}'.format(username, ip1, IPinfo))
-
-            # 渲染模板并存储渲染后的页面内容到缓存中
-            rendered_content = template.render(
-                title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
-                notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
-                current_page=page, city_code=city_code, username=username
-            )
-            # 将渲染后的页面内容保存到缓存，并设置过期时间
-            cache.set(cache_key, rendered_content, timeout=30)
-            resp = make_response(rendered_content)
-            if username is None:
-                username = 'qks' + format(random.randint(1000, 9999))  # 可以设置一个默认值或者抛出异常，具体根据需求进行处理
-
-            resp.set_cookie('key', 'zyBLOG' + username, 7200)
-            # 设置 cookie
-            return resp
-
-        else:
-            return render_template('home.html')
 
 
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 @app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
-    IPinfo = get_client_ip(request,session)
-    if check_banned_ip(IPinfo):
-        return render_template('error.html')
-    else:
         try:
             # 根据文章名称获取相应的内容并处理
             article_name = article
@@ -1288,7 +1281,8 @@ def get_ALL_video(username, page=1, per_page=10):
 @app.route('/get_image_path/<username>/<img_name>')
 def get_image_path(username, img_name):
     try:
-        img_dir = os.path.join('media', username)  # 修改为实际的图片目录路径
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        img_dir = os.path.join(base_dir, 'media', username)  # 修改为实际的图片目录相对路径
         img_path = os.path.join(img_dir, img_name)  # 图片完整路径
 
         # 从缓存中获取图像数据
@@ -1346,7 +1340,8 @@ def upload_image_path(username1):
 @app.route('/zyVideo/<username>/<video_name>')
 def start_video(username, video_name):
     try:
-        video_dir = os.path.join('media', username)
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        video_dir = os.path.join(base_dir,'media', username)
         video_path = os.path.join(video_dir, video_name)
 
         return send_file(video_path, mimetype='video/mp4', as_attachment=False, conditional=True)

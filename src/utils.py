@@ -122,14 +122,6 @@ def read_file(file_path, num_chars):
     return content
 
 
-def check_banned_ip(ip_address):
-    with open("banIP.txt", "r") as file:
-        banned_ips = file.read().splitlines()
-        if ip_address in banned_ips:
-            return True
-    return False
-
-
 def get_weather_icon_url(weather_type):
     iconFileName = ""  # 默认图标文件名，根据实际情况修改
 
