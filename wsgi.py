@@ -1,6 +1,6 @@
 from waitress import serve
-from app import app
-from database import test_database_connection, CheckDatabase
+from src.app import app
+from src.database import test_database_connection, CheckDatabase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 if __name__ == '__main__':
