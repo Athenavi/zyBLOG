@@ -1,45 +1,56 @@
+<!DOCTYPE html>
 <html lang="">
 <head>
-    <link rel="stylesheet" href="../static/css/style.css" type="text/css" media="all">
-    <style>
-      html {overflow-y: hidden;}
-      .search-form.is-visible{background-image: url(../static/image/iloli.gif);}
-    </style>
-      <title></title>
-  </head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/style.css" type="text/css" media="all">
+  <style>
+    html { overflow-y: hidden; }
+    .search-form.is-visible{ background-image: url(../static/image/iloli.gif); }
+  </style>
+  <title></title>
+</head>
 <body class="{{ theme }}">
-  <form class="js-search search-form search-form--modal is-visible" method="post" action="/search" role="search">
-    <div class="search-form__inner">
-      <div class="micro">
-        <p class="micro mb-">想要找点什么呢？</p>
-          <label>
-              <input class="text-input" type="search" name="keyword" placeholder="搜索" required="">
-              {% if results %}
-          </label>
-          <div class="results">
-      <h3>搜索结果：</h3>
-      <ul>
-        {% for result in results %}
-            <li><a href="{{ result.link }}" target="_blank">{{ result.title }}</a><a href="{{ result.link }}" target="_blank"><img src="../static/image/jump.svg" style="height: 28px"  alt=""></a></li>
-
-        {% endfor %}
-      </ul>
-
-    </div>
-  {% else %}
-    <p>No results found</p>
-  {% endif %}
+  <div class="container mt-3">
+    <form class="js-search search-form search-form--modal is-visible" method="post" action="/search" role="search">
+      <div class="search-form__inner">
+        <div class="micro">
+          <p class="micro mb-">想要找点什么呢？</p>
+          <div class="input-group">
+            <input class="form-control" type="search" name="keyword" placeholder="搜索" required>
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit">搜索</button>
+            </div>
+          </div>
+          {% if results %}
+          <div class="results mt-3">
+            <h3>搜索结果：</h3>
+            <ul>
+              {% for result in results %}
+              <li>
+                <a href="{{ result.link }}" target="_blank">{{ result.title }}</a>
+                <a href="{{ result.link }}" target="_blank"><img src="../static/image/jump.svg" style="height: 28px" alt=""></a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% else %}
+          <p>No results found</p>
+          {% endif %}
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
+
+  <script src="../static/js/bootstrap.min.js"></script>
+  <script>
+    if (window !== window.top) {
+      if (window.parent !== window.top) {
+        // 当前窗口被嵌套在二级及以下的iframe中
+        alert("此视图将影响您的体验");
+        window.parent.location.href = "/search"; // 可自定义重定向的URL
+      }
+    }
+  </script>
 </body>
 </html>
-<script>
-if (window !== window.top) {
-  if (window.parent !== window.top) {
-    // 当前窗口被嵌套在二级及以下的iframe中
-    alert("此视图将影响您的体验");
-    window.parent.location.href = "/search"; // 可自定义重定向的URL
-  }
-}
-</script>
