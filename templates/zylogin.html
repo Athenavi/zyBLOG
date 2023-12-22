@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap 的 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <title>登录</title>
+    <style>
+        body {
+            background-image: url(../static/image/day.jpg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="block-content block-content-full px-lg-4 py-md-4 py-lg-4">
+                <div class="">
+                    <div class="mb-3 text-center ">
+                        <h1 class="font-size-h1">Login</h1>
+                    </div>
+                    <form id="login-form" method="post" action="/login" onsubmit="return validateForm()">
+                {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endif %}
+                    <div class="card-body">
+                        <div class="form-group mb-3">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required>
+                        </div>
+                        <div class="form-group  mb-3">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="密码" required>
+                        </div>
+                        <div class="form-group form-check">
+
+                            <label>
+                        <input name="" type="checkbox"  autocomplete="on" required>
+                    </label>
+                    <label for="" style="padding-left: 5px;">阅读并接受</label>
+                    <a target="_blank" href="/blog/legal-agreement">法律声明</a>和
+                    <a target="_blank" href="/blog/privacy">隐私协议</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">安全登录</button>
+                        <span>一键登录</span>
+                <a onclick="openSmallWindow()"><img src="../static/image/mail.svg" alt=""></a>
+                        <label>
+                            还没有账号？
+                         <a target="_blank" href="/register">前往注册</a>
+                    </label>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+
+    <script src="text/javascript">
+        $().toast('show');
+    </script>
+</body>
+
+</html>
+
+<script>
+        function openSmallWindow() {
+            var screenWidth = document.documentElement.clientWidth;
+            var screenHeight = document.documentElement.clientHeight;
+            window.open('/mailloginpage', 'newWindow', 'width=' + (screenWidth / 2) + ', height=' + (screenHeight / 2));
+
+        }
+    </script>
+<script>
+    // 前端表单校验函数，可以根据实际需求进行扩展
+    function validateForm() {
+        var form = document.getElementById("login-form");
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        if (username === "") {
+            alert("请输入账号！");
+            return false;
+        }
+
+        if (password === "") {
+            alert("请输入密码！");
+            return false;
+        }
+
+        return true;
+    }
+</script>
+<script>
+setInterval(function() {
+  var cookieValue = getCookie('login_statu');
+  if (cookieValue && cookieValue === '1') {
+    location.href = '/';
+  }
+}, 3000);
+
+function getCookie(name) {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i].trim();
+    if (cookie.startsWith(name + '=')) {
+      return cookie.substring(name.length + 1);
+    }
+  }
+  return null;
+}</script>

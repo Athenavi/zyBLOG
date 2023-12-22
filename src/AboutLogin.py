@@ -16,7 +16,7 @@ def zylogin():
         password = bleach.clean(request.form['password'])
 
         if input_value == 'guest@7trees.cn':
-            return render_template('login.html', error="Guest account cannot be used for login")
+            return render_template('zylogin.html', error="Guest account cannot be used for login")
 
         db = get_database_connection()
         cursor = db.cursor()
@@ -34,7 +34,7 @@ def zylogin():
 
                 return redirect(url_for('home'))
             else:
-                return render_template('login.html', error="Invalid username or password")
+                return render_template('zylogin.html', error="Invalid username or password")
 
         except Exception as e:
             logging.error(f"Error logging in: {e}")
@@ -44,7 +44,7 @@ def zylogin():
             cursor.close()
             db.close()
 
-    return render_template('login.html', title="登录")
+    return render_template('zylogin.html', title="登录")
 
 
 def zyregister():
@@ -95,7 +95,7 @@ def zyregister():
             cursor.close()
             db.close()
 
-    return render_template('register.html', title="注册新用户")
+    return render_template('zyregister.html', title="注册新用户")
 
 def get_email(username):
     email = 'guest@7trees.cn'
