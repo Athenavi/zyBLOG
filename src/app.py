@@ -274,7 +274,7 @@ def get_city_code():
 @app.route('/profile', methods=['GET', 'POST'])
 def space():
     avatar_url = profile('guest@7trees.cn')
-    template = env.get_template('profile.html')
+    template = env.get_template('zyprofile.html')
     session.setdefault('theme', 'day-theme')
     notice = read_file('notice/1.txt', 50)
     userStatus = get_user_status()
@@ -1209,14 +1209,14 @@ def media_space():
             if not type or type == 'img':
                 imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
 
-                return render_template('media.html', imgs=imgs, title='Media', url_for=url_for,
+                return render_template('zymedia.html', imgs=imgs, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
                                        has_previous_page=has_previous_page, current_page=page, userid=username,
                                        domain=domain)
             if type == 'video':
                 videos, has_next_page, has_previous_page = get_ALL_video(username, page=page)
 
-                return render_template('media.html', videos=videos, title='Media', url_for=url_for,
+                return render_template('zymedia.html', videos=videos, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
                                        has_previous_page=has_previous_page, current_page=page, userid=username,
                                        domain=domain)

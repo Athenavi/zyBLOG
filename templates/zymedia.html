@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="zyBLOG|基于flask的博客程序">
+    <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
+    <meta name="robots" content="index, follow">
+    <title>{{ title }} | zyBLOG</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/card.css">
+    <style>
+        body {
+            background: url(../static/image/day.jpg) no-repeat center/cover;
+        }
+    </style>
+</head>
+
+<body class="{{ theme }}">
+    {% from 'header.html' import zytopbar %}
+    {{ zytopbar() }}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="block-content block-content-full px-lg-4 py-md-4 py-lg-4">
+        {% if userid %}
+      <!-- 展示已登录的内容 -->
+        <a>欢迎您，{{ userid }}</a>
+        <a href="{{ url_for('media_space', username=userid, page=1)}}">仅图片</a>
+        <a href="{{ url_for('media_space', username=userid, page=1,type='video')}}">仅视频</a>
+    {% else %}
+      <!-- 展示未登录的内容 -->
+      <a href="/login">您还没有登录呢</a>
+    {% endif %}
+
+
+<form method="POST" action="/upload_image/{{ username }}">
+      <input type="file" name="file" id="file-input" accept="image/png, image/webp, image/jpeg">
+      <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+        <hr>
+                <!-- 翻页按钮 -->
+        {% if has_previous_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1)}}">Next</a>
+        {% endif %}
+
+      {% if has_previous_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1,type='video')}}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1,type='video')}}">Next</a>
+        {% endif %}
+      </div>
+
+       {% for img in imgs %}
+      <div class="col-md-6" >
+        <a  class="card-link" onclick="showImage('{{ img }}')">
+          <div class="card mb-4">
+            <div class="card-body" style="display: flex;background: transparent">
+
+              <h3 class="card-title" id="InBOX">&nbsp;{{ img }}</h3>
+                <button class="btn btn-primary" onclick="copyImgURL('{{ img }}')">复制外链</button>
+
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+
+    {% for video in videos %}
+      <div class="col-md-6" >
+        <a  class="card-link" onclick="startVideo('{{ video }}')">
+          <div class="card mb-4">
+            <div class="card-body" style="display: flex;background:transparent;">
+
+              <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ video }}</h3>
+                <button class="btn btn-primary" onclick="copyVideoURL('{{ video }}')">复制外链</button>
+
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+        <!-- 翻页按钮 -->
+        {% if has_previous_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1) }}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and imgs %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1)}}">Next</a>
+        {% endif %}
+
+      {% if has_previous_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page-1,type='video')}}">Previous</a>
+        {% endif %}
+        <span>----------</span>
+        {% if has_next_page and videos %}
+        <a href="{{ url_for('media_space', username=userid, page=current_page+1,type='video')}}">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+    <script>
+        $().toast('show');
+    </script>
+
+
+
+
+    <!-- 图像弹窗 -->
+<style>
+  #image-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .image-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .image-wrapper img {
+    max-width: 80%;
+    max-height: 80%;
+  }
+
+  .image-wrapper button {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+
+  #video-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .video-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .video-wrapper video {
+    max-width: 80%;
+    max-height: 80%;
+  }
+
+  .video-wrapper button {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+</style>
+<div id="video-popup">
+  <div class="video-wrapper">
+    <video id="video-image" src="" controls></video>
+    <button class="btn btn-primary" onclick="closeVideo()">关闭</button>
+  </div>
+</div>
+
+
+    <div id="image-popup">
+      <div class="image-wrapper">
+        <img id="popup-image" src="" alt="Image">
+        <button class="btn btn-primary" onclick="closeImage()">关闭</button>
+      </div>
+    </div>
+
+    {% from 'footer.html' import zyfooter %}
+    {{ zyfooter() }}
+</body>
+
+</html>
+
+<style>
+  .card-link:hover .card {
+    box-shadow: 0 0 10px #877725;
+  }
+</style>
+<style>
+  .card-body {
+    display: flex;
+    align-items: center;
+  }
+
+  .card-body img {
+    flex: 1;
+    max-width: 50%;
+    max-height: 125%;
+  }
+
+  .card-body h3 {
+    flex: 1;
+  }
+</style>
+
+<script>
+  async function uploadFile() {
+    let fileInput = document.getElementById('file-input');
+    let file = fileInput.files[0];
+
+    if (file) {
+      let formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        let response = await fetch(`/upload_image/{{ username }}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        let responseText = await response.text(); // 获取响应内容
+
+        if (response.ok && responseText === 'success') {
+          // 文件上传成功
+            alert('File upload failed.');
+            setTimeout(() => {
+                location.reload(); // Refresh the page
+                }, 1000); // Wait for 1 second
+
+        } else if (responseText === 'failed') {
+          // 文件上传失败
+          alert('File upload failed.');
+        } else {
+          // 处理其他未预期的响应
+          console.error('Unexpected response:', responseText);
+        }
+      } catch (error) {
+        console.error('File upload error:', error);
+        alert('File upload error.');
+      }
+    }
+  }
+</script>
+    <script>
+      function showImage(img) {
+        // 发起POST请求获取图像数据
+        fetch('/media', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ img_name: img })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+          // 创建并设置图像URL
+          const imageURL = URL.createObjectURL(blob);
+
+          // 显示图片
+          const popupImage = document.getElementById('popup-image');
+          popupImage.src = imageURL;
+
+          // 显示图像弹窗
+          const imagePopup = document.getElementById('image-popup');
+          imagePopup.style.display = 'block';
+        })
+        .catch(error => {
+          console.error(error);
+        });
+      }
+
+      function closeImage() {
+        // 关闭图像弹窗
+        const imagePopup = document.getElementById('image-popup');
+        imagePopup.style.display = 'none';
+      }
+      function closeVideo() {
+        // 关闭图像弹窗
+        const videoPopup = document.getElementById('video-popup');
+        videoPopup.style.display = 'none';
+      }
+
+      function copyImgURL(img){
+          const URL="{{ domain }}"+"zyImg/{{ userid }}/"+img;
+          navigator.clipboard.writeText(URL).then(function () {
+      alert("已复制到剪切板，可在在博客中使用此外链图片");
+    }).catch(function (error) {
+      alert("复制失败：" + error);
+    });}
+
+      function copyVideoURL(video){
+          const URL="{{ domain }}"+"zyVideo/{{ userid }}/"+video;
+          navigator.clipboard.writeText(URL).then(function () {
+      alert("已复制到剪切板，可在在博客中使用此外链视频");
+    }).catch(function (error) {
+      alert("复制失败：" + error);
+    });}
+
+
+
+
+      function startVideo(video) {
+  var username = "{{ username }}";  // Replace with the actual username
+  var videoSrc = "/zyVideo/" + username + "/" + video;
+
+  var videoElement = document.getElementById("video-image");
+  videoElement.src = videoSrc;
+
+  var videoPopup = document.getElementById("video-popup");
+  videoPopup.style.display = "block";
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const h3Elements = document.querySelectorAll('.card-title');
+
+  h3Elements.forEach(element => {
+    if (element.textContent.trim().length > 12) {
+      const h2Element = document.createElement('h6');
+      h2Element.innerHTML = element.innerHTML;
+      element.parentNode.replaceChild(h2Element, element);
+    }
+  });
+});
+    </script>
+<style>
+    .card {
+        background-color: transparent;
+        border:None;
+    }
+
+    .card-body {
+        background-color: rgba(255, 255, 255, 0.8);
+        /* Set the desired transparency value in the last parameter (0.8 in this example) */
+        /* Adjust other styles as needed */
+
+        display: flex;
+        align-items: center;
+    }
+
+    .card-body img {
+        flex: 1;
+        max-width: 50%;
+        max-height: 125%;
+    }
+
+    .card-body h3 {
+        flex: 1;
+    }
+
+    .card:hover {
+        box-shadow: 0 0 10px #877725;
+    }
+</style>
