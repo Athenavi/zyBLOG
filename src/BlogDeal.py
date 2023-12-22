@@ -99,7 +99,7 @@ def get_article_content(article, limit):
                     )
                     line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
 
-                html_content += line
+                html_content += zyShowArticle(line)
 
             line_counter += 1
 
