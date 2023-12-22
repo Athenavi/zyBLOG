@@ -364,7 +364,7 @@ def home():
 
         # 重新获取页面内容
         articles, has_next_page, has_previous_page = get_article_names(page=page)
-        template = env.get_template('home.html')
+        template = env.get_template('zyhome.html')
         session.setdefault('theme', 'day-theme')
         notice = read_file('notice/1.txt', 50)
 
@@ -389,7 +389,7 @@ def home():
         return resp
 
     else:
-        return render_template('home.html')
+        return render_template('zyhome.html')
 
 
 

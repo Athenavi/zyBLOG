@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="zyBLOG|基于flask的博客程序">
+    <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
+    <meta name="robots" content="index, follow">
+    <title>{{ title }} | zyBLOG</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/card.css">
+    <style>
+        body {
+            background: url(../static/image/day.jpg) no-repeat center/cover;
+        }
+    </style>
+</head>
+
+<body class="{{ theme }}">
+    {% from 'header.html' import zytopbar %}
+    {{ zytopbar() }}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="block-content block-content-full px-lg-4 py-md-4 py-lg-4">
+
+                    <div class="container">
+  <div class="row justify-content-md-center">
+
+    <style>
+      .carousel-inner .carousel-item img {
+        max-height: 100%;
+        max-width: 100%;
+      }
+    </style>
+    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+      <!-- Indicators -->
+      <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+        <li data-target="#myCarousel" data-slide-to="2"></li>
+      </ol>
+
+      <!-- Slides -->
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="https://qks.icu/api/file/rand?name=imgs.txt&1" alt="Image 1">
+        </div>
+        <div class="carousel-item">
+          <img src="https://qks.icu/api/file/rand?name=imgs.txt&2" alt="Image 2">
+        </div>
+        <div class="carousel-item">
+          <img src="https://qks.icu/api/file/rand?name=imgs.txt&3" alt="Image 3">
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+
+                    <span>公告:{{ notice|safe }}</span><br>
+                    <label for="username">欢迎您:<a href="/profile"> {{ username }}</a></label>
+                    {% if username==None %}
+                    <span><a href="/login">当前未登录，登陆后可参与评论</a></span>
+                    {% endif %}
+                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
+                    <hr>
+                    {% if has_previous_page %}
+                    <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
+                    {% endif %}
+                    <span>----------</span>
+                    {% if has_next_page %}
+                    <a href="{{ url_for('home', page=current_page+1) }}">Next</a>
+                    {% endif %}
+                    {% for article in articles %}
+                    <div class="card mb-4">
+                        <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
+                            <div class="card-body" style="display: flex; background: transparent">
+                                {% set i = range(1000)|random %}
+                                {% if loop.index is even %}
+                                <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+                                <img src="https://qks.icu/api/file/rand?name=imgs.txt&{{ article }}"
+                                    alt="{{ article }}">
+                                {% else %}
+                                <img src="https://qks.icu/api/file/rand?name=imgs.txt&{{ article }}"
+                                    alt="{{ article }}">
+                                <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                        <hr>
+                    {% endfor %}
+                    <a href="#top">回到顶部</a>
+                    {% if has_previous_page %}
+                    <a href="{{ url_for('home', page=current_page-1) }}">Previous</a>
+                    {% endif %}
+                    <span>----------</span>
+                    {% if has_next_page %}
+                    <a href="{{ url_for('home', page=current_page+1) }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col">
+                <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
+                                <img src="https://7trees.cn/wp-content/uploads/2023/08/348f5b9acc0605ea443058826975a8a1.png"
+                    alt="Weather Image" style="height: 95px;">
+                <div id="weather-form">
+                    <label for="city-input"></label>
+                    <input type="text" id="city-input" name="city_name" class="form-control" placeholder={{ IPinfo }}>
+                    <button type="button" onclick="getCityCode()"><img src="../static/image/sch.svg" alt="按钮"></button>
+                </div>
+
+                <div id="weather-info">
+                    <div id="today-weather">
+                        <h2 style="margin-right: 5px;">今天</h2>
+                        <p style="margin-right: 5px;"><span id="today-type"></span></p>
+                        <img id="today-icon" src="" alt="天气图标">
+                    </div>
+
+                    <div id="tomorrow-weather">
+                        <h2 style="margin-right: 5px;">明天</h2>
+                        <p style="margin-right: 5px;"><span id="tomorrow-type"></span></p>
+                        <img id="tomorrow-icon" src="" alt="天气图标">
+                    </div>
+
+                    <div id="day-after-tomorrow-weather">
+                        <h2 style="margin-right: 5px;">后天</h2>
+                        <p style="margin-right: 5px;"><span id="day-after-tomorrow-type"></span></p>
+                        <img id="day-after-tomorrow-icon" src="" alt="天气图标">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+    <script>
+        $().toast('show');
+    </script>
+
+    {% from 'footer.html' import zyfooter %}
+    {{ zyfooter() }}
+</body>
+
+</html>
+<script>
+        document.addEventListener('mousedown', function(e) {
+            e.preventDefault(); // 阻止鼠标按下事件的默认行为
+            e.stopPropagation(); // 阻止事件冒泡
+            // 获取当前点击的元素
+            var target = e.target;
+            // 监听mouseup事件，并在释放鼠标时继续阻止默认行为和事件冒泡
+            target.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            // 监听mouseout事件，当鼠标离开当前元素时移除阻止默认行为和事件冒泡
+            target.addEventListener('mouseout', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                target.removeEventListener('mouseup', arguments.callee);
+                target.removeEventListener('mouseout', arguments.callee);
+            });
+        });
+    </script>
+<script>
+async function getCityCode() {
+  const cityInput = document.getElementById("city-input");
+  let cityName = cityInput.value.trim();
+
+  if (cityName === "") {
+    alert("请输入城市名");
+    return;
+  }
+
+  const apiUrl = "/get_city_code";
+  const formData = new FormData();
+  formData.append("city_name", cityName);
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await response.json();
+  const cityCode = data.city_code;
+
+  if (cityCode) {
+    getWeather(cityCode);
+  } else {
+    const isCity = cityName.includes("市");
+    const isCounty = cityName.includes("县");
+
+    if (!isCity && !isCounty) {
+      formData.set("city_name", cityName + "市");
+      const response2 = await fetch(apiUrl, {
+        method: "POST",
+        body: formData
+      });
+      const data2 = await response2.json();
+      const cityCode2 = data2.city_code;
+
+      if (cityCode2) {
+        getWeather(cityCode2);
+      } else {
+        cityName = cityName.replace(/市$/, "") + "县";
+        formData.set("city_name", cityName);
+        const response3 = await fetch(apiUrl, {
+          method: "POST",
+          body: formData
+        });
+        const data3 = await response3.json();
+        const cityCode3 = data3.city_code;
+
+        if (cityCode3) {
+          getWeather(cityCode3);
+        } else {
+          alert("城市不存在");
+        }
+      }
+    } else {
+      alert("城市不存在");
+    }
+  }
+}
+
+function getWeather(cityCode) {
+  const apiUrl = `/weather/${cityCode}`;
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(processedData => {
+      document.getElementById("today-type").innerText = processedData.today.type;
+      document.getElementById("tomorrow-type").innerText = processedData.tomorrow.type;
+      document.getElementById("day-after-tomorrow-type").innerText = processedData.dayAfterTomorrow.type;
+
+      document.getElementById("today-icon").src = processedData.today.icon;
+      document.getElementById("tomorrow-icon").src = processedData.tomorrow.icon;
+      document.getElementById("day-after-tomorrow-icon").src = processedData.dayAfterTomorrow.icon;
+    })
+    .catch(error => {
+      console.error("获取天气信息失败：", error);
+    });
+}
+
+// 在页面加载完成后调用获取天气信息的函数
+document.addEventListener("DOMContentLoaded", () => {
+  const cityCode = "{{ city_code }}";
+  if (cityCode) {
+    getWeather(cityCode);
+  }
+});
+</script>
+<style>
+    .card {
+        background-color: transparent;
+        border:None;
+    }
+
+    .card-body {
+        background-color: rgba(255, 255, 255, 0.8);
+        /* Set the desired transparency value in the last parameter (0.8 in this example) */
+        /* Adjust other styles as needed */
+
+        display: flex;
+        align-items: center;
+    }
+
+    .card-body img {
+        flex: 1;
+        max-width: 50%;
+        max-height: 125%;
+    }
+
+    .card-body h3 {
+        flex: 1;
+    }
+
+    .card:hover {
+        box-shadow: 0 0 10px #877725;
+    }
+</style>
