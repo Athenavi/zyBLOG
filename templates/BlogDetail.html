@@ -4,6 +4,7 @@
 <head>
     <!-- 网站采用的字符编码 -->
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="zyBLOG|基于flask的博客程序">
     <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
     <meta name="robots" content="index, follow">
@@ -14,9 +15,9 @@
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
     <!-- 引入layer.js -->
-    <link rel="stylesheet" href="/static/main.css">
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
+    <script src="../static/bootstrap/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
 {% import 'custom.py' as custom %}
@@ -36,7 +37,7 @@
   <div class="row justify-content-md-center">
       <div class="card">
         <div class="card-body">
-            <h3 class="card-title">{{ articleName }}</h3><img src="../static/image/author.svg" height="16px" alt="">&nbsp;<span><a href="/profile?id={{ author }}" target="_blank">{{ author }}</a></span>&nbsp;&nbsp;<span><img src="../static/image/date.svg" height="16px" alt="">&nbsp;{{ blogDate }}</span>
+            <h3 class="card-title">{{ articleName }}</h3><img src="../static/image/author.svg" height="16px">&nbsp;<span><a href="/profile?id={{ author }}" target="_blank">{{ author }}</a></span>&nbsp;&nbsp;<span><img src="../static/image/date.svg" height="16px">&nbsp;{{ blogDate }}</span>
 
 <!-- 元素代码 -->
 <div class="show-on-desktop">
@@ -91,7 +92,7 @@
     <!-- 评论 -->
     <div id="result"></div>
     <div class="form-group">
-        <label for="comment"><img src="../static/image/comment.svg" height="16px" alt="">&nbsp;评论</label>
+        <label for="comment"><img src="../static/image/comment.svg" height="16px">&nbsp;评论</label>
         <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
         <img id="captcha-image" src="" alt="Captcha Image" onclick="generateCaptcha()">
     </div>
@@ -204,8 +205,8 @@
 
 </body>
 </html>
-<script src="../static/blogdetail.js"></script>
-<script src="../static/mermaid.min.js"></script>
+<script src="/static/blogdetail.js"></script>
+<script src="/static/mermaid.min.js"></script>
 
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
