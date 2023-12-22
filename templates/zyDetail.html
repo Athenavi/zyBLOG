@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<!-- 网站主语言 -->
+<html lang="zh-cn">
+<head>
+    <!-- 网站采用的字符编码 -->
+    <meta charset="utf-8">
+    <meta name="description" content="zyBLOG|基于flask的博客程序">
+    <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
+    <meta name="robots" content="index, follow">
+    <!-- 预留网站标题的位置 -->
+    <title>{{ articleName }} | {{ title }}</title>
+    <!-- 引入bootstrap的css文件 -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="/static/main.css">
+    <!-- 引入layer.js -->
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+{% import 'custom.py' as custom %}
+<body class="{{ theme }}" >
+{% from 'header.html' import zytopbar %}
+<!-- 调用topbar -->
+{{ zytopbar() }}
+
+<!-- 引入导航栏 -->
+<!-- 定义导航栏 -->
+
+<!-- 预留具体页面的位置 -->
+<div class="container">
+  <div class="row justify-content-md-center">
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title">{{ articleName }}</h3>
+        <img src="../static/image/author.svg" height="16px" alt="">
+        &nbsp;<span><a href="/profile?id={{ author }}" target="_blank">{{ author }}</a></span>&nbsp;&nbsp;
+        <span><img src="../static/image/date.svg" height="16px" alt="">&nbsp;{{ blogDate }}</span>
+        <hr>
+        <div class="{{ theme }}">{{ article_content|safe }}</div> <!-- 闭合<div class="{{ theme }}">元素 -->
+        <hr>
+        <span>本文来自奇客舒，作者：{{ author }}，转载请注明原文链接：<a href="{{ article_Surl }}" target="_blank">{{ article_Surl }}</a></span>
+        <br/>
+        <span>由7trees提供支持 转载内容版权归作者及来源网站所有，本站原创内容转载请注明来源，商业媒体及纸媒请先联系：<a href="mailto:support@7trees.cn">support@7trees.cn</a></span>
+      </div>
+<div class="card-body">
+    <form method="post" action="/post_comment" id="comment_form">
+    <div class="form-group">
+    <label for="comment"><img src="../static/image/comment.svg" height="16px" alt="">&nbsp;评论</label>
+    <label for="article_name">当前区域: {{ articleName }}</label>
+        <input type="text" class="form-control" id="article_name" name="article_name" value="{{ articleName }}" readonly style="display:none;">
+          <label for="username">当前已登录: {{ username }}</label>
+            {% if username==None %}
+            <span><a href="/login">当前未登录，登陆后可参与评论</a></span>
+            {% endif %}
+            <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly style="display:none;">
+            <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+            <img id="captcha-image" src="" alt="Captcha Image" onclick="generateCaptcha()">
+            <input type="text" id="captcha" name="captcha" placeholder="验证码不区分大小写" required>
+            <button type="submit" class="btn btn-primary btn-block">一键发送</button>
+            </div>
+    </form>
+<!-- 评论 -->
+<div id="result"></div>
+{% set per_page = 10 %}
+{% set page = 1 %}
+<div id="comments-container">
+{% if comments %}
+  <h2>近期评论</h2>
+  <ul class="list-group">
+    {% set comment_count = comments|length %}
+    {% set total_pages = (comment_count // per_page) + (comment_count % per_page > 0) %}
+    {% set start_index = (page - 1) * per_page %}
+    {% set end_index = start_index + per_page %}
+    {% for comment in comments[start_index:end_index] %}
+      <li class="list-group-item">
+        <span class="fw-bold">{{ comment.username }}:</span> {{ comment.comment }}
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if total_pages > 1 %}
+    <nav aria-label="Comment navigation">
+      <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page-1) }}', 'comments-container')">Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Previous</span>
+          </li>
+        {% endif %}
+
+        {% if page != 1 %}
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=1) }}', 'comments-container')">1</a>
+          </li>
+        {% endif %}
+
+        {% if page > 4 %}
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        {% endif %}
+
+        {% for p in range(1 | custom_max(page - 2), (page + 2) | custom_min(total_pages + 1)) %}
+          {% if p == page %}
+            <li class="page-item active" aria-current="page">
+              <span class="page-link">{{ p }}</span>
+            </li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=p) }}', 'comments-container')">{{ p }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages - 3 %}
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        {% endif %}
+
+        {% if page != total_pages %}
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=total_pages) }}', 'comments-container')">{{ total_pages }}</a>
+          </li>
+        {% endif %}
+
+        {% if page < total_pages %}
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadPage('{{ url_for('blog_detail', article=articleName, page=page+1) }}', 'comments-container')">Next</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Next</span>
+          </li>
+        {% endif %}
+        </ul>
+      </nav>
+    {% else %}
+  {% endif %}
+{% endif %}
+</div>
+</div> <!-- 闭合<div class="card-body">元素 -->
+</div> <!-- 闭合<div class="card">元素 -->
+    </div> <!-- 闭合<div class="row justify-content-md-center">元素 -->
+  </div> <!-- 闭合<div class="container">元素 -->
+{% from 'footer.html' import zyfooter %}
+{{ zyfooter() }}
+<script src="/static/main.js"></script>
+</body>
+</html>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+<script src="../static/blogdetail.js"></script>
+<script src="../static/mermaid.min.js"></script>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+  // 获取所有class='math'的div元素
+  var mathDivs = document.getElementsByClassName('math');
+
+  // 遍历div元素并转换为数学公式
+  for (var i = 0; i < mathDivs.length; i++) {
+    var mathDiv = mathDivs[i];
+    var tex = mathDiv.innerHTML; // 获取div中的文本内容
+
+    // 创建MathJax的span元素包裹数学公式
+    var mathjaxNode = document.createElement('span');
+    mathjaxNode.setAttribute('class', 'math');
+    mathjaxNode.setAttribute('display', 'block'); // 设置为块级元素以换行显示
+    mathDiv.parentNode.replaceChild(mathjaxNode, mathDiv); // 替换原div元素
+
+    // 使用MathJax进行转换
+    MathJax.tex2svgPromise(tex, {display: true}).then(function (node) {
+      mathjaxNode.appendChild(node); // 将转换后的数学公式添加到span元素中
+      MathJax.startup.document.clear(); // 清除MathJax缓存
+      MathJax.startup.document.updateDocument(); // 更新数学公式
+    });
+  }
+});
+
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css" />
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+      var theme = '{{ theme }}';
+      if (theme === 'night-theme') {
+        var elements = document.getElementsByClassName("highlight");
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].classList.remove("highlight");
+          elements[i].classList.add("dark-theme");
+        }
+      }
+      else{
+        var styleSheet = document.querySelector("link[href='https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css']");
+        if (styleSheet) {
+          styleSheet.remove();
+        }
+      }
+      Prism.highlightAll();
+      mermaid.init({}, ".language-mermaid");
+    }, 3000);
+  });
+</script>

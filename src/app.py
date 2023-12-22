@@ -440,7 +440,7 @@ def blog_detail(article):
             blogDate = get_file_date(article_name)
             theme = session.get('theme', 'day-theme')  # 获取当前主题
 
-            response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
+            response = make_response(render_template('zyDetail.html', title=title, article_content=article_content,
                                                      articleName=article_name, theme=theme,
                                                      author=author, blogDate=blogDate, comments=comments,
                                                      url_for=url_for, article_url=article_url,
@@ -1024,7 +1024,7 @@ def vipBlog(articleName):
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return jsonify(comments=comments)  # 返回JSON响应，只包含评论数据
 
-            return render_template('BlogDetail.html', article_content=article_content, articleName=article_name,
+            return render_template('zyDetail.html', article_content=article_content, articleName=article_name,
                                    theme=session['theme'], author=author, blogDate=blogDate, comments=comments,
                                    url_for=url_for, username=username, article_url=article_url,
                                    article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html)
