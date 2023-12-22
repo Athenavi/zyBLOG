@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="zyBLOG|基于flask的博客程序">
+    <meta name="keywords" content="zyBLOG, flask, 七棵树, 奇客舒, 博客">
+    <meta name="robots" content="index, follow">
+    <title>{{ title }} | zyBLOG</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/main.css">
+    <link rel="stylesheet" href="../static/card.css">
+    <style>
+        body {
+            background: url(../static/image/day.jpg) no-repeat center/cover;
+        }
+    </style>
+</head>
+
+<body class="{{ theme }}">
+    {% from 'header.html' import zytopbar %}
+    {{ zytopbar() }}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="block-content block-content-full px-lg-4 py-md-4 py-lg-4">
+                    <span>公告:{{ notice|safe }}</span><br>
+                     <img src="{{ avatar_url }}" style="height: 35px; border-radius: 50%;" alt="">
+      {% if userStatus %}
+        <!-- 展示已登录的内容 -->
+        <a>欢迎您，{{ username }}</a>   <a href="/media">媒体</a>  <a href="/logout">点击这里直接注销</a>　　<a href="/change-password">修改我的密码</a>
+      {% else %}
+        <!-- 展示未登录的内容 -->
+        <a href="/login">需要登录</a>
+      {% endif %}
+    </div>
+    {% if Articles %}
+      <!-- 展示已登录的内容 -->
+      <br><span><span id="idSpan"></span>的文章</span>
+    {% endif %}
+    <div id="changeCodeModal">
+      <div class="modal-content">
+        <h2>修改密码 - <span id="currentArticle"></span></h2>
+        <span>不输入时保存可将密码重置为"0000"</span>
+        <label for="newCodeInput">新的密码：</label>
+        <input type="text" id="newCodeInput">
+        <button id="backButton">取消</button>
+        <button id="saveButton">保存</button>
+      </div>
+    </div>
+                    <hr>
+                    {% for article in Articles %}
+          <a href="{{ url_for('blog_detail', article=article) }}" class="card-link">
+            <div class="card mb-4">
+              <div class="card-body" style="display: flex; background: transparent">
+                {% set i = range(1000)|random %}
+                <!-- Check if the iteration is even -->
+                {% if loop.index is even %}
+                  <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+                  <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+                {% else %}
+                  <img src="https://api.maho.cc/random-img/pc.php?i={{ i }}" alt="{{ article }}">
+                  <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;{{ article }}</h3>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+          <a href="/edit/{{ article }}" style="color:greenyellow">编辑</a>
+          <a href="#" data-article={{ article }} class='hidden121'>隐藏/取消隐藏此文章</a>
+          <a href="#" data-article={{ article }} class='delete121' style="color:red">删除此文章</a>
+          <a href="#" data-article="{{ article }}" class="changeCode" style="color:cadetblue">修改此文章密码</a>
+        {% endfor %}
+
+            <div class="col">
+
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+    <script>
+        $().toast('show');
+    </script>
+
+    {% from 'footer.html' import zyfooter %}
+    {{ zyfooter() }}
+</body>
+
+</html>
+<script>
+        document.addEventListener('mousedown', function(e) {
+            e.preventDefault(); // 阻止鼠标按下事件的默认行为
+            e.stopPropagation(); // 阻止事件冒泡
+            // 获取当前点击的元素
+            var target = e.target;
+            // 监听mouseup事件，并在释放鼠标时继续阻止默认行为和事件冒泡
+            target.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            // 监听mouseout事件，当鼠标离开当前元素时移除阻止默认行为和事件冒泡
+            target.addEventListener('mouseout', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                target.removeEventListener('mouseup', arguments.callee);
+                target.removeEventListener('mouseout', arguments.callee);
+            });
+        });
+    </script>
+
+<style>
+    .card {
+        background-color: transparent;
+        border:None;
+    }
+
+    .card-body {
+        background-color: rgba(255, 255, 255, 0.8);
+        /* Set the desired transparency value in the last parameter (0.8 in this example) */
+        /* Adjust other styles as needed */
+
+        display: flex;
+        align-items: center;
+    }
+
+    .card-body img {
+        flex: 1;
+        max-width: 50%;
+        max-height: 125%;
+    }
+
+    .card-body h3 {
+        flex: 1;
+    }
+
+    .card:hover {
+        box-shadow: 0 0 10px #877725;
+    }
+</style>
+
+<script>
+    // 获取URL参数的函数
+    function getParameterByName(name) {
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var url = window.location.href;
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+        var results = regex.exec(url);
+        if (!results) return '我';
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    // 在页面加载时获取URL参数id的值并显示
+    window.onload = function() {
+        var id = getParameterByName('id');
+        var span = document.getElementById('idSpan');
+        span.innerHTML = id;
+    }
+    // 设置隐藏/取消隐藏文章的请求参数
+const hiddenLinks = document.querySelectorAll('a.hidden121');
+
+// 为每个隐藏链接添加点击事件处理程序
+hiddenLinks.forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault(); // 阻止默认链接行为
+
+    // 获取链接上的 data-article 属性作为文章名
+    const article = link.getAttribute('data-article');
+
+    // 构建请求体
+    const requestBody = JSON.stringify({ article });
+
+    var confirmation = confirm('您正在尝试对文章进行一个操作，是否继续？');
+    if (!confirmation) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+    // 发起 POST 请求
+    fetch('/hidden/article', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: requestBody
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.deal === 'hide') {
+          // 处理隐藏文章的响应
+          console.log('文章已隐藏');
+          alert('文章已隐藏');
+        } else if (data.deal === 'unhide') {
+          // 处理取消隐藏文章的响应
+          console.log('文章已取消隐藏');
+          alert('已经取消隐藏');
+        } else if (data.deal === 'noAuth') {
+          console.log('noAuth');
+          alert('无权限操作');
+        } else {
+          // 处理其他响应
+          console.log(data.message);
+        }
+      })
+      .catch(error => {
+        alert('请求出错');
+        console.error('请求出错:', error);
+      });
+  });
+});
+
+
+//
+const deleteLinks = document.querySelectorAll('a.delete121');
+
+// 为每个隐藏链接添加点击事件处理程序
+deleteLinks.forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault(); // 阻止默认链接行为
+
+    // 获取链接上的 data-article 属性作为文章名
+    const article = link.getAttribute('data-article');
+
+    var confirmation = confirm('您正在尝试永久删除该文章！！！是否继续？');
+    if (!confirmation) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+    var confirmation0 = confirm('再次确认呢？是否继续？');
+    if (!confirmation0) {
+      // 用户点击了取消，终止本次请求
+      return;
+    }
+
+
+    // 发起 POST 请求
+    fetch(`/delete/${article}`, {
+      method: 'POST'
+    })
+    .then(response => {
+      if (response.ok) {
+        // 成功删除文章
+        alert('文章删除成功！');
+        // 刷新页面或做其他处理
+        location.reload();
+      } else {
+        // 删除文章失败
+        alert('文章删除失败！');
+      }
+    })
+    .catch(error => {
+      // 请求出错
+      alert('请求出错：' + error);
+    });
+  });
+});
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const changeCodeLinks = document.querySelectorAll('a.changeCode');
+
+    changeCodeLinks.forEach(function(link) {
+      link.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const article = this.dataset.article;
+        const changeCodeModal = document.getElementById('changeCodeModal');
+        const currentArticle = document.getElementById('currentArticle');
+        const newCodeInput = document.getElementById('newCodeInput');
+        const saveButton = document.getElementById('saveButton');
+
+        // Set the current article in the modal
+        currentArticle.textContent = article;
+
+        // Fill in the input with the current password
+        newCodeInput.value = '';
+
+        // Show the modal
+        changeCodeModal.style.display = 'block';
+
+        saveButton.addEventListener('click', function() {
+          const newCode = newCodeInput.value;
+
+
+          var confirmation = confirm('您正在尝试修改密码！！！是否继续？');
+            if (!confirmation) {
+            // 用户点击了取消，终止本次请求
+             return;
+            }
+            var confirmation1 = confirm('密码修改后会在十分钟内生效，是否继续');
+            if (!confirmation1) {
+            // 用户点击了取消，终止本次请求
+             return;
+            }
+
+          // Send POST request to the server
+          fetch(`/change-article-pw/${article}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ NewPass: newCode, Article: article })
+          })
+          .then(response => response.text())
+          .then(data => {
+            if (data === 'success') {
+              alert('密码修改成功');
+            } else {
+              alert('密码修改失败');
+            }
+
+            // Hide the modal
+            changeCodeModal.style.display = 'none';
+          });
+        });
+      });
+    });
+  });
+
+  // 获取取消按钮
+const cancelButton = document.getElementById("backButton");
+
+// 点击取消按钮时触发的事件处理函数
+cancelButton.addEventListener("click", function() {
+    // 隐藏 changeCodeModal 元素
+    const changeCodeModal = document.getElementById("changeCodeModal");
+    changeCodeModal.style.display = "none";
+});
+
+
+</script>
+<style>
+    #changeCodeModal {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+    #changeCodeModal .modal-content {
+      width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+  </style>
