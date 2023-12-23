@@ -95,7 +95,7 @@ def get_article_content(article, limit):
                     header_title = line.strip('#').strip()
                     anchor = header_title.lower().replace(" ", "-")
                     readNav.append(
-                        f'<a href="#{anchor}">{"#" * header_level + " " + header_title}</a>'
+                        f'<a href="#{anchor}">{header_title}</a><br>'
                     )
                     line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
 

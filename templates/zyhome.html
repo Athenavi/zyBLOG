@@ -14,11 +14,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../static/main.css">
     <link rel="stylesheet" href="../static/card.css">
-    <style>
-        body {
-            background: url(../static/image/day.jpg) no-repeat center/cover;
-        }
-    </style>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 </head>
 
 <body class="{{ theme }}">
@@ -118,9 +114,20 @@
                 </div>
             </div>
             <div class="col">
-                <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
+                <hr>
+                 <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
                                 <img src="https://7trees.cn/wp-content/uploads/2023/08/348f5b9acc0605ea443058826975a8a1.png"
                     alt="Weather Image" style="height: 95px;">
+                <hr>
+               <a href="/travel"><img id="goPost" src="../static/image/blackhole.svg" style="border: none; background-color: transparent; height: 28px" alt=""/>随机一篇文章</a><br>
+                <a href="/newArticle" alt="上传投稿"><img id="goPost" src="../static/image/post.svg"style="border: none; background-color: transparent; height: 28px" alt=""/>上传投稿</a><br>
+                <a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Github开源地址</a><br>
+                <a  href="/blog/privacy">隐私协议</a><br>
+                <a  href="/blog/legal-agreement">法律声明</a><br>
+                <a  href="/sitemap">站点地图</a><br>
+                <a  href="/feed">RSS订阅</a><br>
+                <br>
+
                 <div id="weather-form">
                     <label for="city-input"></label>
                     <input type="text" id="city-input" name="city_name" class="form-control" placeholder={{ IPinfo }}>
