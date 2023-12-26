@@ -1,191 +1,180 @@
 <!-- header.html -->
 {% macro zyfooter() -%}
-<!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
-<script src="static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
 
-<footer id="myFooter" class="py-3 bg-dark fixed-bottom">
-    <div class="container">
-        <p class="m-0 text-center text-white"><a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Copyright &copy; zyBLOG 2023 </a></p>
-    </div>
-</footer>
+    <footer id="myFooter" class="py-3 bg-dark fixed-bottom">
+        <div class="container">
+            <p class="m-0 text-center text-white"><a href="https://github.com/Athenavi/zyBLOG/" target="_blank">Copyright
+                &copy; zyBLOG 2023 </a></p>
+        </div>
+    </footer>
 
-<script>
-    // Hide footer when scrolling
-    let timeoutId;
-    window.addEventListener('scroll', function() {
-        clearTimeout(timeoutId);
-        const footer = document.getElementById('myFooter');
-        footer.style.display = 'none';
+    <script>
+        // Hide footer when scrolling
+        let timeoutId;
+        window.addEventListener('scroll', function () {
+            clearTimeout(timeoutId);
+            const footer = document.getElementById('myFooter');
+            footer.style.display = 'none';
 
-        timeoutId = setTimeout(function() {
-            footer.style.display = 'block';
-        }, 3200);
-    });
-</script>
-<!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
-<script src="/static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
-
-<!--
-    popper.js 采用 cdn 远程引入，意思是你不需要把它下载到本地。
-    在实际的开发中推荐静态文件尽量都使用 cdn 的形式。
-    教程采用本地引入是为了让读者了解静态文件本地部署的流程。
--->
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
-<div class="top-bar">
-<script>
-  function copyAndAlert() {
-    const text = "奇客舒";
-    navigator.clipboard.writeText(text).then(function () {
-      alert("已复制到剪切板，可在微信内搜索该公众号");
-    }).catch(function (error) {
-      alert("复制失败：" + error);
-    });
-  }
-</script>
-<div class="top-bar">
-   <div>
-    <a href="weixin://" onclick="copyAndAlert()" style="text-align: center;">
+            timeoutId = setTimeout(function () {
+                footer.style.display = 'block';
+            }, 3200);
+        });
+    </script>
+    <div class="top-bar">
+        <script>
+            function copyAndAlert() {
+                const text = "奇客舒";
+                navigator.clipboard.writeText(text).then(function () {
+                    alert("已复制到剪切板，可在微信内搜索该公众号");
+                }).catch(function (error) {
+                    alert("复制失败：" + error);
+                });
+            }
+        </script>
+        <div class="top-bar">
+            <div>
+                <a href="weixin://" onclick="copyAndAlert()" style="text-align: center;">
       <span style="color: red;">
         点击这里打开微信
       </span> 搜索“奇客舒”体验GPT-3.5
-    </a>&nbsp;
-  </div>
-      <span id="timer">30</span>秒后自动
-  <a id="close-btn">__关闭</a>
-  </div>
-</div>
-<script type="text/javascript">
-  window.onload = function() {
-    var closeButton = document.querySelector('.close-button');
-    var topBar = document.querySelector('.top-bar');
+                </a>&nbsp;
+            </div>
+            <span id="timer">30</span>秒后自动
+            <a id="close-btn">__关闭</a>
+        </div>
+    </div>
+    <script type="text/javascript">
+        window.onload = function () {
+            var closeButton = document.querySelector('.close-button');
+            var topBar = document.querySelector('.top-bar');
 
-    closeButton.addEventListener('click', function() {
-      topBar.style.display = 'none';
-    });
-  };
-</script>
-<script>
-window.onload = () => {
-  let i = 0; //定义获取词语下标
-  let body = document.getElementsByTagName("body")[0];
+            closeButton.addEventListener('click', function () {
+                topBar.style.display = 'none';
+            });
+        };
+    </script>
+    <script>
+        window.onload = () => {
+            let i = 0; //定义获取词语下标
+            let body = document.getElementsByTagName("body")[0];
 
-  body.onclick = function(e) { //点击body时触发事件
-    const a = ["富强", "民主", "文明", "和谐", "自由", "平等", "公正", "法治", "爱国", "敬业", "诚信", "友善"]; //需要显示的词语
-    let span = document.createElement("span"); //创建span标签
-    span.innerText = a[(i++) % a.length]; //设置词语给span标签
-    let x = e.pageX; //获取x指针坐标
-    let y = e.pageY; //获取y指针坐标
-    let color = getRandomColor(); // 随机生成颜色
-    span.style.cssText = "z-index:999999999999999999999999;top:" + (y - 20) + "px;left:" + x + "px;position:absolute;font-weight:bold;color:" + color + ";"; //在鼠标的指针的位置给span标签添加css样式
-    body.appendChild(span); //在body添加这个span标签
-    animate(span, { "top": y - 180, "opacity": 0 }, 15, 0.01, function() {
-      body.removeChild(span); //时间到了自动删除
-    });
-  }
+            body.onclick = function (e) { //点击body时触发事件
+                const a = ["富强", "民主", "文明", "和谐", "自由", "平等", "公正", "法治", "爱国", "敬业", "诚信", "友善"]; //需要显示的词语
+                let span = document.createElement("span"); //创建span标签
+                span.innerText = a[(i++) % a.length]; //设置词语给span标签
+                let x = e.pageX; //获取x指针坐标
+                let y = e.pageY; //获取y指针坐标
+                let color = getRandomColor(); // 随机生成颜色
+                span.style.cssText = "z-index:999999999999999999999999;top:" + (y - 20) + "px;left:" + x + "px;position:absolute;font-weight:bold;color:" + color + ";"; //在鼠标的指针的位置给span标签添加css样式
+                body.appendChild(span); //在body添加这个span标签
+                animate(span, {"top": y - 180, "opacity": 0}, 15, 0.01, function () {
+                    body.removeChild(span); //时间到了自动删除
+                });
+            }
 
-  //随机生成颜色函数
-  function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
+            //随机生成颜色函数
+            function getRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
 
-  //animate函数执行 CSS 属性集的自定义动画。
-  function animate(obj, json, interval, sp, fn) {
-    clearInterval(obj.timer);
+            //animate函数执行 CSS 属性集的自定义动画。
+            function animate(obj, json, interval, sp, fn) {
+                clearInterval(obj.timer);
 
-    function getStyle(obj, arr) {
-      if (obj.currentStyle) {
-        return obj.currentStyle[arr]; //针对ie
-      } else {
-        return document.defaultView.getComputedStyle(obj, null)[arr].replace(/px/g, "");
-      }
-    }
+                function getStyle(obj, arr) {
+                    if (obj.currentStyle) {
+                        return obj.currentStyle[arr]; //针对ie
+                    } else {
+                        return document.defaultView.getComputedStyle(obj, null)[arr].replace(/px/g, "");
+                    }
+                }
 
-    obj.timer = setInterval(function() {
-      let flag = true;
-      for (let arr in json) {
-        let icur = 0;
-        if (arr === "opacity") {
-          icur = Math.round(parseFloat(getStyle(obj, arr)) * 100);
-        } else {
-          icur = parseInt(getStyle(obj, arr));
+                obj.timer = setInterval(function () {
+                    let flag = true;
+                    for (let arr in json) {
+                        let icur = 0;
+                        if (arr === "opacity") {
+                            icur = Math.round(parseFloat(getStyle(obj, arr)) * 100);
+                        } else {
+                            icur = parseInt(getStyle(obj, arr));
+                        }
+                        let speed = (json[arr] - icur) * sp;
+                        speed = speed > 0 ? Math.ceil(speed) : Math.floor(speed);
+
+                        if (icur !== json[arr]) {
+                            flag = false;
+                        }
+
+                        if (arr === "opacity") {
+                            obj.style.filter = "alpha(opacity : ' + (icur + speed) + ' )";
+                            obj.style.opacity = (icur + speed) / 100;
+                        } else {
+                            obj.style[arr] = icur + speed + "px";
+                        }
+                    }
+
+                    if (flag) {
+                        clearInterval(obj.timer);
+                        if (fn) {
+                            fn();
+                        }
+                    }
+                }, interval);
+            }
         }
-        let speed = (json[arr] - icur) * sp;
-        speed = speed > 0 ? Math.ceil(speed) : Math.floor(speed);
+    </script>
+    <script>
+        // 获取 top-bar 元素和关闭按钮
+        const topBar = document.querySelector('.top-bar');
+        const closeButton = document.querySelector('#close-btn');
+        const timerSpan = document.querySelector('#timer');
 
-        if (icur !== json[arr]) {
-          flag = false;
-        }
+        let seconds = 30;
+        timerSpan.textContent = seconds; // 初始化剩余时间
 
-        if (arr === "opacity") {
-          obj.style.filter = "alpha(opacity : ' + (icur + speed) + ' )";
-          obj.style.opacity = (icur + speed) / 100;
-        } else {
-          obj.style[arr] = icur + speed + "px";
-        }
-      }
+        // 计时器函数
+        const countdown = () => {
+            if (seconds > 0) {
+                seconds--;
+                timerSpan.textContent = seconds;
+            } else {
+                clearInterval(intervalId); // 当时间到达零时，清除计时器
+                topBar.style.display = 'none';
+            }
+        };
 
-      if (flag) {
-        clearInterval(obj.timer);
-        if (fn) {
-          fn();
-        }
-      }
-    }, interval);
-  }
-}
-</script>
-<script>
-// 获取 top-bar 元素和关闭按钮
-const topBar = document.querySelector('.top-bar');
-const closeButton = document.querySelector('#close-btn');
-const timerSpan = document.querySelector('#timer');
+        // 1秒钟倒计时一次
+        const intervalId = setInterval(countdown, 1000);
 
-let seconds = 30;
-timerSpan.textContent = seconds; // 初始化剩余时间
-
-// 计时器函数
-const countdown = () => {
-  if (seconds > 0) {
-    seconds--;
-    timerSpan.textContent = seconds;
-  } else {
-    clearInterval(intervalId); // 当时间到达零时，清除计时器
-    topBar.style.display = 'none';
-  }
-};
-
-// 1秒钟倒计时一次
-const intervalId = setInterval(countdown, 1000);
-
-// 关闭按钮点击事件
-closeButton.addEventListener('click', () => {
-  clearInterval(intervalId); // 关闭按钮被点击时，清除计时器
-  topBar.style.display = 'none';
-});
+        // 关闭按钮点击事件
+        closeButton.addEventListener('click', () => {
+            clearInterval(intervalId); // 关闭按钮被点击时，清除计时器
+            topBar.style.display = 'none';
+        });
 
 
-// 自动Nav跳转
-    window.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        var hash = window.location.hash;
+        // 自动Nav跳转
+        window.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var hash = window.location.hash;
 
-        if (hash !== '') {
-          var anchor = hash.slice(1);
+                if (hash !== '') {
+                    var anchor = hash.slice(1);
 
-          var targetElement = document.getElementById(anchor);
+                    var targetElement = document.getElementById(anchor);
 
-          if (targetElement) {
-            targetElement.scrollIntoView();
-          }
-        }
-      }, 1500);
-    });
+                    if (targetElement) {
+                        targetElement.scrollIntoView();
+                    }
+                }
+            }, 1500);
+        });
 
-</script>
+    </script>
 {% endmacro %}
