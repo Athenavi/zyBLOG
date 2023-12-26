@@ -1,138 +1,141 @@
 <!-- header.html -->
 {% macro zytopbar() -%}
-<style>
-#loading {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-</style>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var loadingElement = document.getElementById("loading");
-    loadingElement.style.display = "none";
-});
-</script>
-<div id="loading"><img src="../static/image/iloli.gif" alt=""></div>
-<div class="fixed-icon">
-    <!-- 这里放置你的图标 -->
-    <a href="#top"><img src="../static/image/rocket.svg" style="height: 40px" alt="回到顶部"></a>
-    <form id="theme-form" method="post" action="/toggle_theme">
-        <br>
-    <button type="submit" style="border: none; background-color: transparent; height: 28px">
-      <img src="../static/image/sun.svg" alt="切换主题" height=28px>
-    </button>
-  </form>
-    <br><br>
-       <button id="wechat-button" style="border: none; background-color: transparent; height: 28px"
-        onmouseover="showQRCode()"
-        onmouseout="hideQRCode()">
-  <img  src="../static/image/wchat.svg" alt="关注微信公众号" style="height: 28px">
-</button>
 
-<img id="wechat-qr-code" src="../static/image/gzh.png" alt="关注微信公众号"
-     style="height:125px;display: none; position: absolute; top: 0; left: -100px;">
+    <!-- bootstrap.js 依赖 jquery.js 和popper.js，因此在这里引入 -->
+    <script src="/static/bootstrap/jquery/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1-lts/dist/umd/popper.min.js"></script>
+    <style>
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var loadingElement = document.getElementById("loading");
+            loadingElement.style.display = "none";
+        });
+    </script>
+    <div id="loading"><img src="../static/image/iloli.gif" alt=""></div>
+    <div class="fixed-icon">
+        <!-- 这里放置你的图标 -->
+        <a href="#top"><img src="../static/image/rocket.svg" style="height: 40px" alt="回到顶部"></a>
+        <form id="theme-form" method="post" action="/toggle_theme">
+            <br>
+            <button type="submit" style="border: none; background-color: transparent; height: 28px">
+                <img src="../static/image/sun.svg" alt="切换主题" height=28px>
+            </button>
+        </form>
+        <br><br>
+        <button id="wechat-button" style="border: none; background-color: transparent; height: 28px"
+                onmouseover="showQRCode()"
+                onmouseout="hideQRCode()">
+            <img src="../static/image/wchat.svg" alt="关注微信公众号" style="height: 28px">
+        </button>
 
-<script>
-  function showQRCode() {
-    document.getElementById("wechat-qr-code").style.display = "block";
-  }
+        <img id="wechat-qr-code" src="../static/image/gzh.png" alt="关注微信公众号"
+             style="height:125px;display: none; position: absolute; top: 0; left: -100px;">
 
-  function hideQRCode() {
-    document.getElementById("wechat-qr-code").style.display = "none";
-  }
-</script>
+        <script>
+            function showQRCode() {
+                document.getElementById("wechat-qr-code").style.display = "block";
+            }
 
-  </div>
+            function hideQRCode() {
+                document.getElementById("wechat-qr-code").style.display = "none";
+            }
+        </script>
 
-<script>
-            $(document).ready(function() {
-            $("#theme-form").submit(function(event) {
-                event.preventDefault();
-                $.post("/toggle_theme", function(data) {
-                    location.reload();  // 刷新页面，以便显示新的主题
-                });
+    </div>
+
+    <script>
+        $("#theme-form").submit(function (event) {
+            event.preventDefault();
+            $.post("/toggle_theme", function (data) {
+                location.reload();  // 刷新页面，以便显示新的主题
             });
         });
-</script>
+    </script>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container" style="z-index: 10000">
-        <!-- 导航栏商标 -->
-        <a class="navbar-brand" href="/"><img src="../static/favicon.ico" style="height:35px" alt=""></a>
-        <!-- 导航入口 -->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" onclick="togglePopup()" >
-            <img id="imageBtn" src="../static/image/sch.svg" alt=""/></a>
-            </li>
-        </ul>
-    </div>
-</nav>
+        <div class="container" style="z-index: 10000">
+            <!-- 导航栏商标 -->
+            <a class="navbar-brand" href="/"><img src="../static/favicon.ico" style="height:35px" alt=""></a>
+            <!-- 导航入口 -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="togglePopup()">
+                        <img id="imageBtn" src="../static/image/sch.svg" alt=""/></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
     <style>
-    /* 弹出窗格的样式 */
-    .popup {
-        display: none; /* 初始状态下隐藏 */
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 95%;
-        height: 85%;
-        background-color: #fff;
-        border: 2px solid #000;
-        padding: 20px;
-        z-index: 9999; /* 设置 z-index 值较大 */
-    }
-
-    /* 图片按钮的样式 */
-    .image-button {
-        cursor: pointer;
-    }
-</style>
-
-<!-- 图片按钮 -->
-<div id="popup" class="popup">
-    <button id="resetBtn" class="btn btn-primary mb-2" onclick="resetIframe()">重置</button>
-    <img id="imageBtn" src="../static/image/close.png" style="height: 28px" alt="按钮" class="image-button" onclick="togglePopup()" />
-    <iframe src="/search" width="100%" height="100%"></iframe>
-</div>
-
-<script>
-    function togglePopup() {
-        var popup = document.getElementById("popup");
-        if (popup.style.display === "none") {
-            popup.style.display = "block"; // 打开窗格
-        } else {
-            popup.style.display = "none"; // 关闭窗格
+        /* 弹出窗格的样式 */
+        .popup {
+            display: none; /* 初始状态下隐藏 */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95%;
+            height: 85%;
+            background-color: #fff;
+            border: 2px solid #000;
+            padding: 20px;
+            z-index: 9999; /* 设置 z-index 值较大 */
         }
-    }
 
-    function resetIframe() {
-        var iframe = document.querySelector("iframe"); // 选择第一个找到的 iframe 元素
-        iframe.src = iframe.src; // 刷新 iframe 内容
-    }
+        /* 图片按钮的样式 */
+        .image-button {
+            cursor: pointer;
+        }
+    </style>
 
-    document.addEventListener("keydown", function(event) {
-    if (event.ctrlKey && event.key === "f") { // 监听 Ctrl+F 键盘事件
-        event.preventDefault(); // 阻止默认的浏览器搜索行为
-        togglePopup(); // 触发 togglePopup() 函数
-    }
-});
+    <!-- 图片按钮 -->
+    <div id="popup" class="popup">
+        <button id="resetBtn" class="btn btn-primary mb-2" onclick="resetIframe()">重置</button>
+        <img id="imageBtn" src="../static/image/close.png" style="height: 28px" alt="按钮" class="image-button"
+             onclick="togglePopup()"/>
+        <iframe src="/search" width="100%" height="100%"></iframe>
+    </div>
 
-</script>
+    <script>
+        function togglePopup() {
+            var popup = document.getElementById("popup");
+            if (popup.style.display === "none") {
+                popup.style.display = "block"; // 打开窗格
+            } else {
+                popup.style.display = "none"; // 关闭窗格
+            }
+        }
 
-<script type="text/javascript">
-  // 禁用右键菜单
-  window.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-  }, false);
-</script>
+        function resetIframe() {
+            var iframe = document.querySelector("iframe"); // 选择第一个找到的 iframe 元素
+            iframe.src = iframe.src; // 刷新 iframe 内容
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.ctrlKey && event.key === "f") { // 监听 Ctrl+F 键盘事件
+                event.preventDefault(); // 阻止默认的浏览器搜索行为
+                togglePopup(); // 触发 togglePopup() 函数
+            }
+        });
+
+    </script>
+
+    <script type="text/javascript">
+        // 禁用右键菜单
+        window.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        }, false);
+    </script>
 
 {% endmacro %}
