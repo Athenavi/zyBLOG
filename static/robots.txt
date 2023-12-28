@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /temp/
-Disallow: /admin/
-Disallow: /templates/

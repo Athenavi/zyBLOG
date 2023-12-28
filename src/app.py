@@ -556,7 +556,7 @@ def generate_rss():
     if os.path.exists(cache_file):
         cache_timestamp = os.path.getmtime(cache_file)
         if datetime.now().timestamp() - cache_timestamp <= 3600:
-            with open(cache_file, 'r') as f:
+            with open(cache_file, 'r', encoding='utf-8', errors='ignore') as f:
                 cached_xml_data = f.read()
             response = Response(cached_xml_data, mimetype='application/rss+xml')
             return response
@@ -605,7 +605,7 @@ def generate_rss():
     xml_data += '</rss>\n'
 
     # 写入缓存文件
-    with open(cache_file, 'w') as f:
+    with open(cache_file, 'w', encoding='utf-8', errors='ignore') as f:
         f.write(xml_data)
 
     response = Response(xml_data, mimetype='application/rss+xml')
@@ -721,9 +721,8 @@ def delete_file(filename):
 
 @app.route('/robots.txt')
 def static_from_root():
-    with app.open_resource('static/robots.txt', 'r') as f:
-        content = f.read()
-        modified_content = content + '\nSitemap: ' + domain + 'sitemap.xml'  # Add your additional rule here
+    content = "User-agent: *\nDisallow: /admin"
+    modified_content = content + '\nSitemap: ' + domain + 'sitemap.xml'  # Add your additional rule here
 
     response = Response(modified_content, mimetype='text/plain')
     return response
@@ -757,13 +756,7 @@ def generate_captcha():
 
     # 修改图像像素，将白色像素变为透明
     new_data = []
-    for item in data:
-        # item 是一个表示像素颜色的元组，如 (255, 255, 255, 255) 表示白色不透明像素
-        # 将白色像素变为透明像素，将其 alpha 通道设置为 0
-        if item[0] == 255 and item[1] == 255 and item[2] == 255:
-            new_data.append((255, 255, 255, 0))
-        else:
-            new_data.append(item)
+    new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
 
     # 更新图像数据
     image.putdata(new_data)
