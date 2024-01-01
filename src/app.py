@@ -176,7 +176,7 @@ def analyze_ip_location(ip_address):
     city_name = session.get('city_name')
     if city_name:
         return city_name
-    city_name = ''
+    city_name = '北京'
 
     # 加载GeoIP2数据库文件
     if ip_address:
@@ -186,7 +186,7 @@ def analyze_ip_location(ip_address):
             response = reader.city(ip_address)
             city_name = response.city.names.get('zh-CN', '')
         except geoip2.errors.AddressNotFoundError:
-            city_name = ''
+            city_name = '北京'
 
         reader.close()
     session['city_name'] = city_name
@@ -1364,24 +1364,15 @@ def maillogin_page():
     return render_template('Maillogin.html')
 
 
-# @app.route('/get_login_status', methods=['POST'])
-# def get_login_status():
-#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-#         username = get_username()
-#         if username:
-#             response = make_response(jsonify({'result': 'true'}))
-#             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-#             response.headers['Pragma'] = 'no-cache'
-#             response.headers['Expires'] = '0'
-#             return response
-#         else:
-#             response = make_response(jsonify({'result': 'false'}))
-#             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-#             response.headers['Pragma'] = 'no-cache'
-#             response.headers['Expires'] = '0'
-#             return response
-#     else:
-#         return 'Invalid request method'
+@app.route('/jump', methods=['GET', 'POST'])
+def jump():
+    url = request.args.get('url', default='None')
+    return render_template('zyJump.html', url=url)
+
+
+
+
+
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     parts = filename.split('/')

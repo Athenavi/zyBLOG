@@ -178,29 +178,32 @@
 
     </script>
     <script>
-        document.addEventListener('click', function (event) {
-            var target = event.target;
+    document.addEventListener('click', function (event) {
+        var target = event.target;
 
-            // 检查点击的元素是否是链接
-            if (target.tagName === 'A') {
-                var origin = window.location.origin;
-                var targetOrigin = new URL(target.href).origin;
+        // 检查点击的元素是否是链接
+        if (target.tagName === 'A') {
+            var origin = window.location.origin;
+            var targetOrigin = new URL(target.href).origin;
 
-                // 检查目标链接的源是否与当前页面的源相同
-                if (origin !== targetOrigin) {
-                    event.preventDefault(); // 阻止默认跳转行为
-                    console.warn('只允许页面上的同源跳转');
-                }
+            // 检查目标链接的源是否与当前页面的源相同
+            if (origin !== targetOrigin) {
+                event.preventDefault(); // 阻止默认跳转行为
+                console.warn('只允许页面上的同源跳转');
+
+                // 创建新标签页打开链接
+                window.open("/jump?url=" + encodeURIComponent(target.href), '_blank');
             }
-        });
+        }
+    });
 
-        (function () {
-            'use strict';
-            var devtools = /./;
-            devtools.toString = function () {
-                this.opened = true;
-            };
-            console.log('%c', devtools);
-        })();
-    </script>
+    (function () {
+        'use strict';
+        var devtools = /./;
+        devtools.toString = function () {
+            this.opened = true;
+        };
+        console.log('%c', devtools);
+    })();
+</script>
 {% endmacro %}
