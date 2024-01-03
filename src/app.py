@@ -906,12 +906,38 @@ def markdown_editor(article):
         if request.method == 'GET':
             edit_html = zyFEditArticle(article)
             show_edit = zyShowArticle(article)
+
+            tags = get_tags_by_article("articles/tags.csv", article)
+
             # 渲染编辑页面并将转换后的HTML传递到模板中
             return render_template('editor.html', edit_html=edit_html, show_edit=show_edit, articleName=article,
-                                   theme=session['theme'])
+                                   theme=session['theme'],tags=tags)
         elif request.method == 'POST':
-            content = request.json.get('content', '')
+            content = request.get_json()
             show_edit = zyShowArticle(content)
+            tags_input = content['tags']
+            tags_list = tags_input.split(",")
+
+            # 读取标签文件，查找文章名是否存在
+            exists = False
+            with open('articles/tags.csv', 'r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                rows = list(reader)
+                for row in rows:
+                    if row[0] == article:
+                        row[1:] = tags_list  # 替换现有标签
+                        exists = True
+                        break
+
+                # 文章名不存在，创建新行
+                if not exists:
+                    rows.append([article] + tags_list)
+
+            # 写入更新后的标签文件
+            with open('articles/tags.csv', 'w', encoding='utf-8', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+
             return jsonify({'show_edit': show_edit})
         else:
             # 渲染编辑页面
@@ -919,6 +945,14 @@ def markdown_editor(article):
 
     else:
         return error(message='您没有权限', status_code=503)
+
+
+
+
+
+
+
+
 
 
 @app.route('/save/edit', methods=['POST'])
