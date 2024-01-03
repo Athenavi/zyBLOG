@@ -888,7 +888,7 @@ def ip_city_code(city_name):
         return None
 
 
-@app.route('/edit/<article>', methods=['GET', 'POST'])
+@app.route('/edit/<article>', methods=['GET', 'POST','PUT'])
 def markdown_editor(article):
     template = env.get_template('editor.html')
     if 'theme' not in session:
@@ -913,9 +913,11 @@ def markdown_editor(article):
             return render_template('editor.html', edit_html=edit_html, show_edit=show_edit, articleName=article,
                                    theme=session['theme'],tags=tags)
         elif request.method == 'POST':
-            content = request.get_json()
+            content = request.json.get('content', '')
             show_edit = zyShowArticle(content)
-            tags_input = content['tags']
+            return jsonify({'show_edit': show_edit})
+        elif request.method == 'PUT':
+            tags_input = request.get_json().get('tags')
             tags_list = tags_input.split(",")
 
             # 读取标签文件，查找文章名是否存在
@@ -937,8 +939,7 @@ def markdown_editor(article):
             with open('articles/tags.csv', 'w', encoding='utf-8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-
-            return jsonify({'show_edit': show_edit})
+            return jsonify({'show_edit': "success"})
         else:
             # 渲染编辑页面
             return render_template('editor.html')
