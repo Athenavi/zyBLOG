@@ -45,6 +45,12 @@
                                                                   height="16px">&nbsp;<span><a
                     href="/profile?id={{ author }}" target="_blank">{{ author }}</a></span>&nbsp;&nbsp;<span><img
                     src="../static/image/date.svg" height="16px">&nbsp;{{ blogDate }}</span>
+                <img src="../static/image/zytag.svg" height="16px">
+                <span>
+                {% for Tag in article_tags %}
+                        <a href="/?tag={{ Tag }}">{{ Tag }}</a>
+                {% endfor %}
+                </span>
 
                 <!-- 元素代码 -->
                 <div class="show-on-desktop">
