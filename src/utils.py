@@ -183,12 +183,12 @@ def get_weather_icon_url(weather_type):
 
 
 # 获取系统默认编码
-def zySaveEdit(articleName, content):
-    if articleName and content:
+def zy_save_edit(article_name, content):
+    if article_name and content:
         save_directory = 'articles/'
 
         # 将文章名转换为字节字符串
-        article_name_bytes = articleName.encode('utf-8')
+        article_name_bytes = article_name.encode('utf-8')
 
         # 将字节字符串和目录拼接为文件路径
         file_path = os.path.join(save_directory, article_name_bytes.decode('utf-8') + ".md")

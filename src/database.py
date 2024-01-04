@@ -8,14 +8,15 @@ def get_database_connection():
 
     db_config = dict(config.items('database'))
 
-    db = mysql.connector.connect(
+    zy_db = mysql.connector.connect(
         host=db_config['host'].strip("'"),
         port=int(db_config['port'].strip("'")),  # 将端口转换为整数类型，并去除单引号
         user=db_config['user'].strip("'"),
         password=db_config['password'].strip("'"),
         database=db_config['database'].strip("'")
     )
-    return db
+    return zy_db
+
 
 def test_database_connection():
     try:

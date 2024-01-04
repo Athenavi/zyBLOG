@@ -11,6 +11,7 @@ from src.user import error
 import datetime
 import re
 
+
 def get_article_names(page=1, per_page=10):
     articles = []
     files = os.listdir('articles')
@@ -20,7 +21,7 @@ def get_article_names(page=1, per_page=10):
     markdown_files = sorted(markdown_files, key=lambda f: datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(
         'articles', f))), reverse=True)
 
-    start_index = (page-1) * per_page
+    start_index = (page - 1) * per_page
     end_index = start_index + per_page
 
     for file in markdown_files[start_index:end_index]:
@@ -36,13 +37,16 @@ def get_article_names(page=1, per_page=10):
 
     return articles, has_next_page, has_previous_page
 
+
 def read_hidden_articles():
     with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
         hidden_articles = hidden_file.read().splitlines()
     return hidden_articles
 
+
 import codecs
 import html
+
 
 def get_article_content(article, limit):
     global code_lang
@@ -67,7 +71,7 @@ def get_article_content(article, limit):
             if line.startswith('```'):
                 if in_code_block:
                     in_code_block = False
-                    #code_lang = line.split('```')[1].strip()
+                    # code_lang = line.split('```')[1].strip()
                     escaped_code_block_content = html.escape(code_block_content.strip())
                     html_content += f'<div class="highlight"><pre><code class="language-{code_lang}">{escaped_code_block_content}</code></pre></div>'
                     code_block_content = ''
@@ -99,7 +103,7 @@ def get_article_content(article, limit):
                     )
                     line = f'<h{header_level} id="{anchor}">{header_title}</h{header_level}>'
 
-                html_content += zyShowArticle(line)
+                html_content += zy_show_article(line)
 
             line_counter += 1
 
@@ -110,8 +114,7 @@ def get_article_content(article, limit):
         return error('No file', 404)
 
 
-
-def clearHTMLFormat(text):
+def clear_html_format(text):
     clean_text = re.sub('<.*?>', '', str(text))
     return clean_text
 
@@ -127,7 +130,6 @@ def zy_get_comment(article_name, page=1, per_page=10):
 
         results = []
         rows = cursor.fetchall()
-
 
         for row in rows:
             username = row[0]
@@ -226,13 +228,13 @@ def get_file_date(file_path):
         return None
 
 
-def zySendMessage(message):
+def zy_send_message(message):
     config = ConfigParser()
     config.read('config.ini', encoding='utf-8')
     access_token = config.get('messageBot', 'access_token').strip("'")
     webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=' + access_token
     dingbot = DingtalkChatbot(webhook_url)
-    #red_msg = '<font color="#dd0000">级别:危险</font>'
+    # red_msg = '<font color="#dd0000">级别:危险</font>'
     orange_msg = '<font color="#FFA500">级别:警告</font>'
 
     now_time = datetime.now().strftime('%Y.%m.%d %H:%M:%S')
@@ -240,7 +242,7 @@ def zySendMessage(message):
     dingbot.send_markdown(
         title=f'新消息',
         text=f'### **我是主内容的第一行**\n'
-             #f'**{red_msg}**\n\n'
+        # f'**{red_msg}**\n\n'
              f'**{orange_msg}**\n\n'
              f'**{message}**\n\n'
              f'**发送时间:**  {now_time}\n\n'
@@ -248,7 +250,7 @@ def zySendMessage(message):
         is_at_all=True)
 
 
-def authArticles(articleName, username):
+def auth_articles(current_article_name, username):
     article_map = {}
     with open('author/mapper.ini', 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -263,25 +265,24 @@ def authArticles(articleName, username):
                 article_map[article_name] = article_owner
 
     # Check if articleName exists in the article_map and owner matches the username
-    if articleName in article_map and article_map[articleName] == username:
-        #print("edit Author check")
+    if current_article_name in article_map and article_map[current_article_name] == username:
+        # print("edit Author check")
         return True
 
     return False
 
 
-
-
-def zyShowArticle(content):
+def zy_show_article(content):
     try:
         markdown_text = content
-        html = markdown.markdown(markdown_text)
-        return html
+        article_content = markdown.markdown(markdown_text)
+        return article_content
     except:
         # 发生任何异常时返回一个错误页面，可以根据需要自定义错误消息
-        return error('Error in displaying the article',404)
+        return error('Error in displaying the article', 404)
 
-def zyFEditArticle(article):
+
+def zy_edit_article(article):
     limit = 215  # 读取的最大行数
     try:
         with codecs.open(f'articles/{article}.md', 'r', encoding='utf-8-sig', errors='replace') as f:
@@ -300,6 +301,3 @@ def zyFEditArticle(article):
     except FileNotFoundError:
         # 文件不存在时返回 404 错误页面
         return error('No file', 404)
-
-
-
