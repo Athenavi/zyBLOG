@@ -47,6 +47,18 @@
       <a href="/login">需要登录</a>
       {% endif %}
     </div>
+    <div class="tag_area">
+    {{ articleName }}
+    <hr>
+    {% for Tag in tags %}
+        <img src="../static/image/zytag.svg" height="16px">
+        <a href="/?tag={{ Tag }}">{{ Tag }}</a>
+    {% endfor %}
+    <hr>
+    <input id="tagInput" type="text" placeholder="输入标签，用逗号分割">
+    <button id="changeTags">保存</button>
+</div>
+
 
     <div class="editor">
       <button id="manual-refresh-button">预览</button>
@@ -175,4 +187,28 @@ saveButton.addEventListener('click', function(event) {
   });
 });
 
+</script>
+<script>
+document.getElementById("changeTags").addEventListener("click", function () {
+    var tagsInput = document.getElementById("tagInput").value;
+    var data = {
+        article: "{{ articleName }}",
+        tags: tagsInput
+    };
+
+    // 发起 PUT 请求
+    fetch('/edit/{{ articleName }}', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(function (response) {
+        if (response.ok) {
+            location.reload();  // 刷新页面以更新标签
+        }
+    }).catch(function (error) {
+        console.log(error);
+    });
+});
 </script>

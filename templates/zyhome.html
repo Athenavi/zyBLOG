@@ -115,6 +115,11 @@
             </div>
             <div class="col">
                 <hr>
+                {% for Tag in tags %}
+                        <img src="../static/image/zytag.svg" height="16px">
+                        <a href="/?tag={{ Tag }}">{{ Tag }}</a>
+                {% endfor %}
+                <hr>
                  <span style="margin-right: 5px;">Ctrl + F 搜索内容</span>
                                 <img src="https://7trees.cn/wp-content/uploads/2023/08/348f5b9acc0605ea443058826975a8a1.png"
                     alt="Weather Image" style="height: 95px;">
@@ -127,32 +132,6 @@
                 <a  href="/sitemap">站点地图</a><br>
                 <a  href="/feed">RSS订阅</a><br>
                 <br>
-
-                <div id="weather-form">
-                    <label for="city-input"></label>
-                    <input type="text" id="city-input" name="city_name" class="form-control" placeholder={{ IPinfo }}>
-                    <button type="button" onclick="getCityCode()"><img src="../static/image/sch.svg" alt="按钮"></button>
-                </div>
-
-                <div id="weather-info">
-                    <div id="today-weather">
-                        <h2 style="margin-right: 5px;">今天</h2>
-                        <p style="margin-right: 5px;"><span id="today-type"></span></p>
-                        <img id="today-icon" src="" alt="天气图标">
-                    </div>
-
-                    <div id="tomorrow-weather">
-                        <h2 style="margin-right: 5px;">明天</h2>
-                        <p style="margin-right: 5px;"><span id="tomorrow-type"></span></p>
-                        <img id="tomorrow-icon" src="" alt="天气图标">
-                    </div>
-
-                    <div id="day-after-tomorrow-weather">
-                        <h2 style="margin-right: 5px;">后天</h2>
-                        <p style="margin-right: 5px;"><span id="day-after-tomorrow-type"></span></p>
-                        <img id="day-after-tomorrow-icon" src="" alt="天气图标">
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -193,94 +172,7 @@
             });
         });
     </script>
-<script>
-async function getCityCode() {
-  const cityInput = document.getElementById("city-input");
-  let cityName = cityInput.value.trim();
 
-  if (cityName === "") {
-    alert("请输入城市名");
-    return;
-  }
-
-  const apiUrl = "/get_city_code";
-  const formData = new FormData();
-  formData.append("city_name", cityName);
-
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await response.json();
-  const cityCode = data.city_code;
-
-  if (cityCode) {
-    getWeather(cityCode);
-  } else {
-    const isCity = cityName.includes("市");
-    const isCounty = cityName.includes("县");
-
-    if (!isCity && !isCounty) {
-      formData.set("city_name", cityName + "市");
-      const response2 = await fetch(apiUrl, {
-        method: "POST",
-        body: formData
-      });
-      const data2 = await response2.json();
-      const cityCode2 = data2.city_code;
-
-      if (cityCode2) {
-        getWeather(cityCode2);
-      } else {
-        cityName = cityName.replace(/市$/, "") + "县";
-        formData.set("city_name", cityName);
-        const response3 = await fetch(apiUrl, {
-          method: "POST",
-          body: formData
-        });
-        const data3 = await response3.json();
-        const cityCode3 = data3.city_code;
-
-        if (cityCode3) {
-          getWeather(cityCode3);
-        } else {
-          alert("城市不存在");
-        }
-      }
-    } else {
-      alert("城市不存在");
-    }
-  }
-}
-
-function getWeather(cityCode) {
-  const apiUrl = `/weather/${cityCode}`;
-
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(processedData => {
-      document.getElementById("today-type").innerText = processedData.today.type;
-      document.getElementById("tomorrow-type").innerText = processedData.tomorrow.type;
-      document.getElementById("day-after-tomorrow-type").innerText = processedData.dayAfterTomorrow.type;
-
-      document.getElementById("today-icon").src = processedData.today.icon;
-      document.getElementById("tomorrow-icon").src = processedData.tomorrow.icon;
-      document.getElementById("day-after-tomorrow-icon").src = processedData.dayAfterTomorrow.icon;
-    })
-    .catch(error => {
-      console.error("获取天气信息失败：", error);
-    });
-}
-
-// 在页面加载完成后调用获取天气信息的函数
-document.addEventListener("DOMContentLoaded", () => {
-  const cityCode = "{{ city_code }}";
-  if (cityCode) {
-    getWeather(cityCode);
-  }
-});
-</script>
 <style>
     .card {
         background-color: transparent;

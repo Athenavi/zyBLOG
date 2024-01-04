@@ -340,6 +340,47 @@ def zy_get_city_code(city_name):
         return jsonify({'error': '城市不存在'})
 
 
+import csv
+def get_unique_tags(csv_filename):
+    tags = []
+    with open(csv_filename, 'r',encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header line
+        for row in reader:
+            tags.extend(row[1:])  # Append tags from the row (excluding the article name)
+
+    unique_tags = list(set(tags))  # Remove duplicates
+    return unique_tags
+
+
+def get_articles_by_tag(csv_filename, tag_name):
+    tag_articles = []
+    with open(csv_filename, 'r',encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header line
+        for row in reader:
+            if tag_name in row[1:]:
+                tag_articles.append(row[0])  # Append the article name
+
+    return tag_articles
+
+
+def get_tags_by_article(csv_filename, article_name):
+    tags = []
+    with open(csv_filename, 'r',encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header line
+        for row in reader:
+            if row[0] == article_name:
+                tags.extend(row[1:])  # Append tags from the row (excluding the article name)
+                break  # Break the loop if the article is found
+
+    unique_tags = list(set(tags))  # Remove duplicates
+    return unique_tags
+
+def get_list_intersection(list1, list2):
+    intersection = list(set(list1) & set(list2))
+    return intersection
 # 主页
 
 @app.route('/', methods=['GET', 'POST'])
@@ -351,11 +392,13 @@ def home():
     city_code = ip_city_code(IPinfo)
     if request.method == 'GET':
         page = request.args.get('page', default=1, type=int)
+        tag = request.args.get('tag')
+
         if page <= 0:
             page = 1
 
         theme = session.get('theme', 'day-theme')  # 获取当前主题
-        cache_key = f'page_content:{page}:{theme}'  # 根据页面值和主题生成缓存键
+        cache_key = f'page_content:{page}:{theme}:{tag}'  # 根据页面值和主题,标签生成缓存键
 
         # 从缓存中获取页面内容
         content = cache.get(cache_key)
@@ -367,6 +410,10 @@ def home():
         template = env.get_template('zyhome.html')
         session.setdefault('theme', 'day-theme')
         notice = read_file('notice/1.txt', 50)
+        tags = get_unique_tags('articles/tags.csv')
+        if tag:
+            tag_articles = get_articles_by_tag('articles/tags.csv',tag)
+            articles = get_list_intersection(articles,tag_articles)
 
         # 获取用户名
         username = session.get('username')
@@ -376,7 +423,7 @@ def home():
         rendered_content = template.render(
             title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
             notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
-            current_page=page, city_code=city_code, username=username
+            current_page=page, city_code=city_code, username=username,tags=tags
         )
         # 将渲染后的页面内容保存到缓存，并设置过期时间
         cache.set(cache_key, rendered_content, timeout=30)
@@ -414,6 +461,7 @@ def blog_detail(article):
             def get_article_content_cached():
                 return get_article_content(article, 215)
 
+            article_tags = get_tags_by_article('articles/tags.csv',article_name)
             article_content, readNav_html = get_article_content_cached()
             article_summary = clearHTMLFormat(article_content)[:30]
 
@@ -444,7 +492,7 @@ def blog_detail(article):
                                                      articleName=article_name, theme=theme,
                                                      author=author, blogDate=blogDate, comments=comments,
                                                      url_for=url_for, article_url=article_url,
-                                                     article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html))
+                                                     article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html,article_tags=article_tags))
 
 
             # 设置服务器端缓存时间
@@ -840,7 +888,7 @@ def ip_city_code(city_name):
         return None
 
 
-@app.route('/edit/<article>', methods=['GET', 'POST'])
+@app.route('/edit/<article>', methods=['GET', 'POST','PUT'])
 def markdown_editor(article):
     template = env.get_template('editor.html')
     if 'theme' not in session:
@@ -858,19 +906,54 @@ def markdown_editor(article):
         if request.method == 'GET':
             edit_html = zyFEditArticle(article)
             show_edit = zyShowArticle(article)
+
+            tags = get_tags_by_article("articles/tags.csv", article)
+
             # 渲染编辑页面并将转换后的HTML传递到模板中
             return render_template('editor.html', edit_html=edit_html, show_edit=show_edit, articleName=article,
-                                   theme=session['theme'])
+                                   theme=session['theme'],tags=tags)
         elif request.method == 'POST':
             content = request.json.get('content', '')
             show_edit = zyShowArticle(content)
             return jsonify({'show_edit': show_edit})
+        elif request.method == 'PUT':
+            tags_input = request.get_json().get('tags')
+            tags_list = tags_input.split(",")
+
+            # 读取标签文件，查找文章名是否存在
+            exists = False
+            with open('articles/tags.csv', 'r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                rows = list(reader)
+                for row in rows:
+                    if row[0] == article:
+                        row[1:] = tags_list  # 替换现有标签
+                        exists = True
+                        break
+
+                # 文章名不存在，创建新行
+                if not exists:
+                    rows.append([article] + tags_list)
+
+            # 写入更新后的标签文件
+            with open('articles/tags.csv', 'w', encoding='utf-8', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+            return jsonify({'show_edit': "success"})
         else:
             # 渲染编辑页面
             return render_template('editor.html')
 
     else:
         return error(message='您没有权限', status_code=503)
+
+
+
+
+
+
+
+
 
 
 @app.route('/save/edit', methods=['POST'])
