@@ -10,7 +10,7 @@ from flask import request, session, redirect, url_for, render_template, app, mak
 from src.database import get_database_connection
 
 
-def zylogin():
+def zy_login():
     if request.method == 'POST':
         input_value = bleach.clean(request.form['username'])  # 用户输入的用户名或邮箱
         password = bleach.clean(request.form['password'])
@@ -47,7 +47,7 @@ def zylogin():
     return render_template('zylogin.html', title="登录")
 
 
-def zyregister():
+def zy_register():
     if request.method == 'POST':
         username = bleach.clean(request.form['username'])  # 使用 bleach 进行 XSS 防范
         password = bleach.clean(request.form['password'])
@@ -97,6 +97,7 @@ def zyregister():
 
     return render_template('zyregister.html', title="注册新用户")
 
+
 def get_email(username):
     email = 'guest@7trees.cn'
     if username is not None and isinstance(username, str):
@@ -118,7 +119,10 @@ def get_email(username):
 
     return email
 
+
 import hashlib
+
+
 def profile(email):
     email = email  # 用户的电子邮件地址
     # 将电子邮件地址转换为小写，并使用 MD5 哈希算法生成哈希值
@@ -128,7 +132,8 @@ def profile(email):
 
     return avatar_url
 
-def zyMaillogin(user_email):
+
+def zy_mail_login(user_email):
     username = 'qks' + format(random.randint(1000, 9999))
     password = '123456'
     db = get_database_connection()
@@ -149,7 +154,7 @@ def zyMaillogin(user_email):
             resp = make_response(render_template('success.html', message="授权通过!你可以关闭此页面"))
 
             # 设置 cookie
-            resp.set_cookie('login_statu', '1',30)
+            resp.set_cookie('login_statu', '1', 30)
             return resp
 
         else:
@@ -162,7 +167,7 @@ def zyMaillogin(user_email):
             resp = make_response(render_template('success.html', message=message))
 
             # 设置 cookie
-            resp.set_cookie('login_statu', '1',30)
+            resp.set_cookie('login_statu', '1', 30)
             return resp
 
     except Exception as e:
@@ -181,14 +186,14 @@ from email.header import Header
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 mail_config = dict(config.items('mail'))
-mail_host=mail_config['host']
-mail_port=mail_config['port']
-mail_user=mail_config['user']
-mail_password=mail_config['password']
-mail_title=mail_config['title']
+mail_host = mail_config['host']
+mail_port = mail_config['port']
+mail_user = mail_config['user']
+mail_password = mail_config['password']
+mail_title = mail_config['title']
 
 
-def zySendMail(code, toMail):
+def zy_send_mail(code, recip_mail):
     # 发件人邮箱地址和密码
     smtp_server = mail_host
     smtp_port = mail_port
@@ -196,10 +201,10 @@ def zySendMail(code, toMail):
     sender_password = mail_password  # 这里是你的授权码？ 非邮箱登录密码
 
     # 收件人邮箱地址
-    recipient_email = str(toMail)
+    recipient_email = str(recip_mail)
 
     # 创建一封邮件，文本内容为 "Hello, World!"
-    message = MIMEText('您的验证码为'+code+"请勿泄露", 'plain', 'utf-8')
+    message = MIMEText('您的验证码为' + code + "请勿泄露", 'plain', 'utf-8')
     message['From'] = Header('发件人昵称 <{}>'.format(sender_email), 'utf-8')  # 设置发件人昵称
     message['To'] = Header('收件人昵称 <{}>'.format(recipient_email), 'utf-8')  # 设置收件人昵称
     message['Subject'] = Header('邮件主题', 'utf-8')  # 设置邮件主题
