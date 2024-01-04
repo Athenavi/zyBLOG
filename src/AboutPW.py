@@ -3,7 +3,7 @@ from flask import session, flash, redirect, url_for, render_template, request
 from src.database import get_database_connection
 
 
-def zychange_password():
+def zy_change_password():
     if 'logged_in' not in session:
         flash('修改密码需要先登录')
         return redirect(url_for('login'))
@@ -57,7 +57,7 @@ def zychange_password():
     return render_template('change_password.html')
 
 
-def zyconfirm_password():
+def zy_confirm_password():
     if 'logged_in' not in session:
         flash('修改密码需要先登录')
         return redirect(url_for('login'))

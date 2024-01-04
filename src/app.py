@@ -1,5 +1,6 @@
 import base64
 import configparser
+import csv
 import datetime
 import io
 import json
@@ -16,24 +17,25 @@ import geoip2.database
 import portalocker
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify, send_from_directory, \
-    send_file, make_response, send_from_directory
+from flask import Flask, render_template, redirect, session, request, url_for, Response, jsonify, send_file, \
+    make_response, send_from_directory
 from flask_caching import Cache
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import safe_join
 
-from src.AboutLogin import zylogin, zyregister, get_email, profile, zyMaillogin, zySendMail
-from src.AboutPW import zychange_password, zyconfirm_password
-from src.BlogDeal import get_article_names, get_article_content, clearHTMLFormat, zy_get_comment, zy_post_comment, \
-    get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zySendMessage, authArticles, \
-    zyShowArticle, zyFEditArticle
+from src.AboutLogin import zy_login, zy_register, get_email, profile, zy_mail_login, zy_send_mail
+from src.AboutPW import zy_change_password, zy_confirm_password
+from src.BlogDeal import get_article_names, get_article_content, clear_html_format, zy_get_comment, zy_post_comment, \
+    get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zy_send_message, auth_articles, \
+    zy_show_article, zy_edit_article
 from src.database import get_database_connection
-from templates.custom import custom_max, custom_min
-from src.user import zyadmin, zy_delete_file, zynewArticle, error, GetOwnerArticles
+from src.user import zyadmin, zy_delete_file, zy_new_article, error, get_owner_articles
 from src.utils import zy_upload_file, get_user_status, get_username, get_client_ip, read_file, \
-     get_weather_icon_url, zySaveEdit
+    get_weather_icon_url, zy_save_edit
+from templates.custom import custom_max, custom_min
 
+global_encoding = 'utf-8'
 template_dir = 'templates'  # 模板文件的目录
 loader = FileSystemLoader(template_dir)
 env = Environment(loader=loader, autoescape=select_autoescape(['html', 'xml']))
@@ -54,13 +56,13 @@ app.logger.handlers = []
 
 # 新增日志处理程序
 log_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-file_handler = logging.FileHandler('temp/app.log', encoding='utf-8')
+file_handler = logging.FileHandler('temp/app.log', encoding=global_encoding)
 file_handler.setFormatter(log_formatter)
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
 config = ConfigParser()
-config.read('config.ini', encoding='utf-8')
+config.read('config.ini', encoding=global_encoding)
 # 应用分享配置参数
 from datetime import datetime, timedelta
 
@@ -78,13 +80,13 @@ def login():
     if 'logged_in' in session:
         return redirect(url_for('home'))
     else:
-        return zylogin()
+        return zy_login()
 
 
 # 注册页面
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    return zyregister()
+    return zy_register()
 
 
 # 登出页面
@@ -138,7 +140,7 @@ def search():
                 article_url = domain + 'blog/' + encoded_article_name
                 date = get_file_date(encoded_article_name)
                 describe = get_article_content(article_name, 50)  # 建议的值50以内
-                describe = clearHTMLFormat(describe)
+                describe = clear_html_format(describe)
 
                 if keyword.lower() in article_name.lower() or keyword.lower() in describe.lower():
                     # 创建item元素并包含内容
@@ -152,7 +154,7 @@ def search():
             tree = ET.ElementTree(root)
 
             # 将XML数据转换为字符串
-            match_data = ET.tostring(tree.getroot(), encoding='utf-8', method='xml').decode()
+            match_data = ET.tostring(tree.getroot(), encoding=global_encoding, method='xml').decode()
 
             # 写入缓存
             with open(cache_path, 'w') as cache_file:
@@ -193,7 +195,13 @@ def analyze_ip_location(ip_address):
     return city_name
 
 
-
+def check_exist(cache_file):
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            cache_data = json.load(f)
+            cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
+            if datetime.now() - cache_timestamp <= timedelta(hours=1):
+                return jsonify(cache_data)
 
 
 @app.route('/weather/<city_code>', methods=['GET'])
@@ -204,25 +212,14 @@ def get_weather(city_code):
     cache_file = os.path.join(cache_dir, f'{city_code}.json')
 
     # Check if cache file exists and is within one hour
-    if os.path.exists(cache_file):
-        with open(cache_file, 'r') as f:
-            cache_data = json.load(f)
-            cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
-            if datetime.now() - cache_timestamp <= timedelta(hours=1):
-                return jsonify(cache_data)
+    check_exist(cache_file)
 
     # Acquire a lock before generating cache file
     lock_file = f'{cache_file}.lock'
     try:
         with portalocker.Lock(lock_file, timeout=1) as lock:
             # Check again if cache file is created by another request
-            if os.path.exists(cache_file):
-                with open(cache_file, 'r') as f:
-                    cache_data = json.load(f)
-                    cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
-                    if datetime.now() - cache_timestamp <= timedelta(hours=1):
-                        return jsonify(cache_data)
-
+            check_exist(cache_file)
             apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
             try:
                 response = requests.get(apiUrl)
@@ -267,7 +264,7 @@ def get_weather(city_code):
 @app.route('/get_city_code', methods=['POST'])
 def get_city_code():
     city_name = request.form.get('city_name')
-    city_name = clearHTMLFormat(city_name)
+    city_name = clear_html_format(city_name)
     return zy_get_city_code(city_name)
 
 
@@ -285,7 +282,7 @@ def space():
         ownerName = request.args.get('id')
         if ownerName is None or ownerName == '':
             ownerName = username
-        ownerArticles = GetOwnerArticles(ownerName)
+        ownerArticles = get_owner_articles(ownerName)
         avatar_url = get_email(ownerName)
         avatar_url = profile(avatar_url)
 
@@ -340,10 +337,9 @@ def zy_get_city_code(city_name):
         return jsonify({'error': '城市不存在'})
 
 
-import csv
 def get_unique_tags(csv_filename):
     tags = []
-    with open(csv_filename, 'r',encoding='utf-8') as file:
+    with open(csv_filename, 'r', encoding=global_encoding) as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header line
         for row in reader:
@@ -355,7 +351,7 @@ def get_unique_tags(csv_filename):
 
 def get_articles_by_tag(csv_filename, tag_name):
     tag_articles = []
-    with open(csv_filename, 'r',encoding='utf-8') as file:
+    with open(csv_filename, 'r', encoding=global_encoding) as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header line
         for row in reader:
@@ -367,7 +363,7 @@ def get_articles_by_tag(csv_filename, tag_name):
 
 def get_tags_by_article(csv_filename, article_name):
     tags = []
-    with open(csv_filename, 'r',encoding='utf-8') as file:
+    with open(csv_filename, 'r', encoding=global_encoding) as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header line
         for row in reader:
@@ -378,15 +374,18 @@ def get_tags_by_article(csv_filename, article_name):
     unique_tags = list(set(tags))  # Remove duplicates
     return unique_tags
 
+
 def get_list_intersection(list1, list2):
     intersection = list(set(list1) & set(list2))
     return intersection
+
+
 # 主页
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     # 获取客户端IP地址
-    IPinfo = get_client_ip(request,session)
+    IPinfo = get_client_ip(request, session)
     ip1 = IPinfo
     IPinfo = analyze_ip_location(IPinfo)
     city_code = ip_city_code(IPinfo)
@@ -412,8 +411,8 @@ def home():
         notice = read_file('notice/1.txt', 50)
         tags = get_unique_tags('articles/tags.csv')
         if tag:
-            tag_articles = get_articles_by_tag('articles/tags.csv',tag)
-            articles = get_list_intersection(articles,tag_articles)
+            tag_articles = get_articles_by_tag('articles/tags.csv', tag)
+            articles = get_list_intersection(articles, tag_articles)
 
         # 获取用户名
         username = session.get('username')
@@ -423,7 +422,7 @@ def home():
         rendered_content = template.render(
             title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
             notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
-            current_page=page, city_code=city_code, username=username,tags=tags
+            current_page=page, city_code=city_code, username=username, tags=tags
         )
         # 将渲染后的页面内容保存到缓存，并设置过期时间
         cache.set(cache_key, rendered_content, timeout=30)
@@ -439,73 +438,73 @@ def home():
         return render_template('zyhome.html')
 
 
-
 @app.route('/blog/<article>', methods=['GET', 'POST'])
 @app.route('/blog/<article>.html', methods=['GET', 'POST'])
 def blog_detail(article):
-        try:
-            # 根据文章名称获取相应的内容并处理
-            article_name = article
-            article_names = get_article_names()
-            hidden_articles = read_hidden_articles()
+    try:
+        # 根据文章名称获取相应的内容并处理
+        article_name = article
+        article_names = get_article_names()
+        hidden_articles = read_hidden_articles()
 
-            if article_name in hidden_articles:
-                # 隐藏的文章
-                return vipBlog(article_name)
+        if article_name in hidden_articles:
+            # 隐藏的文章
+            return vip_blog(article_name)
 
-            if article_name not in article_names[0]:
-                return render_template('404.html'), 404
-
-            # 通过关键字缓存内容
-            @cache.cached(timeout=180, key_prefix=f"article_{article_name}")
-            def get_article_content_cached():
-                return get_article_content(article, 215)
-
-            article_tags = get_tags_by_article('articles/tags.csv',article_name)
-            article_content, readNav_html = get_article_content_cached()
-            article_summary = clearHTMLFormat(article_content)[:30]
-
-            # 分页参数
-            page = request.args.get('page', default=1, type=int)
-            per_page = 10  # 每页显示的评论数量
-
-            username = None
-            if session.get('logged_in'):
-                username = session.get('username')
-
-            # 通过关键字缓存评论内容
-            @cache.cached(timeout=180, key_prefix=f"comments_{article_name}_{username}")
-            def get_comments_cached():
-                if username is not None:
-                    return zy_get_comment(article_name, page=page, per_page=per_page)
-                else:
-                    return None
-
-            comments = get_comments_cached()
-            article_Surl = domain + 'blog/' + article_name
-            article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
-            author = get_blog_author(article_name)
-            blogDate = get_file_date(article_name)
-            theme = session.get('theme', 'day-theme')  # 获取当前主题
-
-            response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
-                                                     articleName=article_name, theme=theme,
-                                                     author=author, blogDate=blogDate, comments=comments,
-                                                     url_for=url_for, article_url=article_url,
-                                                     article_Surl=article_Surl, article_summary=article_summary, readNav=readNav_html,article_tags=article_tags))
-
-
-            # 设置服务器端缓存时间
-            response.cache_control.max_age = 180
-            response.expires = datetime.utcnow() + timedelta(seconds=180)
-
-            # 设置浏览器端缓存时间
-            response.headers['Cache-Control'] = 'public, max-age=180'
-
-            return response
-
-        except FileNotFoundError:
+        if article_name not in article_names[0]:
             return render_template('404.html'), 404
+
+        # 通过关键字缓存内容
+        @cache.cached(timeout=180, key_prefix=f"article_{article_name}")
+        def get_article_content_cached():
+            return get_article_content(article, 215)
+
+        article_tags = get_tags_by_article('articles/tags.csv', article_name)
+        article_content, readNav_html = get_article_content_cached()
+        article_summary = clear_html_format(article_content)[:30]
+
+        # 分页参数
+        page = request.args.get('page', default=1, type=int)
+        per_page = 10  # 每页显示的评论数量
+
+        username = None
+        if session.get('logged_in'):
+            username = session.get('username')
+
+        # 通过关键字缓存评论内容
+        @cache.cached(timeout=180, key_prefix=f"comments_{article_name}_{username}")
+        def get_comments_cached():
+            if username is not None:
+                return zy_get_comment(article_name, page=page, per_page=per_page)
+            else:
+                return None
+
+        comments = get_comments_cached()
+        article_Surl = domain + 'blog/' + article_name
+        article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
+        author = get_blog_author(article_name)
+        blogDate = get_file_date(article_name)
+        theme = session.get('theme', 'day-theme')  # 获取当前主题
+
+        response = make_response(render_template('BlogDetail.html', title=title, article_content=article_content,
+                                                 articleName=article_name, theme=theme,
+                                                 author=author, blogDate=blogDate, comments=comments,
+                                                 url_for=url_for, article_url=article_url,
+                                                 article_Surl=article_Surl, article_summary=article_summary,
+                                                 readNav=readNav_html, article_tags=article_tags))
+
+        # 设置服务器端缓存时间
+        response.cache_control.max_age = 180
+        response.expires = datetime.utcnow() + timedelta(seconds=180)
+
+        # 设置浏览器端缓存时间
+        response.headers['Cache-Control'] = 'public, max-age=180'
+
+        return response
+
+    except FileNotFoundError:
+        return render_template('404.html'), 404
+
 
 last_comment_time = {}  # 全局变量，用于记录用户最后评论时间
 
@@ -604,7 +603,7 @@ def generate_rss():
     if os.path.exists(cache_file):
         cache_timestamp = os.path.getmtime(cache_file)
         if datetime.now().timestamp() - cache_timestamp <= 3600:
-            with open(cache_file, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(cache_file, 'r', encoding=global_encoding, errors='ignore') as f:
                 cached_xml_data = f.read()
             response = Response(cached_xml_data, mimetype='application/rss+xml')
             return response
@@ -653,7 +652,7 @@ def generate_rss():
     xml_data += '</rss>\n'
 
     # 写入缓存文件
-    with open(cache_file, 'w', encoding='utf-8', errors='ignore') as f:
+    with open(cache_file, 'w', encoding=global_encoding, errors='ignore') as f:
         f.write(xml_data)
 
     response = Response(xml_data, mimetype='application/rss+xml')
@@ -662,13 +661,13 @@ def generate_rss():
 
 @app.route('/confirm-password', methods=['GET', 'POST'])
 def confirm_password():
-    return zyconfirm_password()
+    return zy_confirm_password()
 
 
 @app.route('/change-password', methods=['GET', 'POST'])
 def change_password():
     # 调用已定义的change_password函数
-    return zychange_password()
+    return zy_change_password()
 
 
 @app.route('/admin/<key>', methods=['GET', 'POST'])
@@ -682,7 +681,7 @@ authorMapper = configparser.ConfigParser()
 
 
 @app.route('/newArticle', methods=['GET', 'POST'])
-def newArticle():
+def new_article():
     if request.method == 'GET':
         username = session.get('username')
         if username in last_newArticle_time:
@@ -690,7 +689,7 @@ def newArticle():
             current_time = time.time()
             if current_time - last_time < 600:
                 return error('您完成了一次服务（无论成功与否），此服务短期内将变得不可达，请你10分钟之后再来', 503)
-        return zynewArticle()
+        return zy_new_article()
 
     elif request.method == 'POST':
         username = session.get('username')
@@ -724,15 +723,15 @@ def newArticle():
                     # 如果文件不存在，将文件复制到articles文件夹下，并提示上传成功
                     shutil.copy(os.path.join(app.config['UPLOAD_FOLDER'], file.filename), 'articles')
                     file_name = os.path.splitext(file.filename)[0]  # 获取文件名（不包含后缀）
-                    with open('articles/hidden.txt', 'a', encoding='utf-8') as f:
+                    with open('articles/hidden.txt', 'a', encoding=global_encoding) as f:
                         f.write('\n' + file_name + '\n')
-                    authorMapper.read('author/mapper.ini', encoding='utf-8')
+                    authorMapper.read('author/mapper.ini', encoding=global_encoding)
                     author_value = session.get('username')
                     # 更新 [author] 节中的键值对
                     authorMapper.set('author', file_name, f"'{author_value}'")
 
                     # 将更改保存到文件
-                    with open('author/mapper.ini', 'w', encoding='utf-8') as configfile:
+                    with open('author/mapper.ini', 'w', encoding=global_encoding) as configfile:
                         authorMapper.write(configfile)
 
                     message = '上传成功。但目前处于隐藏状态，以便于你检查错误以及编辑'
@@ -757,9 +756,9 @@ def delete_file(filename):
     if userStatus and username is not None:
         article = filename
         # Auth 认证
-        auth = authArticles(article, username)
+        auth = auth_articles(article, username)
 
-    if auth == True:
+    if auth:
 
         return zy_delete_file(filename)
 
@@ -828,7 +827,7 @@ def generate_captcha():
 def verify_captcha():
     # 获取前端传来的验证码值
     user_input = request.form.get('captcha')
-    user_input = clearHTMLFormat(user_input)
+    user_input = clear_html_format(user_input)
 
     # 获取存储在session中的验证码文本
     captcha_text = session['captcha_text']
@@ -843,9 +842,8 @@ def verify_captcha():
 
 @app.route('/send_message', methods=['POST'])
 def send_message(message):
-    zySendMessage(message)
+    zy_send_message(message)
     return '1'
-
 
 
 def ip_city_code(city_name):
@@ -888,9 +886,8 @@ def ip_city_code(city_name):
         return None
 
 
-@app.route('/edit/<article>', methods=['GET', 'POST','PUT'])
+@app.route('/edit/<article>', methods=['GET', 'POST', 'PUT'])
 def markdown_editor(article):
-    template = env.get_template('editor.html')
     if 'theme' not in session:
         session['theme'] = 'day-theme'
     # notice = read_file('notice/1.txt', 50)
@@ -900,21 +897,21 @@ def markdown_editor(article):
 
     if userStatus and username is not None:
         # Auth 认证
-        auth = authArticles(article, username)
+        auth = auth_articles(article, username)
 
-    if auth == True:
+    if auth:
         if request.method == 'GET':
-            edit_html = zyFEditArticle(article)
-            show_edit = zyShowArticle(article)
+            edit_html = zy_edit_article(article)
+            show_edit = zy_show_article(article)
 
             tags = get_tags_by_article("articles/tags.csv", article)
 
             # 渲染编辑页面并将转换后的HTML传递到模板中
             return render_template('editor.html', edit_html=edit_html, show_edit=show_edit, articleName=article,
-                                   theme=session['theme'],tags=tags)
+                                   theme=session['theme'], tags=tags)
         elif request.method == 'POST':
             content = request.json.get('content', '')
-            show_edit = zyShowArticle(content)
+            show_edit = zy_show_article(content)
             return jsonify({'show_edit': show_edit})
         elif request.method == 'PUT':
             tags_input = request.get_json().get('tags')
@@ -922,7 +919,7 @@ def markdown_editor(article):
 
             # 读取标签文件，查找文章名是否存在
             exists = False
-            with open('articles/tags.csv', 'r', encoding='utf-8') as file:
+            with open('articles/tags.csv', 'r', encoding=global_encoding) as file:
                 reader = csv.reader(file)
                 rows = list(reader)
                 for row in rows:
@@ -936,7 +933,7 @@ def markdown_editor(article):
                     rows.append([article] + tags_list)
 
             # 写入更新后的标签文件
-            with open('articles/tags.csv', 'w', encoding='utf-8', newline='') as file:
+            with open('articles/tags.csv', 'w', encoding=global_encoding, newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
             return jsonify({'show_edit': "success"})
@@ -948,16 +945,8 @@ def markdown_editor(article):
         return error(message='您没有权限', status_code=503)
 
 
-
-
-
-
-
-
-
-
 @app.route('/save/edit', methods=['POST'])
-def editorSave():
+def edit_save():
     content = request.json.get('content', '')
     article = request.json.get('article')
 
@@ -971,12 +960,12 @@ def editorSave():
         return jsonify({'message': '您没有权限'}), 503
 
     # Auth 认证
-    auth = authArticles(article, username)
+    auth = auth_articles(article, username)
 
     if not auth:
         return jsonify({'message': '404'}), 404
 
-    save_edit_code = zySaveEdit(article, content)
+    save_edit_code = zy_save_edit(article, content)
     if save_edit_code == 'success':
         return jsonify({'show_edit_code': 'success'})
     else:
@@ -995,7 +984,7 @@ def hideen_article():
     if userStatus is None or username is None:
         return jsonify({'deal': 'noAuth'})
 
-    auth = authArticles(article, username)
+    auth = auth_articles(article, username)
 
     if not auth:
         return jsonify({'deal': 'noAuth'})
@@ -1011,16 +1000,16 @@ def hideen_article():
 
 
 def hide_article(article):
-    with open('articles/hidden.txt', 'a', encoding='utf-8') as hidden_file:
+    with open('articles/hidden.txt', 'a', encoding=global_encoding) as hidden_file:
         # 将文章名写入hidden.txt的新的一行中
         hidden_file.write('\n' + article + '\n')
 
 
 def unhide_article(article):
-    with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
+    with open('articles/hidden.txt', 'r', encoding=global_encoding) as hidden_file:
         hidden_articles = hidden_file.read().splitlines()
 
-    with open('articles/hidden.txt', 'w', encoding='utf-8') as hidden_file:
+    with open('articles/hidden.txt', 'w', encoding=global_encoding) as hidden_file:
         # 从hidden中移除完全匹配文章名的一行
         for hidden_article in hidden_articles:
             if hidden_article != article:
@@ -1028,7 +1017,7 @@ def unhide_article(article):
 
 
 def is_hidden(article):
-    with open('articles/hidden.txt', 'r', encoding='utf-8') as hidden_file:
+    with open('articles/hidden.txt', 'r', encoding=global_encoding) as hidden_file:
         hidden_articles = hidden_file.read().splitlines()
         return article in hidden_articles
 
@@ -1056,17 +1045,16 @@ def travel():
         return "Failed to fetch sitemap content."
 
 
-def vipBlog(articleName):
-    article_name = articleName
+def vip_blog(article_name):
     userStatus = get_user_status()
     username = get_username()
     auth = False  # 设置默认值
 
     if userStatus and username is not None:
         # Auth 认证
-        auth = authArticles(article_name, username)
+        auth = auth_articles(article_name, username)
 
-    if auth == True:
+    if auth:
         if request.method == 'GET':
             article_Surl = domain + 'blog/' + article_name
             article_url = "https://api.7trees.cn/qrcode/?data=" + article_Surl
@@ -1078,7 +1066,7 @@ def vipBlog(articleName):
                 session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
             article_content, readNav_html = get_article_content(article_name, 215)
-            article_summary = clearHTMLFormat(article_content)
+            article_summary = clear_html_format(article_content)
             article_summary = article_summary[:30]
 
             # 分页参数
@@ -1107,24 +1095,20 @@ def vipBlog(articleName):
 
         elif request.method == 'POST':
             content = request.json.get('content', '')
-            show_edit = zyShowArticle(content)
+            show_edit = zy_show_article(content)
             return jsonify({'show_edit': show_edit})
         else:
             # 渲染编辑页面
-            return zyPWblog(article_name)
-
-
+            return zy_pw_blog(article_name)
     else:
-        return zyPWblog(article_name)
+        return zy_pw_blog(article_name)
 
 
-def zyPWblog(article_name):
-    template = env.get_template('hidden.html')
+def zy_pw_blog(article_name):
     session.setdefault('theme', 'day-theme')
-    notice = read_file('notice/1.txt', 50)
     if request.method == 'GET':
         # 在此处添加密码验证的逻辑
-        codePass = zypwCheck(article_name, request.args.get('password'))
+        codePass = zy_pw_check(article_name, request.args.get('password'))
         if codePass == 'success':
             try:
                 # 根据文章名称获取相应的内容并处理
@@ -1139,7 +1123,7 @@ def zyPWblog(article_name):
                     session['theme'] = 'day-theme'  # 如果不存在，则设置默认主题为白天（day-theme）
 
                 article_content, readNav_html = get_article_content(article_name, 215)
-                article_summary = clearHTMLFormat(article_content)
+                article_summary = clear_html_format(article_content)
                 article_summary = article_summary[:30]
 
                 # 分页参数
@@ -1176,7 +1160,7 @@ def zyPWblog(article_name):
                                    url_for=url_for)
 
 
-def zypwCheck(article, code):
+def zy_pw_check(article, code):
     try:
         invitecodes = get_invitecode_data()  # 获取invitecode表数据
 
@@ -1213,7 +1197,7 @@ def get_invitecode_data():
 
 
 @app.route('/change-article-pw/<filename>', methods=['POST'])
-def changeArticlePW(filename):
+def change_article_pw(filename):
     userStatus = get_user_status()
     username = get_username()
     auth = False  # 设置默认值
@@ -1221,9 +1205,9 @@ def changeArticlePW(filename):
     if userStatus and username is not None:
         article = filename
         # Auth 认证
-        auth = authArticles(article, username)
+        auth = auth_articles(article, username)
 
-    if auth == True:
+    if auth:
         newCode = request.get_json()['NewPass']
         article = request.get_json()["Article"]
         if newCode == '': newCode = '0000'
@@ -1233,7 +1217,7 @@ def changeArticlePW(filename):
         return error(message='您没有权限', status_code=503)
 
 
-def zy_change_article_pw(filename, newCode='1234'):
+def zy_change_article_pw(filename, new_pw='1234'):
     # Connect to the database
     db = get_database_connection()
 
@@ -1247,15 +1231,15 @@ def zy_change_article_pw(filename, newCode='1234'):
             if result is not None:
                 # Update the code value
                 query = "UPDATE invitecode SET code = %s WHERE uuid = %s"
-                cursor.execute(query, (newCode, filename))
+                cursor.execute(query, (new_pw, filename))
             else:
                 # Insert a new row
                 # Check if the length of newCode is not greater than 4
-                if len(newCode) > 4:
+                if len(new_pw) > 4:
                     return "failed"
 
                 query = "INSERT INTO invitecode (uuid, code, is_used) VALUES (%s, %s, 0)"
-                cursor.execute(query, (filename, newCode))
+                cursor.execute(query, (filename, new_pw))
 
             # Commit the changes to the database
             db.commit()
@@ -1283,14 +1267,14 @@ def media_space():
     if userStatus and username is not None:
         if request.method == 'GET':
             if not type or type == 'img':
-                imgs, has_next_page, has_previous_page = get_ALL_img(username, page=page)
+                imgs, has_next_page, has_previous_page = get_all_img(username, page=page)
 
                 return render_template('zymedia.html', imgs=imgs, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
                                        has_previous_page=has_previous_page, current_page=page, userid=username,
                                        domain=domain)
             if type == 'video':
-                videos, has_next_page, has_previous_page = get_ALL_video(username, page=page)
+                videos, has_next_page, has_previous_page = get_all_video(username, page=page)
 
                 return render_template('zymedia.html', videos=videos, title='Media', url_for=url_for,
                                        theme=session.get('theme'), has_next_page=has_next_page,
@@ -1311,45 +1295,39 @@ def media_space():
     return error(message='您没有权限', status_code=503)
 
 
-def get_ALL_img(username, page=1, per_page=10):
-    imgs = []
-    img_dir = os.path.join('media', username)
-    if not os.path.exists(img_dir):
-        os.makedirs(img_dir)
+def get_media_list(username, category, page=1, per_page=10):
+    files = []
+    file_suffix = ()
+    if category == 'img':
+        file_suffix = ('.png', '.jpg', '.webp')
+    elif category == 'video':
+        file_suffix = ('.mp4', '.avi', '.mkv', '.webm', '.flv')
+    file_dir = os.path.join('media', username)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
 
-    img_files = [file for file in os.listdir(img_dir) if file.endswith(('.png', '.jpg', '.webp'))]
-    img_files = sorted(img_files, key=lambda x: os.path.getctime(os.path.join(img_dir, x)), reverse=True)
-    total_img_count = len(img_files)
+    files = [file for file in os.listdir(file_dir) if file.endswith(tuple(file_suffix))]
+    files = sorted(files, key=lambda x: os.path.getctime(os.path.join(file_dir, x)), reverse=True)
+    total_img_count = len(files)
     total_pages = (total_img_count + per_page - 1) // per_page
 
     start_index = (page - 1) * per_page
     end_index = start_index + per_page
-    imgs = img_files[start_index:end_index]
+    files = files[start_index:end_index]
 
     has_next_page = page < total_pages
     has_previous_page = page > 1
 
+    return files, has_next_page, has_previous_page
+
+
+def get_all_img(username, page=1, per_page=10):
+    imgs, has_next_page, has_previous_page = get_media_list(username, category='img')
     return imgs, has_next_page, has_previous_page
 
 
-def get_ALL_video(username, page=1, per_page=10):
-    videos = []
-    video_dir = os.path.join('media', username)
-    if not os.path.exists(video_dir):
-        os.makedirs(video_dir)
-
-    video_files = [file for file in os.listdir(video_dir) if file.endswith(('.mp4', '.avi', '.mkv', '.webm', '.flv'))]
-    video_files = sorted(video_files, key=lambda x: os.path.getctime(os.path.join(video_dir, x)), reverse=True)
-    total_video_count = len(video_files)
-    total_pages = (total_video_count + per_page - 1) // per_page
-
-    start_index = (page - 1) * per_page
-    end_index = start_index + per_page
-    videos = video_files[start_index:end_index]
-
-    has_next_page = page < total_pages
-    has_previous_page = page > 1
-
+def get_all_video(username, page=1, per_page=10):
+    videos, has_next_page, has_previous_page = get_media_list(username, category='video')
     return videos, has_next_page, has_previous_page
 
 
@@ -1417,7 +1395,7 @@ def upload_image_path(username1):
 def start_video(username, video_name):
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        video_dir = os.path.join(base_dir,'media', username)
+        video_dir = os.path.join(base_dir, 'media', username)
         video_path = os.path.join(video_dir, video_name)
 
         return send_file(video_path, mimetype='video/mp4', as_attachment=False, conditional=True)
@@ -1430,16 +1408,16 @@ def start_video(username, video_name):
 def maillogin_page():
     if request.method == 'POST':
         input_value = request.form['username']  # 用户输入的邮箱
-        code = clearHTMLFormat(request.form['password'])
+        code = clear_html_format(request.form['password'])
         if input_value == 'guest@7trees.cn':
             return render_template('error.html', error="授权未通过")
         captcha_text = session.get('captcha_text', 'default_value_if_not_exists')
         code = str(code)
-        zySendMail(captcha_text, input_value)
-        if (code == captcha_text):
+        zy_send_mail(captcha_text, input_value)
+        if code == captcha_text:
 
             app.logger.info('用户:{},获取了验证码:{} '.format(input_value, code))
-            return zyMaillogin(input_value)
+            return zy_mail_login(input_value)
         else:
             return render_template('Maillogin.html', error="验证码不匹配")
 
@@ -1451,9 +1429,6 @@ def maillogin_page():
 def jump():
     url = request.args.get('url', default='None')
     return render_template('zyJump.html', url=url)
-
-
-
 
 
 @app.route('/static/<path:filename>')
