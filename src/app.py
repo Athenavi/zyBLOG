@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import random
+import re
 import shutil
 import time
 import urllib
@@ -372,6 +373,7 @@ def get_tags_by_article(csv_filename, article_name):
                 break  # Break the loop if the article is found
 
     unique_tags = list(set(tags))  # Remove duplicates
+    unique_tags = [tag for tag in unique_tags if tag]  # Remove empty tags
     return unique_tags
 
 
@@ -915,7 +917,21 @@ def markdown_editor(article):
             return jsonify({'show_edit': show_edit})
         elif request.method == 'PUT':
             tags_input = request.get_json().get('tags')
-            tags_list = tags_input.split(",")
+            tags_list = []
+            # 将中文逗号转换为英文逗号
+            tags_input = tags_input.replace("，", ",")
+
+            # 用正则表达式截断标签信息中超过五个标签的部分
+            comma_count = tags_input.count(",")
+            if comma_count > 4:
+                tags_input = re.split(",{1}", tags_input, maxsplit=4)[0]
+
+            # 限制每个标签最大字符数为10，并添加到标签列表
+
+            for tag in tags_input.split(","):
+                tag = tag.strip()
+                if len(tag) <= 10:
+                    tags_list.append(tag)
 
             # 读取标签文件，查找文章名是否存在
             exists = False
@@ -937,6 +953,7 @@ def markdown_editor(article):
                 writer = csv.writer(file)
                 writer.writerows(rows)
             return jsonify({'show_edit': "success"})
+
         else:
             # 渲染编辑页面
             return render_template('editor.html')
