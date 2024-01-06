@@ -25,7 +25,7 @@ from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import safe_join
 
-from src.AboutLogin import zy_login, zy_register, get_email, profile, zy_mail_login, zy_send_mail
+from src.AboutLogin import zy_login, zy_register, get_email, profile, zy_mail_login
 from src.AboutPW import zy_change_password, zy_confirm_password
 from src.BlogDeal import get_article_names, get_article_content, clear_html_format, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zy_send_message, auth_articles, \
@@ -1421,31 +1421,10 @@ def start_video(username, video_name):
         return None
 
 
-@app.route('/mailloginpage', methods=['POST', 'GET'])
-def maillogin_page():
-    if request.method == 'POST':
-        input_value = request.form['username']  # 用户输入的邮箱
-        code = clear_html_format(request.form['password'])
-        if input_value == 'guest@7trees.cn':
-            return render_template('error.html', error="授权未通过")
-        captcha_text = session.get('captcha_text', 'default_value_if_not_exists')
-        code = str(code)
-        zy_send_mail(captcha_text, input_value)
-        if code == captcha_text:
-
-            app.logger.info('用户:{},获取了验证码:{} '.format(input_value, code))
-            return zy_mail_login(input_value)
-        else:
-            return render_template('Maillogin.html', error="验证码不匹配")
-
-    generate_captcha()
-    return render_template('Maillogin.html')
-
-
 @app.route('/jump', methods=['GET', 'POST'])
 def jump():
-    url = request.args.get('url', default='None')
-    return render_template('zyJump.html', url=url)
+    url = request.args.get('url', default=domain)
+    return render_template('zyJump.html', url=url, domain=domain)
 
 
 @app.route('/static/<path:filename>')
@@ -1454,3 +1433,60 @@ def serve_static(filename):
     directory = safe_join('/'.join(parts[:-1]))
     file = parts[-1]
     return send_from_directory(directory, file)
+
+
+# 彩虹聚合登录
+app_id = config.get('general', 'app_id').strip("'")
+app_key = config.get('general', 'app_key').strip("'")
+
+
+@app.route('/login/<provider>')
+def cc_login(provider):
+    if provider not in ['qq', 'wx', 'alipay', 'sina', 'baidu', 'huawei', 'xiaomi', 'dingtalk']:
+        return jsonify({'message': 'Invalid login provider'})
+
+    redirect_uri = domain + "callback/" + provider
+
+    login_url = f'https://u.cccyun.cc/connect.php?act=login&appid={app_id}&appkey={app_key}&type={provider}&redirect_uri={redirect_uri}'
+    response = requests.get(login_url)
+    data = response.json()
+    code = data.get('code')
+    if code == 0:
+        cc_url = data.get('url')
+
+    return redirect(cc_url, 302)
+
+
+@app.route('/callback/<provider>')
+def callback(provider):
+    if provider not in ['qq', 'wx', 'alipay', 'sina', 'baidu', 'huawei', 'xiaomi', 'dingtalk']:
+        return jsonify({'message': 'Invalid login provider'})
+
+    # Replace with your app's credentials
+
+    authorization_code = request.args.get('code')
+
+    callback_url = f'https://u.cccyun.cc/connect.php?act=callback&appid={app_id}&appkey={app_key}&type={provider}&code={authorization_code}'
+
+    response = requests.get(callback_url)
+    data = response.json()
+    code = data.get('code')
+    if code == 0:
+        social_uid = data.get('social_uid')
+        access_token = data.get('access_token')
+        nickname = data.get('nickname')
+        faceimg = data.get('faceimg')
+        gender = data.get('gender')
+        location = data.get('location')
+        ip = data.get('ip')
+        session['public_ip'] = ip
+        if provider == 'qq':
+            user_email = social_uid + "@qq.com"
+        if provider == 'wx':
+            user_email = social_uid + "@wx.com"
+        elif provider != 'qq' and 'wx':
+            user_email = social_uid + "@qks.com"
+        return zy_mail_login(user_email)
+
+    # Redirect the user to a logged-in page
+    return redirect('/profile')

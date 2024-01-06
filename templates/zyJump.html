@@ -28,11 +28,19 @@
 <body>
     <div class="container">
     <div class="row justify-content-center">
-        {% if url and url != "None" %}
+        {% if url and url != domain %}
             <div class="alert alert-danger" role="alert">
                 <span>你即将跳转的<br>{{ url }}<br>非本站站点<br>请注意自我甄别与自我防护<br></span>
                 <button class="btn btn-primary btn-sm" id="jump">仍要访问</button>
                 <button class="btn btn-danger btn-sm" id="close">取消访问</button>
+            </div>
+
+        {% endif %}
+
+        {% if url == domain %}
+            <div class="alert alert-danger" role="alert">
+                <span>你未指定跳转的链接<br>去主页{{ url }}看看吧<br></span>
+                <button class="btn btn-primary btn-sm" id="jump">访问主页</button>
             </div>
 
         {% endif %}

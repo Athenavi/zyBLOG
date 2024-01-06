@@ -57,7 +57,10 @@
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">安全登录</button>
                         <span>一键登录</span>
-                <a onclick="openSmallWindow()"><img src="../static/image/mail.svg" alt=""></a>
+                        <a onclick="openSmallWindow()"><img src="../static/image/mail.svg" alt=""></a>
+                        <a href="/login/qq">QQ登录</a>
+                        <a href="/login/wx">微信登录</a>
+                        <a href="/login/alipay">支付宝登录</a>
                         <label>
                             还没有账号？
                          <a target="_blank" href="/register">前往注册</a>
@@ -87,7 +90,7 @@
         function openSmallWindow() {
             var screenWidth = document.documentElement.clientWidth;
             var screenHeight = document.documentElement.clientHeight;
-            window.open('/mailloginpage', 'newWindow', 'width=' + (screenWidth / 2) + ', height=' + (screenHeight / 2));
+            window.open('/mailoginpage', 'newWindow', 'width=' + (screenWidth / 2) + ', height=' + (screenHeight / 2));
 
         }
     </script>

@@ -165,7 +165,8 @@ def zy_mail_login(user_email):
             db.commit()
             message = '已经为您自动注册账号\n' + '账号' + username + '默认密码：123456 请尽快修改'
             resp = make_response(render_template('success.html', message=message))
-
+            session['logged_in'] = True
+            session['username'] = username
             # 设置 cookie
             resp.set_cookie('login_statu', '1', 30)
             return resp
@@ -178,49 +179,3 @@ def zy_mail_login(user_email):
         cursor.close()
         db.close()
 
-
-import smtplib
-from email.mime.text import MIMEText
-from email.header import Header
-
-config = configparser.ConfigParser()
-config.read('config.ini', encoding='utf-8')
-mail_config = dict(config.items('mail'))
-mail_host = mail_config['host']
-mail_port = mail_config['port']
-mail_user = mail_config['user']
-mail_password = mail_config['password']
-mail_title = mail_config['title']
-
-
-def zy_send_mail(code, recip_mail):
-    # 发件人邮箱地址和密码
-    smtp_server = mail_host
-    smtp_port = mail_port
-    sender_email = mail_user  # 这里替换为您自己的发件人邮箱地址
-    sender_password = mail_password  # 这里是你的授权码？ 非邮箱登录密码
-
-    # 收件人邮箱地址
-    recipient_email = str(recip_mail)
-
-    # 创建一封邮件，文本内容为 "Hello, World!"
-    message = MIMEText('您的验证码为' + code + "请勿泄露", 'plain', 'utf-8')
-    message['From'] = Header('发件人昵称 <{}>'.format(sender_email), 'utf-8')  # 设置发件人昵称
-    message['To'] = Header('收件人昵称 <{}>'.format(recipient_email), 'utf-8')  # 设置收件人昵称
-    message['Subject'] = Header('邮件主题', 'utf-8')  # 设置邮件主题
-
-    try:
-        # 连接邮件服务器并登录
-        smtp_connection = smtplib.SMTP(smtp_server, smtp_port)
-        smtp_connection.login(sender_email, sender_password)
-
-        # 发送邮件
-        smtp_connection.sendmail(sender_email, recipient_email, message.as_string())
-
-        # 关闭连接
-        smtp_connection.quit()
-
-        print("邮件发送成功！")
-
-    except Exception as e:
-        print("邮件发送失败：", e)
