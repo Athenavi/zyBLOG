@@ -50,6 +50,7 @@
     <div class="tag_area">
     {{ articleName }}
     <hr>
+    <span>最大五个标签，标签不宜过长</span>
     {% for Tag in tags %}
         <img src="../static/image/zytag.svg" height="16px">
         <a href="/?tag={{ Tag }}">{{ Tag }}</a>

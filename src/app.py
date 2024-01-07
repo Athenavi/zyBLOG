@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import random
+import re
 import shutil
 import time
 import urllib
@@ -24,7 +25,7 @@ from jinja2 import Environment, select_autoescape, FileSystemLoader
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import safe_join
 
-from src.AboutLogin import zy_login, zy_register, get_email, profile, zy_mail_login, zy_send_mail
+from src.AboutLogin import zy_login, zy_register, get_email, profile, zy_mail_login
 from src.AboutPW import zy_change_password, zy_confirm_password
 from src.BlogDeal import get_article_names, get_article_content, clear_html_format, zy_get_comment, zy_post_comment, \
     get_file_date, get_blog_author, generate_random_text, read_hidden_articles, zy_send_message, auth_articles, \
@@ -176,23 +177,21 @@ def search():
 
 def analyze_ip_location(ip_address):
     city_name = session.get('city_name')
-    if city_name:
-        return city_name
-    city_name = '北京'
+    city_code = session.get('city_code')
+    if city_name and city_code:
+        return city_name,city_code
+    else:
+        ip_api_url = f'http://whois.pconline.com.cn/ipJson.jsp?ip={ip_address}&json=true'
+        response = requests.get(ip_api_url)
+        data = response.json()
+        city_name = data.get('city')
+        city_code = data.get('cityCode')
+        session['city_name'] = city_name
+        session['city_code'] = city_code
+        return city_name,city_code
 
-    # 加载GeoIP2数据库文件
-    if ip_address:
-        reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
 
-        try:
-            response = reader.city(ip_address)
-            city_name = response.city.names.get('zh-CN', '')
-        except geoip2.errors.AddressNotFoundError:
-            city_name = '北京'
 
-        reader.close()
-    session['city_name'] = city_name
-    return city_name
 
 
 def check_exist(cache_file):
@@ -266,6 +265,13 @@ def get_city_code():
     city_name = request.form.get('city_name')
     city_name = clear_html_format(city_name)
     return zy_get_city_code(city_name)
+
+
+
+
+
+
+
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -372,6 +378,7 @@ def get_tags_by_article(csv_filename, article_name):
                 break  # Break the loop if the article is found
 
     unique_tags = list(set(tags))  # Remove duplicates
+    unique_tags = [tag for tag in unique_tags if tag]  # Remove empty tags
     return unique_tags
 
 
@@ -385,10 +392,8 @@ def get_list_intersection(list1, list2):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     # 获取客户端IP地址
-    IPinfo = get_client_ip(request, session)
-    ip1 = IPinfo
-    IPinfo = analyze_ip_location(IPinfo)
-    city_code = ip_city_code(IPinfo)
+    ip = get_client_ip(request, session)
+    city_name,city_code = analyze_ip_location(ip)
     if request.method == 'GET':
         page = request.args.get('page', default=1, type=int)
         tag = request.args.get('tag')
@@ -416,11 +421,11 @@ def home():
 
         # 获取用户名
         username = session.get('username')
-        app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{}'.format(username, ip1, IPinfo))
+        app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{},城市代码:{}'.format(username, ip, city_name,city_code))
 
         # 渲染模板并存储渲染后的页面内容到缓存中
         rendered_content = template.render(
-            title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
+            title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=city_name,
             notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
             current_page=page, city_code=city_code, username=username, tags=tags
         )
@@ -846,44 +851,6 @@ def send_message(message):
     return '1'
 
 
-def ip_city_code(city_name):
-    api_url = domain + "get_city_code"
-    form_data = {"city_name": city_name}
-
-    try:
-        response = requests.post(api_url, data=form_data)
-        response.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-        data = response.json()
-        city_code = data.get("city_code")
-
-        if city_code:
-            return city_code
-        else:
-            is_city = "市" in city_name
-            is_county = "县" in city_name
-
-            if not is_city and not is_county:
-                form_data["city_name"] = city_name + "市"
-                response2 = requests.post(api_url, data=form_data)
-                response2.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-                data2 = response2.json()
-                city_code2 = data2.get("city_code")
-                return city_code2
-            else:
-                city_name = city_name.rstrip("市") + "县"
-                form_data["city_name"] = city_name
-                response3 = requests.post(api_url, data=form_data)
-                response3.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-                data3 = response3.json()
-                city_code3 = data3.get("city_code")
-                return city_code3
-
-    except requests.exceptions.RequestException as e:
-        print("发生请求异常:", str(e))
-        return None
 
 
 @app.route('/edit/<article>', methods=['GET', 'POST', 'PUT'])
@@ -915,7 +882,21 @@ def markdown_editor(article):
             return jsonify({'show_edit': show_edit})
         elif request.method == 'PUT':
             tags_input = request.get_json().get('tags')
-            tags_list = tags_input.split(",")
+            tags_list = []
+            # 将中文逗号转换为英文逗号
+            tags_input = tags_input.replace("，", ",")
+
+            # 用正则表达式截断标签信息中超过五个标签的部分
+            comma_count = tags_input.count(",")
+            if comma_count > 4:
+                tags_input = re.split(",{1}", tags_input, maxsplit=4)[0]
+
+            # 限制每个标签最大字符数为10，并添加到标签列表
+
+            for tag in tags_input.split(","):
+                tag = tag.strip()
+                if len(tag) <= 10:
+                    tags_list.append(tag)
 
             # 读取标签文件，查找文章名是否存在
             exists = False
@@ -937,6 +918,7 @@ def markdown_editor(article):
                 writer = csv.writer(file)
                 writer.writerows(rows)
             return jsonify({'show_edit': "success"})
+
         else:
             # 渲染编辑页面
             return render_template('editor.html')
@@ -1404,31 +1386,10 @@ def start_video(username, video_name):
         return None
 
 
-@app.route('/mailloginpage', methods=['POST', 'GET'])
-def maillogin_page():
-    if request.method == 'POST':
-        input_value = request.form['username']  # 用户输入的邮箱
-        code = clear_html_format(request.form['password'])
-        if input_value == 'guest@7trees.cn':
-            return render_template('error.html', error="授权未通过")
-        captcha_text = session.get('captcha_text', 'default_value_if_not_exists')
-        code = str(code)
-        zy_send_mail(captcha_text, input_value)
-        if code == captcha_text:
-
-            app.logger.info('用户:{},获取了验证码:{} '.format(input_value, code))
-            return zy_mail_login(input_value)
-        else:
-            return render_template('Maillogin.html', error="验证码不匹配")
-
-    generate_captcha()
-    return render_template('Maillogin.html')
-
-
 @app.route('/jump', methods=['GET', 'POST'])
 def jump():
-    url = request.args.get('url', default='None')
-    return render_template('zyJump.html', url=url)
+    url = request.args.get('url', default=domain)
+    return render_template('zyJump.html', url=url, domain=domain)
 
 
 @app.route('/static/<path:filename>')
@@ -1437,3 +1398,61 @@ def serve_static(filename):
     directory = safe_join('/'.join(parts[:-1]))
     file = parts[-1]
     return send_from_directory(directory, file)
+
+
+# 彩虹聚合登录
+app_id = config.get('general', 'app_id').strip("'")
+app_key = config.get('general', 'app_key').strip("'")
+
+
+@app.route('/login/<provider>')
+def cc_login(provider):
+    if provider not in ['qq', 'wx', 'alipay', 'sina', 'baidu', 'huawei', 'xiaomi', 'dingtalk']:
+        return jsonify({'message': 'Invalid login provider'})
+
+    redirect_uri = domain + "callback/" + provider
+
+    login_url = f'https://u.cccyun.cc/connect.php?act=login&appid={app_id}&appkey={app_key}&type={provider}&redirect_uri={redirect_uri}'
+    response = requests.get(login_url)
+    data = response.json()
+    code = data.get('code')
+    if code == 0:
+        cc_url = data.get('url')
+
+    return redirect(cc_url, 302)
+
+
+@app.route('/callback/<provider>')
+def callback(provider):
+    if provider not in ['qq', 'wx', 'alipay', 'sina', 'baidu', 'huawei', 'xiaomi', 'dingtalk']:
+        return jsonify({'message': 'Invalid login provider'})
+
+    # Replace with your app's credentials
+
+    authorization_code = request.args.get('code')
+
+    callback_url = f'https://u.cccyun.cc/connect.php?act=callback&appid={app_id}&appkey={app_key}&type={provider}&code={authorization_code}'
+
+    response = requests.get(callback_url)
+    data = response.json()
+    code = data.get('code')
+    msg = data.get('msg')
+    if code == 0:
+        social_uid = data.get('social_uid')
+        access_token = data.get('access_token')
+        nickname = data.get('nickname')
+        faceimg = data.get('faceimg')
+        gender = data.get('gender')
+        location = data.get('location')
+        ip = data.get('ip')
+        session['public_ip'] = ip
+        if provider == 'qq':
+            user_email = social_uid + "@qq.com"
+        if provider == 'wx':
+            user_email = social_uid + "@wx.com"
+        elif provider != 'qq' and 'wx':
+            user_email = social_uid + "@qks.com"
+        return zy_mail_login(user_email)
+
+
+    return render_template('zylogin.html', error=msg)
