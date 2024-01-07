@@ -177,23 +177,21 @@ def search():
 
 def analyze_ip_location(ip_address):
     city_name = session.get('city_name')
-    if city_name:
-        return city_name
-    city_name = '北京'
+    city_code = session.get('city_code')
+    if city_name and city_code:
+        return city_name,city_code
+    else:
+        ip_api_url = f'http://whois.pconline.com.cn/ipJson.jsp?ip={ip_address}&json=true'
+        response = requests.get(ip_api_url)
+        data = response.json()
+        city_name = data.get('city')
+        city_code = data.get('cityCode')
+        session['city_name'] = city_name
+        session['city_code'] = city_code
+        return city_name,city_code
 
-    # 加载GeoIP2数据库文件
-    if ip_address:
-        reader = geoip2.database.Reader('static/GeoLite2-City.mmdb')
 
-        try:
-            response = reader.city(ip_address)
-            city_name = response.city.names.get('zh-CN', '')
-        except geoip2.errors.AddressNotFoundError:
-            city_name = '北京'
 
-        reader.close()
-    session['city_name'] = city_name
-    return city_name
 
 
 def check_exist(cache_file):
@@ -267,6 +265,13 @@ def get_city_code():
     city_name = request.form.get('city_name')
     city_name = clear_html_format(city_name)
     return zy_get_city_code(city_name)
+
+
+
+
+
+
+
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -387,10 +392,8 @@ def get_list_intersection(list1, list2):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     # 获取客户端IP地址
-    IPinfo = get_client_ip(request, session)
-    ip1 = IPinfo
-    IPinfo = analyze_ip_location(IPinfo)
-    city_code = ip_city_code(IPinfo)
+    ip = get_client_ip(request, session)
+    city_name,city_code = analyze_ip_location(ip)
     if request.method == 'GET':
         page = request.args.get('page', default=1, type=int)
         tag = request.args.get('tag')
@@ -418,11 +421,11 @@ def home():
 
         # 获取用户名
         username = session.get('username')
-        app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{}'.format(username, ip1, IPinfo))
+        app.logger.info('当前访问的用户:{}, IP:{}, IP归属地:{},城市代码:{}'.format(username, ip, city_name,city_code))
 
         # 渲染模板并存储渲染后的页面内容到缓存中
         rendered_content = template.render(
-            title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=IPinfo,
+            title=title, articles=articles, url_for=url_for, theme=session['theme'], IPinfo=city_name,
             notice=notice, has_next_page=has_next_page, has_previous_page=has_previous_page,
             current_page=page, city_code=city_code, username=username, tags=tags
         )
@@ -848,44 +851,6 @@ def send_message(message):
     return '1'
 
 
-def ip_city_code(city_name):
-    api_url = domain + "get_city_code"
-    form_data = {"city_name": city_name}
-
-    try:
-        response = requests.post(api_url, data=form_data)
-        response.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-        data = response.json()
-        city_code = data.get("city_code")
-
-        if city_code:
-            return city_code
-        else:
-            is_city = "市" in city_name
-            is_county = "县" in city_name
-
-            if not is_city and not is_county:
-                form_data["city_name"] = city_name + "市"
-                response2 = requests.post(api_url, data=form_data)
-                response2.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-                data2 = response2.json()
-                city_code2 = data2.get("city_code")
-                return city_code2
-            else:
-                city_name = city_name.rstrip("市") + "县"
-                form_data["city_name"] = city_name
-                response3 = requests.post(api_url, data=form_data)
-                response3.raise_for_status()  # 检查请求是否成功，若失败会引发异常
-
-                data3 = response3.json()
-                city_code3 = data3.get("city_code")
-                return city_code3
-
-    except requests.exceptions.RequestException as e:
-        print("发生请求异常:", str(e))
-        return None
 
 
 @app.route('/edit/<article>', methods=['GET', 'POST', 'PUT'])
@@ -1471,6 +1436,7 @@ def callback(provider):
     response = requests.get(callback_url)
     data = response.json()
     code = data.get('code')
+    msg = data.get('msg')
     if code == 0:
         social_uid = data.get('social_uid')
         access_token = data.get('access_token')
@@ -1488,5 +1454,5 @@ def callback(provider):
             user_email = social_uid + "@qks.com"
         return zy_mail_login(user_email)
 
-    # Redirect the user to a logged-in page
-    return redirect('/profile')
+
+    return render_template('zylogin.html', error=msg)
