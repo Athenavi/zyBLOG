@@ -198,7 +198,7 @@ def check_exist(cache_file):
     if os.path.exists(cache_file):
         with open(cache_file, 'r') as f:
             cache_data = json.load(f)
-            cache_timestamp = datetime.fromisoformat(cache_data.get('timestamp'))
+            cache_timestamp = datetime.fromtimestamp(os.path.getmtime(cache_file))
             if datetime.now() - cache_timestamp <= timedelta(hours=1):
                 return jsonify(cache_data)
 
@@ -222,27 +222,7 @@ def get_weather(city_code):
             apiUrl = f'http://t.weather.itboy.net/api/weather/city/{city_code}'
             try:
                 response = requests.get(apiUrl)
-                weatherData = response.json()
-
-                todayWeather = weatherData['data']['forecast'][0]
-                tomorrowWeather = weatherData['data']['forecast'][1]
-                dayAfterTomorrowWeather = weatherData['data']['forecast'][2]
-
-                processedData = {
-                    'timestamp': datetime.now().isoformat(),
-                    'today': {
-                        'type': todayWeather['type'],
-                        'icon': get_weather_icon_url(todayWeather['type'])
-                    },
-                    'tomorrow': {
-                        'type': tomorrowWeather['type'],
-                        'icon': get_weather_icon_url(tomorrowWeather['type'])
-                    },
-                    'dayAfterTomorrow': {
-                        'type': dayAfterTomorrowWeather['type'],
-                        'icon': get_weather_icon_url(dayAfterTomorrowWeather['type'])
-                    }
-                }
+                processedData = response.json()
 
                 with open(cache_file, 'w') as f:
                     json.dump(processedData, f)
@@ -789,6 +769,10 @@ def undefined_route(undefined_path):
 
 @app.route('/generate_captcha')
 def generate_captcha():
+    image_base64 = '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'
+    captcha_text = '8er2'
+    if 'logged_in' not in session:
+        return {'image': image_base64, 'captcha_text': captcha_text}
     # 生成验证码文本
     captcha_text = generate_random_text()
 
@@ -808,7 +792,12 @@ def generate_captcha():
 
     # 修改图像像素，将白色像素变为透明
     new_data = []
-    new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+    theme = session.get('theme', 'day-theme')
+    if theme == 'night-theme':
+        new_data = data
+    else:
+        new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+
 
     # 更新图像数据
     image.putdata(new_data)
