@@ -2,6 +2,9 @@
 
 
 ## 简介
+===
+此项目已经停止更新，请转到 [zb](https://github.com/Athenavi/zb)
+===
 
 [zyBLOG](https://github.com/Athenavi/zyBLOG) 是一个基于 Python Flask 和 WSGI 的简易博客程序
 
