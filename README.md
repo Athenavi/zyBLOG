@@ -1,6 +1,2 @@
-===
-!!!此项目已经停止更新，请转到 [zb](https://github.com/Athenavi/zb)
-!!!此项目已经停止更新，请转到 [zb](https://github.com/Athenavi/zb)
-!!!此项目已经停止更新，请转到 [zb](https://github.com/Athenavi/zb)
-===
+> 💡 提示：项目持续迭代中，请转到`zb-v2`https://github.com/Athenavi/zb-v2 最新更新。
 
